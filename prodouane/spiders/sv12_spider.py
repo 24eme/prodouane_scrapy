@@ -16,10 +16,10 @@ class QuotesSpider(scrapy.Spider):
         yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/WDsession.asp', formdata={"login":os.environ['PRODOUANE_USER'],"pass":os.environ['PRODOUANE_PASS']}, callback=self.sv12_postlogin)
 
     def sv12_postlogin(self, response):
-        yield scrapy.Request(url=response.urljoin('/wdactuapplif.asp?wdAppli=57'),  callback=self.sv12_postmenu)
+        yield scrapy.Request(url='https://pro.douane.gouv.fr/wdactuapplif.asp?wdAppli=57',  callback=self.sv12_postmenu)
 
     def sv12_postmenu(self, response):
-        yield scrapy.Request(url=response.urljoin('/wdroute.asp?btn=57&rap=3&cat=3'),  callback=self.sv12_login, meta={'departement': 0, 'commune': 0, 'campagne': os.environ['PRODOUANE_CAMPAGNE']})
+        yield scrapy.Request(url='https://pro.douane.gouv.fr/wdroute.asp?btn=57&rap=3&cat=3',  callback=self.sv12_login, meta={'departement': 0, 'commune': 0, 'campagne': os.environ['PRODOUANE_CAMPAGNE']})
 
     def sv12_login(self, response):
         args = {}
