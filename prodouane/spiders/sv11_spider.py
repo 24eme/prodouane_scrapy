@@ -187,7 +187,7 @@ class QuotesSpider(scrapy.Spider):
         inputs = self.get_input_args(response, '')
         args = {
                'javax.faces.ViewState': inputs['javax.faces.ViewState'],
-               'form1:_idcl':"form1:_idJsp50",
+               'form1:_idcl':"form1:_idJsp47",
                'form1:_idJsp40':"_idJsp41",
                'form1:_idJsp42':"_idJsp43",
                'form1_SUBMIT':"1",
@@ -195,6 +195,24 @@ class QuotesSpider(scrapy.Spider):
         }
 
         response.meta['javaxViewState'] = inputs['javax.faces.ViewState']
+        yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_sv11/prodouane/jsp/recapApporteur.jsf?total', formdata=args, callback=self.sv11_pdf_sv11, meta=response.meta)
+
+    def sv11_pdf_sv11(self, response): 
+        self.log('sv11_pdf_sv11')
+        filename = 'documents/SV11-%s-%s.pdf' % (response.meta['info'][response.meta['id']]['date'], response.meta['info'][response.meta['id']]['cvi'])
+        with open(filename, 'wb') as f:
+            f.write(response.body)
+        self.log('Saved file %s' % filename)
+
+        args = {
+               'javax.faces.ViewState': response.meta['javaxViewState'],
+               'form1:_idcl':"form1:_idJsp50",
+               'form1:_idJsp40':"_idJsp41",
+               'form1:_idJsp42':"_idJsp43",
+               'form1_SUBMIT':"1",
+               'form1:_link_hidden_':"",
+        }
+
         yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_sv11/prodouane/jsp/recapApporteur.jsf?total', formdata=args, callback=self.sv11_tableur_sv11, meta=response.meta)
 
 
