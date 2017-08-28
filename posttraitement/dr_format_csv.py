@@ -7,7 +7,7 @@ import re
 
 annee_recolte = sys.argv[2];
 
-print "type de document;campagne;cvi;"
+print "type de document;campagne;cvi;raison_sociale;libelle produit;code_douane;numéro de la colonne produit;type_ligne;numero_ligne;volume ou superficie"
 
 with open(sys.argv[1], 'rb') as csvfile:
     reader = csv.reader(csvfile, delimiter=',', quotechar='"')
@@ -26,31 +26,29 @@ with open(sys.argv[1], 'rb') as csvfile:
         for i in range(3, len(row)-1):
             if i % 2 == 0:
                 continue
-            num_produit = i-3-((i-3)*(2)
-            print num_produit
+            num_produit = i - 3 - ((i-3)/2)
+
             if len(produits) <= num_produit:
-                produits.append([row[i].strip(" ")])
+                produits.append([])
 
-            produits[num_produit].extend([row[i]])
-
-    print produits
+            produits[num_produit].extend([row[i].strip(" ")])
 
     for row in rows:
         if len(row) < 2:
-            print row
+            #print row
             continue
 
         libelle = row[1].strip(" ")
         num = row[0].strip(" ")
 
         if libelle == "Libelle produit":
-            print row
+            #print row
             continue
         if num == "DNR":
-            print row
+            #print row
             continue
         if num == "Identification de la déclaration":
-            print row
+            #print row
             continue
 
         for i in range(3, len(row)-1):
@@ -59,9 +57,9 @@ with open(sys.argv[1], 'rb') as csvfile:
 
             volume = row[i]
             if not re.match("^[0-9]+.?[0-9]*$", volume):
-                print row
                 continue
-            num_produit = i-3-(i-3*2)
+            num_produit = i - 3 - ((i-3)/2)
             produit = produits[num_produit]
-            produit_libelle = produit[0]
-            print("DR;%s;%s;%s;%s;%s;%s;%s;%s" % (annee_recolte, cvi, raison_sociale, produit_libelle, num_produit, libelle, num, volume))
+            produit_code_douane = produit[0]
+            produit_libelle = produit[1]
+            print("DR;%s;%s;%s;%s;%s;%s;%s;%s;%s" % (annee_recolte, cvi, raison_sociale, produit_libelle, produit_code_douane, num_produit, libelle, num, volume))

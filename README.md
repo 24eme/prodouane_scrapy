@@ -1,8 +1,8 @@
 # Export des documents du portail prodouane
 
-## Dépendance 
+## Dépendance
 
-    python-scrapy
+    python-scrapy catdoc
 
 ## Lancer le téléchargement des documents
 
@@ -15,3 +15,13 @@ Ainsi pour télécharger les DR mise à dispoition du compte `login` (dont le mo
 Il est possible de remplacer `dr` par `sv11` ou `sv12` pour télécharger respectivement les SV11 et SV12.
 
 Les documents au format html et xls sont mis à dispoition dans le répertoire `documents/`
+
+## Formatage des xls en csv
+
+La conversion de xls en csv se fait à l'aide de xls2csv disponible dans le paquet debian catdoc
+
+### DR
+
+Pour formater les xls des déclarations en csv exploitable
+
+    bash posttraitement/dr_xls2csv.sh chemin_vers_le_fichier_xls campagne
