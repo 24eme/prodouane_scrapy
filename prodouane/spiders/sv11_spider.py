@@ -19,7 +19,7 @@ class QuotesSpider(scrapy.Spider):
         yield scrapy.Request(url=response.urljoin('/wdactuapplif.asp?wdAppli=56'),  callback=self.sv11_postmenu)
 
     def sv11_postmenu(self, response):
-        yield scrapy.Request(url=response.urljoin('/wdroute.asp?btn=56&rap=3&cat=3'),  callback=self.sv11_login, meta={'departement': 0, 'commune': 0, 'campagne': '2016-2017'})
+        yield scrapy.Request(url=response.urljoin('/wdroute.asp?btn=56&rap=3&cat=3'),  callback=self.sv11_login, meta={'departement': 0, 'commune': 0, 'campagne': os.environ['PRODOUANE_CAMPAGNE']})
 
     def sv11_login(self, response):
         args = {}
