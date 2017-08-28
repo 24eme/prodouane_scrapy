@@ -189,15 +189,34 @@ class QuotesSpider(scrapy.Spider):
             args = {
                    'javax.faces.ViewState': inputs['javax.faces.ViewState'],
                    'formSaisirDNR:_idJsp160': inputs['formSaisirDNR:_idJsp160'],
-                   'formSaisirDNR:_idJsp424': "Exporter",
+                   'formSaisirDNR:_idJsp423': "Imprimer",
                    'formSaisirDNR_SUBMIT': "1",
             }
 
             response.meta['javaxViewState'] = inputs['javax.faces.ViewState']
-            yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_recolte/prodouane/jsp/saisieDeclarationNormale.jsf', formdata=args, callback=self.dr_tableur_dr, meta=response.meta)
+            response.meta['dr_html_inputs'] = inputs
+            yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_recolte/prodouane/jsp/saisieDeclarationNormale.jsf', formdata=args, callback=self.dr_pdf_dr, meta=response.meta)
         else:
             response.meta['id'] = response.meta['id'] + 1
             yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_recolte/prodouane/jsp/accueilOrganisme.jsf?%d,%d,%d,%d' % (response.meta['departement'], response.meta['commune'], response.meta['page'], response.meta['id']), callback=self.dr_page_1, meta=response.meta)
+
+    def dr_pdf_dr(self,response):
+        self.log('dr_pdf_dr')
+        filename = 'documents/dr-%s-%s.pdf' % (response.meta['info'][response.meta['id']]['date'], response.meta['info'][response.meta['id']]['cvi'])
+        with open(filename, 'wb') as f:
+            f.write(response.body)
+            self.log('Saved file %s' % filename)
+
+        inputs = response.meta['dr_html_inputs']
+        args = {
+                'javax.faces.ViewState': inputs['javax.faces.ViewState'],
+                'formSaisirDNR:_idJsp160': inputs['formSaisirDNR:_idJsp160'],
+                'formSaisirDNR:_idJsp424': "Exporter",
+                'formSaisirDNR_SUBMIT': "1",
+               }
+
+        response.meta['dr_html_inputs'] = {}
+        yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_recolte/prodouane/jsp/saisieDeclarationNormale.jsf', formdata=args, callback=self.dr_tableur_dr, meta=response.meta)
 
     def dr_tableur_dr(self, response):
         self.log('dr_tableur_dr')
