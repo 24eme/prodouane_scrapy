@@ -16,6 +16,12 @@ Il est possible de remplacer `dr` par `sv11` ou `sv12` pour télécharger respec
 
 Les documents au format html et xls sont mis à dispoition dans le répertoire `documents/`
 
+Une commande générique permet de télécharger l'un des trois types de documents pour un CVI et une campagne données :
+
+    bash bin/download_douane.sh dr 2014-2015 UN_CVI
+
+Les identifiants et mot de passe doivent avant été indiqué dans le fichier `bin/config.inc`.
+
 ## Formatage des xls en csv
 
 La conversion de xls en csv se fait à l'aide de xls2csv disponible dans le paquet debian catdoc
