@@ -19,7 +19,10 @@ class QuotesSpider(scrapy.Spider):
         yield scrapy.Request(url='https://pro.douane.gouv.fr/wdactuapplif.asp?wdAppli=77',  callback=self.dr_postmenu)
 
     def dr_postmenu(self, response):
-        yield scrapy.Request(url='https://pro.douane.gouv.fr/wdroute.asp?btn=77&rap=3&cat=3',  callback=self.dr_login, meta={'departement': 0, 'commune': 0, 'campagne': os.environ['PRODOUANE_CAMPAGNE']})
+        cvi = ''
+        if 'CVI' in os.environ:
+            cvi = os.environ['CVI']
+        yield scrapy.Request(url='https://pro.douane.gouv.fr/wdroute.asp?btn=77&rap=3&cat=3',  callback=self.dr_login, meta={'departement': 0, 'commune': 0, 'campagne': os.environ['PRODOUANE_CAMPAGNE'], "cvi": cvi})
 
     def dr_login(self, response):
         args = {}
@@ -86,7 +89,7 @@ class QuotesSpider(scrapy.Spider):
         args[meta['campagne_name']] = meta['campagne_selected']
         args['formFiltre:selectDepartement'] = str(meta['departement_selected'])
         args['formFiltre:selectCommune'] = communes[meta['commune']]
-        args['formFiltre:inputNumeroCvi'] = ""
+        args['formFiltre:inputNumeroCvi'] = meta['cvi']
         args['formFiltre:_idJsp143'] = "Rechercher"
         args['autoScroll'] = "0,0"
         args['formFiltre:_idcl'] = ""
@@ -96,6 +99,8 @@ class QuotesSpider(scrapy.Spider):
         meta['page'] = 0
         meta['javaxViewState'] = inputs['javax.faces.ViewState']
         meta['nb_communes']  = len(communes)
+
+        self.log('cvi: %s' % meta['cvi'])
 
         yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_recolte/prodouane/jsp/accueilOrganisme.jsf', formdata=args, callback=self.dr_page_1, meta=meta)
 
@@ -154,7 +159,7 @@ class QuotesSpider(scrapy.Spider):
             response.meta['info'] = info
 
             yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_recolte/prodouane/jsp/accueilOrganisme.jsf', formdata=myargs, callback=self.dr_html_dr, meta=response.meta)
-        else:
+        elif (not len(response.meta['cvi'])) :
             self.log('id %s : %d (%d)' % ('NO MORE CVI', id, len(info)) )
             if (len(info) == 30) and (nb_docs > (30 * (response.meta['page'] + 1))) :
                 response.meta['page'] = response.meta['page'] + 1
@@ -176,6 +181,8 @@ class QuotesSpider(scrapy.Spider):
                     response.meta['commune'] = 0
                 if (response.meta['nb_departements'] > response.meta['departement']):
                     yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_recolte/prodouane/jsp/accueilOrganisme.jsf?commune=%d&dep=%d' % (response.meta['commune'], response.meta['departement']), callback=self.dr_connexion, meta=response.meta)
+        else:
+            self.log('no document found for %s' % response.meta['cvi'])
 
     def dr_html_dr(self, response):
         self.log('dr_html_dr')
@@ -185,7 +192,7 @@ class QuotesSpider(scrapy.Spider):
         self.log('Saved file %s' % filename)
 
         inputs = self.get_input_args(response, '')
-        if (inputs.get('formSaisirDNR:_idJsp424', 0)):
+        if (inputs.get('formSaisirDNR:_idJsp424', 0) or inputs.get('formSaisirDNR:_idJsp442', 0)):
             args = {
                    'javax.faces.ViewState': inputs['javax.faces.ViewState'],
                    'formSaisirDNR:_idJsp160': inputs['formSaisirDNR:_idJsp160'],
@@ -226,4 +233,6 @@ class QuotesSpider(scrapy.Spider):
         self.log('Saved file %s' % filename)
 
         response.meta['id'] = response.meta['id'] + 1
-        yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_recolte/prodouane/jsp/accueilOrganisme.jsf?%d,%d,%d,%d' % (response.meta['departement'], response.meta['commune'], response.meta['page'], response.meta['id']), callback=self.dr_page_1, meta=response.meta)
+        self.log('len(cvi) : %d' % len(response.meta['cvi']))
+        if (not len(response.meta['cvi'])):
+            yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_recolte/prodouane/jsp/accueilOrganisme.jsf?%d,%d,%d,%d' % (response.meta['departement'], response.meta['commune'], response.meta['page'], response.meta['id']), callback=self.dr_page_1, meta=response.meta)
