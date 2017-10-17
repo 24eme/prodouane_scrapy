@@ -22,7 +22,7 @@ class QuotesSpider(scrapy.Spider):
         cvi = ''
         if 'CVI' in os.environ:
             cvi = os.environ['CVI']
-        yield scrapy.Request(url='https://pro.douane.gouv.fr/wdroute.asp?btn=77&rap=3&cat=3',  callback=self.dr_login, meta={'departement': 0, 'commune': 0, 'campagne': os.environ['PRODOUANE_CAMPAGNE'], "cvi": cvi})
+        yield scrapy.Request(url='https://pro.douane.gouv.fr/wdroute.asp?btn=77&rap=3&cat=3',  callback=self.dr_login, meta={'departement': 0, 'commune': 0, 'annee': os.environ['PRODOUANE_ANNEE'], "cvi": cvi})
 
     def dr_login(self, response):
         args = {}
@@ -60,7 +60,7 @@ class QuotesSpider(scrapy.Spider):
 
         response.meta['departement_selected'] = departements[response.meta['departement']]
         response.meta['campagne_name'] = campagne_name
-        response.meta['campagne_selected'] = campagnes[response.meta['campagne']]
+        response.meta['campagne_selected'] = campagnes["%s-%d" % (response.meta['annee'], int(response.meta['annee']) + 1)]
 
         args = {}
         args['AJAXREQUEST'] = "_viewRoot"
@@ -197,6 +197,7 @@ class QuotesSpider(scrapy.Spider):
                    'javax.faces.ViewState': inputs['javax.faces.ViewState'],
                    'formSaisirDNR:_idJsp160': inputs['formSaisirDNR:_idJsp160'],
                    'formSaisirDNR:_idJsp423': "Imprimer",
+                   'formSaisirDNR:_idJsp441': "Imprimer",
                    'formSaisirDNR_SUBMIT': "1",
             }
 
@@ -219,6 +220,7 @@ class QuotesSpider(scrapy.Spider):
                 'javax.faces.ViewState': inputs['javax.faces.ViewState'],
                 'formSaisirDNR:_idJsp160': inputs['formSaisirDNR:_idJsp160'],
                 'formSaisirDNR:_idJsp424': "Exporter",
+                'formSaisirDNR:_idJsp442': "Exporter",
                 'formSaisirDNR_SUBMIT': "1",
                }
 

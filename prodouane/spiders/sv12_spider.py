@@ -22,7 +22,7 @@ class QuotesSpider(scrapy.Spider):
         cvi = ''
         if 'CVI' in os.environ:
             cvi = os.environ['CVI']
-        yield scrapy.Request(url='https://pro.douane.gouv.fr/wdroute.asp?btn=57&rap=3&cat=3',  callback=self.sv12_login, meta={'departement': 0, 'commune': 0, 'campagne': os.environ['PRODOUANE_CAMPAGNE'], "cvi": cvi})
+        yield scrapy.Request(url='https://pro.douane.gouv.fr/wdroute.asp?btn=57&rap=3&cat=3',  callback=self.sv12_login, meta={'departement': 0, 'commune': 0, 'annee': os.environ['PRODOUANE_ANNEE'], "cvi": cvi})
 
     def sv12_login(self, response):
         args = {}
@@ -60,7 +60,7 @@ class QuotesSpider(scrapy.Spider):
 
         response.meta['departement_selected'] = departements[response.meta['departement']]
         response.meta['campagne_name'] = campagne_name
-        response.meta['campagne_selected'] = campagnes[response.meta['campagne']]
+        response.meta['campagne_selected'] = campagnes["%s-%d" % (response.meta['annee'], int(response.meta['annee']) + 1)]
 
         args = {}
         args['AJAXREQUEST'] = "_viewRoot"
@@ -184,7 +184,7 @@ class QuotesSpider(scrapy.Spider):
 
     def sv12_html_sv12(self, response):
         self.log('sv12_html_sv12')
-        filename = 'documents/SV12-%s-%s.html' % (response.meta['info'][response.meta['id']]['date'], response.meta['info'][response.meta['id']]['cvi'])
+        filename = 'documents/sv12-%s-%s.html' % (response.meta['info'][response.meta['id']]['date'], response.meta['info'][response.meta['id']]['cvi'])
         with open(filename, 'wb') as f:
             f.write(response.body)
         self.log('Saved file %s' % filename)
@@ -204,7 +204,7 @@ class QuotesSpider(scrapy.Spider):
 
     def sv12_pdf_sv12(self, response):
         self.log('sv12_pdf_sv12')
-        filename = 'documents/SV12-%s-%s.pdf' % (response.meta['info'][response.meta['id']]['date'], response.meta['info'][response.meta['id']]['cvi'])
+        filename = 'documents/sv12-%s-%s.pdf' % (response.meta['info'][response.meta['id']]['date'], response.meta['info'][response.meta['id']]['cvi'])
         with open(filename, 'wb') as f:
             f.write(response.body)
         self.log('Saved file %s' % filename)
@@ -223,7 +223,7 @@ class QuotesSpider(scrapy.Spider):
 
     def sv12_tableur_sv12(self, response):
         self.log('sv12_tableur_sv12_total')
-        filename = 'documents/SV12-%s-%s.xls' % (response.meta['info'][response.meta['id']]['date'], response.meta['info'][response.meta['id']]['cvi'])
+        filename = 'documents/sv12-%s-%s.xls' % (response.meta['info'][response.meta['id']]['date'], response.meta['info'][response.meta['id']]['cvi'])
         with open(filename, 'wb') as f:
             f.write(response.body)
         self.log('Saved file %s' % filename)

@@ -22,7 +22,7 @@ class QuotesSpider(scrapy.Spider):
         cvi = ''
         if 'CVI' in os.environ:
             cvi = os.environ['CVI']
-        yield scrapy.Request(url='https://pro.douane.gouv.fr/wdroute.asp?btn=56&rap=3&cat=3',  callback=self.sv11_login, meta={'departement': 0, 'commune': 0, 'campagne': os.environ['PRODOUANE_CAMPAGNE'], "cvi": cvi})
+        yield scrapy.Request(url='https://pro.douane.gouv.fr/wdroute.asp?btn=56&rap=3&cat=3',  callback=self.sv11_login, meta={'departement': 0, 'commune': 0, 'annee': os.environ['PRODOUANE_ANNEE'], "cvi": cvi})
 
     def sv11_login(self, response):
         args = {}
@@ -60,7 +60,7 @@ class QuotesSpider(scrapy.Spider):
 
         response.meta['departement_selected'] = departements[response.meta['departement']]
         response.meta['campagne_name'] = campagne_name
-        response.meta['campagne_selected'] = campagnes[response.meta['campagne']]
+        response.meta['campagne_selected'] = campagnes["%s-%d" % (response.meta['annee'], int(response.meta['annee']) + 1)]
 
         args = {}
         args['AJAXREQUEST'] = "_viewRoot"
@@ -76,7 +76,7 @@ class QuotesSpider(scrapy.Spider):
     def sv11_communes(self, response):
         meta = response.meta
         response = HtmlResponse(url=response.url, body=response.body)
-        self.log('dr_communes')
+        self.log('sv11_communes')
 #        with open("quotes-sv11-commune.html", 'wb') as f:
 #            f.write(response.body)
 
@@ -103,7 +103,7 @@ class QuotesSpider(scrapy.Spider):
         yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_sv11/prodouane/jsp/accueilOrganisme.jsf', formdata=args, callback=self.sv11_page_1, meta=meta)
 
     def sv11_page_1(self, response):
-        self.log('dr_page_1')
+        self.log('sv11_page_1')
 #        with open("quotes-sv11-page1.html", 'wb') as f:
 #            f.write(response.body)
         args = self.get_input_args(response, '#formFiltre')
@@ -184,7 +184,7 @@ class QuotesSpider(scrapy.Spider):
 
     def sv11_html_sv11(self, response):
         self.log('sv11_html_sv11')
-        filename = 'documents/SV11-%s-%s.html' % (response.meta['info'][response.meta['id']]['date'], response.meta['info'][response.meta['id']]['cvi'])
+        filename = 'documents/sv11-%s-%s.html' % (response.meta['info'][response.meta['id']]['date'], response.meta['info'][response.meta['id']]['cvi'])
         with open(filename, 'wb') as f:
             f.write(response.body)
         self.log('Saved file %s' % filename)
@@ -192,11 +192,14 @@ class QuotesSpider(scrapy.Spider):
         inputs = self.get_input_args(response, '')
         args = {
                'javax.faces.ViewState': inputs['javax.faces.ViewState'],
-               'form1:_idcl':"form1:_idJsp47",
-               'form1:_idJsp40':"_idJsp41",
-               'form1:_idJsp42':"_idJsp43",
-               'form1_SUBMIT':"1",
-               'form1:_link_hidden_':"",
+               'form1:_idcl': "form1:_idJsp47",
+               'form1:_idcl': "form1:_idJsp50",
+               'form1:_idJsp40': "_idJsp41",
+               'form1:_idJsp42': "_idJsp43",
+               'form1:_idJsp43': "_idJsp44",
+               'form1:_idJsp45': "_idJsp46",
+               'form1_SUBMIT': "1",
+               'form1:_link_hidden_': "",
         }
 
         response.meta['javaxViewState'] = inputs['javax.faces.ViewState']
@@ -204,7 +207,7 @@ class QuotesSpider(scrapy.Spider):
 
     def sv11_pdf_sv11(self, response):
         self.log('sv11_pdf_sv11')
-        filename = 'documents/SV11-%s-%s.pdf' % (response.meta['info'][response.meta['id']]['date'], response.meta['info'][response.meta['id']]['cvi'])
+        filename = 'documents/sv11-%s-%s.pdf' % (response.meta['info'][response.meta['id']]['date'], response.meta['info'][response.meta['id']]['cvi'])
         with open(filename, 'wb') as f:
             f.write(response.body)
         self.log('Saved file %s' % filename)
@@ -212,6 +215,7 @@ class QuotesSpider(scrapy.Spider):
         args = {
                'javax.faces.ViewState': response.meta['javaxViewState'],
                'form1:_idcl':"form1:_idJsp50",
+               'form1:_idcl':"form1:_idJsp53",
                'form1:_idJsp40':"_idJsp41",
                'form1:_idJsp42':"_idJsp43",
                'form1_SUBMIT':"1",
@@ -223,7 +227,7 @@ class QuotesSpider(scrapy.Spider):
 
     def sv11_tableur_sv11(self, response):
         self.log('sv11_tableur_sv11_total')
-        filename = 'documents/SV11-%s-%s.xls' % (response.meta['info'][response.meta['id']]['date'], response.meta['info'][response.meta['id']]['cvi'])
+        filename = 'documents/sv11-%s-%s.xls' % (response.meta['info'][response.meta['id']]['date'], response.meta['info'][response.meta['id']]['cvi'])
         with open(filename, 'wb') as f:
             f.write(response.body)
         self.log('Saved file %s' % filename)

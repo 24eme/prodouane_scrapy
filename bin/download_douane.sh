@@ -10,7 +10,7 @@ if ! test "$PRODOUANE_USER" || ! test "$PRODOUANE_PASS" ; then
 fi
 
 type=$1
-campagne=$2
+annee=$2
 cvi=$3
 
 if ! test "$cvi" ; then
@@ -18,4 +18,4 @@ if ! test "$cvi" ; then
 	exit 2;
 fi
 
-PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" CVI="$cvi" PRODOUANE_CAMPAGNE="$campagne" scrapy crawl $type
+PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" CVI="$cvi" PRODOUANE_ANNEE="$annee" scrapy crawl $type
