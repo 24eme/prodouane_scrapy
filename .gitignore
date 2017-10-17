@@ -1,4 +1,6 @@
-documents/*
+documents/*xls
+documents/*pdf
+documents/*html
 
 bin/config.inc
 
