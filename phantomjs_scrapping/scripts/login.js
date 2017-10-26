@@ -1,7 +1,7 @@
 var system = require('system');
 var page = require('webpage').create();
 
-page.open(system.args[1], function(status) {
+page.open("http://"+system.args[1], function(status) {
   setTimeout(function() {
     page.sendEvent('keypress', page.event.key['Tab']);
     page.sendEvent('keypress', system.args[2]);
