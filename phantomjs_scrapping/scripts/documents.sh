@@ -2,7 +2,7 @@
 
 . scripts/config.inc
 
-rgrep -B 1 -A 1 viewDocument identites/ | sed 's/href="/>/' | sed 's/" target=/;</' | sed 's/<[^>]*>/;/g' | sed 's/identites.//' | sed 's/.html./;/' | sed 's/;\s*/;/' | tr '\n' ';' | sed 's/--/\n/g' | sed 's/^;//' | awk -F ';' 'BEGIN{print "identifiant;nom fichier;lien;date;codification"} {print $1";"$3";"$8";"$15";"$17}' | sed 's|../DocumentsOperateur|http://'$domain'/DocumentsOperateur|' > data/documents.csv
+rgrep -B 1 -A 1 viewDocument identites/ | sed 's/href="/>/' | sed 's/\&amp;*/\&/g' | sed 's/\&lt;/</g' | sed 's/\&nbsp;/ /g' | sed 's/;//g' | sed 's/" target=/;</' | sed 's/<[^>]*>/;/g' | sed 's/identites.//' | sed 's/.html./;/' | sed 's/;\s*/;/' | tr '\n' ';' | sed 's/--/\n/g' | sed 's/^;//' | awk -F ';' 'BEGIN{print "identifiant;nom fichier;lien;date;codification"} {print $1";"$3";"$8";"$15";"$17}' | sed 's|../DocumentsOperateur|http://'$domain'/DocumentsOperateur|' > data/documents.csv
 
 
 mycookie=$(QT_QPA_FONTDIR=/usr/share/fonts QT_QPA_PLATFORM=offscreen phantomjs scripts/login.js $domain $1 $2 | sed 's/ASP.NET_SessionId=//' )
