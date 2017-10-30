@@ -4,6 +4,7 @@ var cookie = system.args[3];
 var fs = require('fs');
 
 var page = require('webpage').create();
+var annee = '2016'
 
 //page.settings.userAgent = "Mozilla/5.0 (X11; Linux x86_64; rv:43.0) Gecko/20100101 Firefox/43.0 Iceweasel/43.0.4";
 
@@ -21,7 +22,7 @@ phantom.addCookie({
 
 function downloadBeforeDrev(id) {
   page.open("http://"+system.args[1]+"/DREV/DREV2/BeforeDrev2.aspx?site=SGV&code_ident_site="+id, function(status) {
-    page.render('beforedev.png');
+    // page.render('beforedev.png');
     if (status != "success") {
       page.open("http://"+system.args[1]+"/default.aspx?AbandonSession=1", function(statuts) {
         phantom.exit();
@@ -41,7 +42,7 @@ function downloadBeforeDrev(id) {
           var cle_evv = page.evaluate(function() {
             return document.getElementById('ctl00_ContentPlaceHolder1_ddEVV').value;
           });
-          downloadDrev(id, cle_evv, '2016');
+          downloadDrev(id, cle_evv, annee);
         }
       }, 2000);
     }
@@ -51,12 +52,12 @@ function downloadBeforeDrev(id) {
 function downloadDrev(id, cle_evv, campagne) {
   page.open("http://"+system.args[1]+"/DREV/DREV2/drev.aspx?code_ident_site="+id+"&site=SGV&cle_evv="+cle_evv+"&mill="+campagne, function(status) {
     setTimeout(function() {
-      page.render('drev.png');
+      // page.render('drev.png');
       var html = page.evaluate(function () {
         return document.all[0].outerHTML+"";
       });
-      fs.write("html/drev_"+id+".html", html, 'w');
-      console.log("DRev of "+id+" saved");
+      fs.write("html/drev_"+id+"_"+annee+".html", html, 'w');
+      console.log("DRev "+annee+" of "+id+" saved");
       phantom.exit();
     }, 2000);
   });
