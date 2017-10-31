@@ -1,0 +1,5 @@
+#!/bin/bash
+
+. scripts/config.inc
+
+curl --header "Content-Type: text/xml;charset=UTF-8" --header "SOAPAction: http://tempuri.org/IAntsysServices/Run" --data '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/" xmlns:ser="http://schemas.datacontract.org/2004/07/Services.Contract"><soapenv:Header/><soapenv:Body><tem:Run><tem:header><ser:Action>Identite</ser:Action><ser:Client>SGV</ser:Client><ser:Information>Identification</ser:Information><ser:Site>ExtranetSGV</ser:Site></tem:header><tem:parameters xsi:type="ser:ParametersIdentification" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><ser:MaxLines>1000000</ser:MaxLines><ser:NbreElementParPage>10000000</ser:NbreElementParPage><ser:NumPage>0</ser:NumPage><ser:Traitement>Identite</ser:Traitement><ser:DateDebutModificationOperateur>2001-01-01T00:00:00</ser:DateDebutModificationOperateur><ser:DateFinModificationOperateur>2017-12-01T00:00:00</ser:DateFinModificationOperateur></tem:parameters></tem:Run></soapenv:Body></soapenv:Envelope>'  "http://"$webservicedomain"/AntsysServices.svc" > data/identites.xml
