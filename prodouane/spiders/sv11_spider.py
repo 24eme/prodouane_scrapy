@@ -184,7 +184,7 @@ class QuotesSpider(scrapy.Spider):
 
     def sv11_html_sv11(self, response):
         self.log('sv11_html_sv11')
-        filename = 'documents/sv11-%s-%s.html' % (response.meta['info'][response.meta['id']]['date'], response.meta['info'][response.meta['id']]['cvi'])
+        filename = 'documents/sv11-%s-%s.html' % (response.meta['annee'], response.meta['info'][response.meta['id']]['cvi'])
         with open(filename, 'wb') as f:
             f.write(response.body)
         self.log('Saved file %s' % filename)
@@ -207,7 +207,7 @@ class QuotesSpider(scrapy.Spider):
 
     def sv11_pdf_sv11(self, response):
         self.log('sv11_pdf_sv11')
-        filename = 'documents/sv11-%s-%s.pdf' % (response.meta['info'][response.meta['id']]['date'], response.meta['info'][response.meta['id']]['cvi'])
+        filename = 'documents/sv11-%s-%s.pdf' % (response.meta['annee'], response.meta['info'][response.meta['id']]['cvi'])
         with open(filename, 'wb') as f:
             f.write(response.body)
         self.log('Saved file %s' % filename)
@@ -227,7 +227,7 @@ class QuotesSpider(scrapy.Spider):
 
     def sv11_tableur_sv11(self, response):
         self.log('sv11_tableur_sv11_total')
-        filename = 'documents/sv11-%s-%s.xls' % (response.meta['info'][response.meta['id']]['date'], response.meta['info'][response.meta['id']]['cvi'])
+        filename = 'documents/sv11-%s-%s.xls' % (response.meta['annee'], response.meta['info'][response.meta['id']]['cvi'])
         with open(filename, 'wb') as f:
             f.write(response.body)
         self.log('Saved file %s' % filename)
