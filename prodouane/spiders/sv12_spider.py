@@ -192,11 +192,14 @@ class QuotesSpider(scrapy.Spider):
         inputs = self.get_input_args(response, '')
         args = {
                'javax.faces.ViewState': inputs['javax.faces.ViewState'],
-               'form1:_idcl':"form1:_idJsp47",
-               'form1:_idJsp40':"_idJsp41",
-               'form1:_idJsp42':"_idJsp43",
-               'form1_SUBMIT':"1",
-               'form1:_link_hidden_':"",
+               'form1:_idcl': "form1:_idJsp47",
+               'form1:_idcl': "form1:_idJsp50",
+               'form1:_idJsp40': "_idJsp41",
+               'form1:_idJsp42': "_idJsp43",
+               'form1:_idJsp43': "_idJsp44",
+               'form1:_idJsp45': "_idJsp46",
+               'form1_SUBMIT': "1",
+               'form1:_link_hidden_': "",
         }
 
         response.meta['javaxViewState'] = inputs['javax.faces.ViewState']
@@ -212,6 +215,7 @@ class QuotesSpider(scrapy.Spider):
         args = {
                'javax.faces.ViewState': response.meta['javaxViewState'],
                'form1:_idcl':"form1:_idJsp50",
+               'form1:_idcl':"form1:_idJsp53",
                'form1:_idJsp40':"_idJsp41",
                'form1:_idJsp42':"_idJsp43",
                'form1_SUBMIT':"1",
