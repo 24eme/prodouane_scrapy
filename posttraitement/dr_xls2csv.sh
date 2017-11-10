@@ -19,6 +19,6 @@ xls2csv $XLSFILE > $CSVFILE_NONFORMATE
 
 echo "Transformation du fichier xls en csv : $CSVFILE_NONFORMATE"
 
-python posttraitement/dr_format_csv.py $CSVFILE_NONFORMATE $CAMPAGNE > $CSVFILE_FORMATE
+python posttraitement/dr_format_csv.py $CSVFILE_NONFORMATE $CAMPAGNE | sed 's/\&amp;/\&/' > $CSVFILE_FORMATE
 
 echo "Formatage du csv : $CSVFILE_FORMATE"
