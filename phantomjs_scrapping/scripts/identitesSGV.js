@@ -46,7 +46,7 @@ function downloadExtravitis(id) {
                     phantom.exit();
             });
 	  }else {
-	          fs.write("html/"+id+".html", html, 'w');
+	          fs.write("identites/"+id+".html", html, 'w');
 	          console.log("http://"+system.args[1]+"/FicheIdentite/IdentityDetails.aspx?site=SGV&code_ident_site="+id+" DONE");
 
 		  id++;
@@ -58,4 +58,3 @@ function downloadExtravitis(id) {
 }
 
 downloadExtravitis(id);
-
