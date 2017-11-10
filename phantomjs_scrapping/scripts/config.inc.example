@@ -1,2 +1,6 @@
 domain="mondomaine.fr"
 webservicedomain="webservice.mondomaine.fr"
+utilisateur_identite=user
+motdepasse_identite=mdp
+utilisateur_drev=user
+motdepasse_drev=mdp
