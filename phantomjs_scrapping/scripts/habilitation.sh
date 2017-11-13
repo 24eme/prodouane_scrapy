@@ -1,3 +1,7 @@
+ #!/bin/bash
+
+ bash scripts/dossiers.sh
+
 ls identites/*html | while read identite ; do
 grep -r -A 1410 lblCodeExtra $identite | sed 's/identites\/[0-9]*.html.//' | tr '\n' ' ' | sed 's/<\/td>/<\/td>\n/ig'  | sed 's/<.tr>/\n@@@@@/ig' | sed 's/<[^>]*>//g' | sed 's/^\s*//' | sed 's/\s*$//g' | sed 's/&amp;/\&/g' | tr '\n' ';' | sed 's/@@@@@/\n/g' | sed 's/--/\n/g' | sed 's/^\s*//' | grep '^[0-9][0-9]*;'
 done  > /tmp/habilitation_sansidentite.unsorted.csv
@@ -13,5 +17,8 @@ cat data/habilitations.csv | sed 's/[ \t]*$/;/' | awk -F ';' '{
     split($27,date,"/"); if ($26) print $1";"$2";"$3";"$4";"$5";"$6";"$7";"$8";"$9";achat et vente;"      $26";"date[3]"-"date[2]"-"date[1]";"$28";"$29 ;
     split($31,date,"/"); if ($30) print $1";"$2";"$3";"$4";"$5";"$6";"$7";"$8";"$9";elaborateur;"         $30";"date[3]"-"date[2]"-"date[1]";"$32";"$33 ;
     split($35,date,"/"); if ($34) print $1";"$2";"$3";"$4";"$5";"$6";"$7";"$8";"$9";vente tireuse;"       $34";"date[3]"-"date[2]"-"date[1]";"$36";"$37 ;
-}' | sed 's/;--;/;9999-99-99;/' | sort -t ';' -k 12,12 | sed 's/;9999-99-99;/;;/' >> data/habilitation.csv
+}' | sed 's/;--;/;9999-99-99;/' | sort -t ';' -k 12,12 | sed 's/;9999-99-99;/;;/' > /tmp/habilitation.csv
+
+perl scripts/correct_habilitation.pl /tmp/habilitation.csv  data/dossiers.csv | sort -t ';' -k 12,12 >> data/habilitation.csv
+
 rm /tmp/extraid2identite.csv /tmp/habilitation_sansidentite.csv /tmp/habilitation_sansidentite.unsorted.csv data/habilitations.csv
