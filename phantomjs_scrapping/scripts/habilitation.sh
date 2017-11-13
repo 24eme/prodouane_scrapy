@@ -21,4 +21,4 @@ cat data/habilitations.csv | sed 's/[ \t]*$/;/' | awk -F ';' '{
 
 perl scripts/correct_habilitation.pl /tmp/habilitation.csv  data/dossiers.csv | sort -t ';' -k 12,12 >> data/habilitation.csv
 
-rm /tmp/extraid2identite.csv /tmp/habilitation_sansidentite.csv /tmp/habilitation_sansidentite.unsorted.csv data/habilitations.csv
+rm /tmp/extraid2identite.csv /tmp/habilitation_sansidentite.csv /tmp/habilitation_sansidentite.unsorted.csv data/habilitations.csv /tmp/habilitation.csv
