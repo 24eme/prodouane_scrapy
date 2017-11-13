@@ -39,10 +39,20 @@ function downloadBeforeDrev(id) {
           });
         } else {
           fs.write("html/breforedrev_"+id+".html", html, 'w');
-          var cle_evv = page.evaluate(function() {
-            return document.getElementById('ctl00_ContentPlaceHolder1_ddEVV').value;
+          var cle_evvs = page.evaluate(function() {
+              var evvs = [];
+              for (drevChildIndex in document.getElementById("ctl00_ContentPlaceHolder1_ddEVV").children) {
+                  drevChild = document.getElementById("ctl00_ContentPlaceHolder1_ddEVV").children[drevChildIndex];
+                  if(drevChild.value) {
+                      evvs.push(drevChild.value);
+                  }
+              }
+
+              return evvs;
           });
-          downloadDrev(id, cle_evv, annee);
+          for(cle_evv_index in cle_evvs) {
+              downloadDrev(id, cle_evvs[cle_evv_index], annee);
+          }
         }
       }, 2000);
     }
