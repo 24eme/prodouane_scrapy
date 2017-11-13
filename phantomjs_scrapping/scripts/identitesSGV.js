@@ -40,7 +40,7 @@ function downloadExtravitis(id) {
 	  });
 	  console.log("html: "+html.length);
 	  console.log("length OK");
-	  if (id > 45555 || html.length == 13912 || nb++ > 1000) {
+	  if (id > 45555 || html.length == 13912 || nb++ > 100) {
             console.log('fin');
             page.open("http://"+system.args[1]+"/default.aspx?AbandonSession=1", function(statuts) {
                     phantom.exit();
