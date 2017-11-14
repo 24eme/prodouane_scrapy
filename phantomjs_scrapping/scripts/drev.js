@@ -47,28 +47,30 @@ function downloadBeforeDrev(id) {
                       evvs.push(drevChild.value);
                   }
               }
-
               return evvs;
           });
-          for(cle_evv_index in cle_evvs) {
-              downloadDrev(id, cle_evvs[cle_evv_index], annee);
-          }
+          downloadDrev(id, cle_evvs, annee);
         }
       }, 2000);
     }
   });
 }
 
-function downloadDrev(id, cle_evv, campagne) {
+function downloadDrev(id, cle_evvs, campagne) {
+  cle_evv = cle_evvs.shift();
   page.open("http://"+system.args[1]+"/DREV/DREV2/drev.aspx?code_ident_site="+id+"&site=SGV&cle_evv="+cle_evv+"&mill="+campagne, function(status) {
     setTimeout(function() {
       // page.render('drev.png');
       var html = page.evaluate(function () {
         return document.all[0].outerHTML+"";
       });
-      fs.write("html/drev_"+id+"_"+annee+".html", html, 'w');
-      console.log("DRev "+annee+" of "+id+" saved");
-      phantom.exit();
+      fs.write("html/drev_"+id+"_"+annee+"_"+cle_evv+".html", html, 'w');
+      console.log("DRev "+annee+" of "+id+" ("+cle_evv+") saved");
+      if (!cle_evvs.length) {
+        phantom.exit();
+      }else{
+        downloadDrev(id, cle_evvs, campagne);
+      }
     }, 2000);
   });
 }
