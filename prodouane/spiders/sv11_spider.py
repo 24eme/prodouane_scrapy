@@ -16,13 +16,13 @@ class QuotesSpider(scrapy.Spider):
         yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/WDsession.asp', formdata={"login":os.environ['PRODOUANE_USER'],"pass":os.environ['PRODOUANE_PASS']}, callback=self.sv11_postlogin)
 
     def sv11_postlogin(self, response):
-        yield scrapy.Request(url='https://pro.douane.gouv.fr/wdactuapplif.asp?wdAppli=56',  callback=self.sv11_postmenu)
+        yield scrapy.Request(url='https://pro.douane.gouv.fr/wdactuapplif.asp?wdAppli=118',  callback=self.sv11_postmenu)
 
     def sv11_postmenu(self, response):
         cvi = ''
         if 'CVI' in os.environ:
             cvi = os.environ['CVI']
-        yield scrapy.Request(url='https://pro.douane.gouv.fr/wdroute.asp?btn=56&rap=3&cat=3',  callback=self.sv11_login, meta={'departement': 0, 'commune': 0, 'annee': os.environ['PRODOUANE_ANNEE'], "cvi": cvi})
+        yield scrapy.Request(url='https://pro.douane.gouv.fr/wdroute.asp?btn=118&rap=3&cat=3',  callback=self.sv11_login, meta={'departement': 0, 'commune': 0, 'annee': os.environ['PRODOUANE_ANNEE'], "cvi": cvi})
 
     def sv11_login(self, response):
         args = {}

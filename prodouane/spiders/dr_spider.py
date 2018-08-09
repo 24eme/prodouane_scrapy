@@ -16,15 +16,21 @@ class QuotesSpider(scrapy.Spider):
         yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/WDsession.asp', formdata={"login":os.environ['PRODOUANE_USER'],"pass":os.environ['PRODOUANE_PASS']}, callback=self.dr_postlogin)
 
     def dr_postlogin(self, response):
-        yield scrapy.Request(url='https://pro.douane.gouv.fr/wdactuapplif.asp?wdAppli=77',  callback=self.dr_postmenu)
+        self.log('dr_login')
+#        with open("quotes-dr_postlogin.html", 'wb') as f:
+#            f.write(response.body)
+        yield scrapy.Request(url='https://pro.douane.gouv.fr/wdactuapplif.asp?wdAppli=118',  callback=self.dr_postmenu)
 
     def dr_postmenu(self, response):
         cvi = ''
         if 'CVI' in os.environ:
             cvi = os.environ['CVI']
-        yield scrapy.Request(url='https://pro.douane.gouv.fr/wdroute.asp?btn=77&rap=3&cat=3',  callback=self.dr_login, meta={'departement': 0, 'commune': 0, 'annee': os.environ['PRODOUANE_ANNEE'], "cvi": cvi})
+        yield scrapy.Request(url='https://pro.douane.gouv.fr/wdroute.asp?btn=118&rap=3&cat=3',  callback=self.dr_login, meta={'departement': 0, 'commune': 0, 'annee': os.environ['PRODOUANE_ANNEE'], "cvi": cvi})
 
     def dr_login(self, response):
+        self.log('dr_login')
+#        with open("quotes-dr_login.html", 'wb') as f:
+#            f.write(response.body)
         args = {}
         for i in response.css('#wdformAppli input'):
             args[i.xpath('@name')[0].extract()] = i.xpath('@value')[0].extract()
