@@ -144,7 +144,11 @@ class QuotesSpider(scrapy.Spider):
                     date = 'XXXX'
                     if (len(tr.css('td::text')[3].extract().split('/')) > 1):
                         date = tr.css('td::text')[3].extract().split('/')[2]
-                    info.append({'date': date, 'cvi': cvi, 'idhtml': idhtml})
+                    #telechargement que si CVI specifie
+                    if (response.meta['cvi']):
+                        info.append({'date': date, 'cvi': cvi, 'idhtml': idhtml})
+                    else:
+                        print("new cvi found : dr "+cvi)
 
         args = self.get_input_args(response, '#formFiltre')
 
