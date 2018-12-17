@@ -137,31 +137,16 @@ class QuotesSpider(scrapy.Spider):
                     if (len(tr.css('td::text')[2].extract().split('/')) > 1):
                         date = tr.css('td::text')[2].extract().split('/')[2]
                     #telechargement que si CVI specifie
-                    if (response.meta['cvi']):
-                        info.append({'date': date, 'cvi': cvi, 'idhtml': idhtml})
-                    else:
+                    self.log("new line : {date: %s, cvi: %s, idhtml: %s}"% (date, cvi, idhtml))
+                    info.append({'date': date, 'cvi': cvi, 'idhtml': idhtml})
+                    if (not len(response.meta['cvi'])):
                         print("new cvi found : sv11 "+cvi)
 
         args = self.get_input_args(response, '#formFiltre')
 
         id = response.meta['id']
 
-        if (len(info) > id):
-            self.log('id %s : %d (%d)' % (info[id]['cvi'], id, len(info)) )
-            i = info[id]
-            myargs = {
-                    'javax.faces.ViewState' : args['javax.faces.ViewState'],
-                    'formDeclaration:_link_hidden_':'',
-                    'formDeclaration:_idcl': i['idhtml'],
-                    'formDeclaration_SUBMIT':"1",
-                    'autoScroll':"0,0",
-                    }
-
-            response.meta['id'] = id
-            response.meta['info'] = info
-
-            yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_sv11/prodouane/jsp/accueilOrganisme.jsf', formdata=myargs, callback=self.sv11_html_sv11, meta=response.meta)
-        elif (not len(response.meta['cvi'])) :
+        if (not len(response.meta['cvi'])) :
             self.log('id %s : %d (%d)' % ('NO MORE CVI', id, len(info)) )
             if (len(info) == 30) and (nb_docs > (30 * (response.meta['page'] + 1))) :
                 response.meta['page'] = response.meta['page'] + 1
@@ -183,6 +168,21 @@ class QuotesSpider(scrapy.Spider):
                     response.meta['commune'] = 0
                 if (response.meta['nb_departements'] > response.meta['departement']):
                     yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_sv11/prodouane/jsp/accueilOrganisme.jsf?commune=%d&dep=%d' % (response.meta['commune'], response.meta['departement']), callback=self.sv11_connexion, meta=response.meta)
+        elif (len(info) > id):
+            self.log('id %s : %d (%d)' % (info[id]['cvi'], id, len(info)) )
+            i = info[id]
+            myargs = {
+                    'javax.faces.ViewState' : args['javax.faces.ViewState'],
+                    'formDeclaration:_link_hidden_':'',
+                    'formDeclaration:_idcl': i['idhtml'],
+                    'formDeclaration_SUBMIT':"1",
+                    'autoScroll':"0,0",
+                    }
+
+            response.meta['id'] = id
+            response.meta['info'] = info
+
+            yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_sv11/prodouane/jsp/accueilOrganisme.jsf', formdata=myargs, callback=self.sv11_html_sv11, meta=response.meta)
         else:
             self.log('no document found for %s' % response.meta['cvi'])
 
