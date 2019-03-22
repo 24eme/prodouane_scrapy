@@ -5,6 +5,7 @@
 import os
 
 import scrapy
+from scrapy.exporters import JsonItemExporter
 from prodouane.items import CviItem, ExploitationItem, ExploitantItem
 from prodouane.items import ParcellaireItem
 
@@ -156,7 +157,8 @@ class ParcellaireSpider(scrapy.Spider):
         exploitant['civilite'] = table_exploitant[2].css('::text').get()
         exploitant['nom'] = table_exploitant[3].css('::text').get()
         exploitant['prenom'] = table_exploitant[4].css('::text').get()
-        exploitant['statut_juridique'] = table_exploitant[5].css('::text').get()
+        exploitant['statut_juridique'] = \
+            table_exploitant[5].css('::text').get()
         exploitant['date_naissance'] = table_exploitant[6].css('::text').get()
         exploitant['adresse'] = table_exploitant[7].css('::text').get()
         exploitant['cp'] = table_exploitant[8].css('::text').get()
@@ -168,6 +170,17 @@ class ParcellaireSpider(scrapy.Spider):
         cvi = response.meta['cvi']
         cvi['exploitation'] = exploitation
         cvi['exploitant'] = exploitant
+
+        tables = response.css(
+                'div[id=formFdcConsultation\:j_idt172\:j_idt173] table'
+        ).getall()
+        self.export_html(cvi['cvi'], 'accueil', tables)
+
+        file = open('/tmp/%s.json' % cvi['cvi'], 'a')
+        try:
+            JsonItemExporter(file).export_item(cvi)
+        finally:
+            file.close()
 
         return scrapy.FormRequest.from_response(
             response,
@@ -189,3 +202,12 @@ class ParcellaireSpider(scrapy.Spider):
         """ Méthode par défaut de parsage de page """
         print(response.body)
         return None
+
+    def export_html(self, cvi, name, contents):
+        """ Permet de sauvegarder le HTML en cas de coupure """
+        file = open('/tmp/%s-%s.html' % (cvi, name), 'a')
+        try:
+            for content in contents:
+                file.write(content.encode('utf-8'))
+        finally:
+            file.close()
