@@ -82,16 +82,47 @@ class ParcellaireSpider(scrapy.Spider):
             r'#formFdc\:selectCommune option::attr(value)').getall()
 
         selected_commune = response.css(
-            r'#formFdc\:selectCommune option[selected]::attr(value)').getall()
+            r'#formFdc\:selectCommune option[selected]::attr(value)').get()
 
-        yield scrapy.FormRequest.from_response(
+        return scrapy.FormRequest.from_response(
             response,
             formname='formFdc',
-            callback=self.get_liste_cvi,
-            meta={'commune': selected_commune}
+            callback=self.get_total_page,
+            meta={'commune': str(selected_commune)}
         )
 
+    def get_total_page(self, response):
+        """ Récupère le nombre de page de la commune """
+        total_pages = len(response.css(r'#formFdc\:dttListeEvvOA\:scrollerId '
+                                       '.rf-ds-nmb-btn').getall())
+        for page in range(1, total_pages+1):
+            response_copy = response.copy()
+            yield scrapy.FormRequest.from_response(
+                response_copy,
+                formname='formFdc',
+                formdata={'javax.faces.source':
+                          'formFdc:dttListeEvvOA:scrollerId',
+                          'javax.faces.partial.event':
+                          'rich:datascroller:onscroll',
+                          'javax.faces.partial.execute':
+                          'formFdc:dttListeEvvOA:scrollerId @component',
+                          'javax.faces.partial.render': '@component',
+                          'formFdc:dttListeEvvOA:scrollerId:page': str(page),
+                          'org.richfaces.ajax.component':
+                          'formFdc:dttListeEvvOA:scrollerId',
+                          'formFdc:dttListeEvvOA:scrollerId':
+                          'formFdc:dttListeEvvOA:scrollerId',
+                          'AJAX:EVENTS_COUNT': '1',
+                          'rfExt': 'null',
+                          },
+                callback=self.get_liste_cvi,
+                meta={'page': str(page), 'commune': response.meta['commune']}
+            )
+
     def get_liste_cvi(self, response):
+        """ Récupère le nombre de CVI sur la page """
+        self.export_html(response.meta['commune'] + '-page-' +
+                         response.meta['page'], 'list', response.text)
         numero_cvi = response.css(
             r'table#formFdc\:dttListeEvvOA td[id$=j_idt231]::text').get()
 
@@ -100,7 +131,7 @@ class ParcellaireSpider(scrapy.Spider):
         cvi['libelle'] = (
             response.css(
                 r'table#formFdc\:dttListeEvvOA td[id$=j_idt233]::text'
-            ).get().strip()
+            ).get()
         )
         cvi['commune'] = response.meta['commune']
         cvi['categorie'] = response.css(
@@ -108,7 +139,7 @@ class ParcellaireSpider(scrapy.Spider):
         cvi['activite'] = response.css(
             r'table#formFdc\:dttListeEvvOA td[id$=j_idt237]::text').get()
 
-        return scrapy.FormRequest.from_response(
+        yield scrapy.FormRequest.from_response(
             response,
             formname='formFdc',
             formdata={'formFdc:dttListeEvvOA:0:j_idt242':
