@@ -25,8 +25,6 @@ class ParcellaireSpider(scrapy.Spider):
         'portailNcviProdouane?sid=%s&app=118&code_teleservice=PORTAIL_VITI'
     url_connexion_prodouane = 'https://pro.douane.gouv.fr/ncvi_foncier/' \
         'prodouane/connexionProdouane?direct=fdc&sid=%s&app=118'
-    url = 'https://pro.douane.gouv.fr/ncvi_foncier/' \
-        'prodouane/pages/fdc/accueil.xhtml'
 
     communes = {}
 
