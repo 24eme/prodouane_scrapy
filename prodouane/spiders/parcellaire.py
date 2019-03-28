@@ -13,7 +13,8 @@ from prodouane.items import ParcellaireItem
 class ParcellaireSpider(scrapy.Spider):
     """ Spider pour les parcellaires """
 
-    custom_settings = {'COOKIES_DEBUG': True}
+    custom_settings = {'COOKIES_DEBUG': True, 'DUPEFILTER_DEBUG': True,
+                       'DUPEFILTER_CLASS': 'scrapy.dupefilters.BaseDupeFilter'}
 
     name = 'parcellaire'
     domain = 'https://pro.douane.gouv.fr/'
@@ -76,19 +77,6 @@ class ParcellaireSpider(scrapy.Spider):
     def accueil_fdc(self, response):
         """ Page d'accueil où l'on récupère les départements autorisés """
 
-        data = {
-            'javax.faces.source': 'formFdc:selectDepartement',
-            'javax.faces.partial.event': 'change',
-            'javax.faces.partial.execute':
-                'formFdc:selectDepartement @component',
-            'javax.faces.partial.render': '@component',
-            'javax.faces.behavior.event': 'change',
-            'org.richfaces.ajax.component': 'formFdc:selectDepartement',
-            'rfExt': 'null',
-            'AJAX:EVENTS_COUNT': '1',
-            'javax.faces.partial.ajax': 'true'
-        }
-
         departements = response.css(
             r'#formFdc\:selectDepartement option::attr(value)').getall()
 
@@ -134,7 +122,7 @@ class ParcellaireSpider(scrapy.Spider):
     def fiche_accueil(self, response):
         """ Parse la page d'accueil de la fiche CVI """
         table_exploitation = response.css(
-            'div[id=formFdcConsultation\:j_idt172\:j_idt173] table tr '
+            r'div[id=formFdcConsultation\:j_idt172\:j_idt173] table tr '
             'td.fdcCoordonneCol2')
 
         exploitation = ExploitationItem()
@@ -148,7 +136,7 @@ class ParcellaireSpider(scrapy.Spider):
         exploitation['statut'] = table_exploitation[7].css('::text').get()
 
         table_exploitant = response.css(
-            'div[id=formFdcConsultation\:j_idt172\:j_idt173]'
+            r'div[id=formFdcConsultation\:j_idt172\:j_idt173]'
             ' table:nth-child(2) td.fdcCoordonneCol2')
 
         exploitant = ExploitantItem()
@@ -172,9 +160,9 @@ class ParcellaireSpider(scrapy.Spider):
         cvi['exploitant'] = exploitant
 
         tables = response.css(
-                'div[id=formFdcConsultation\:j_idt172\:j_idt173] table'
+            r'div[id=formFdcConsultation\:j_idt172\:j_idt173] table'
         ).getall()
-        self.export_html(cvi['cvi'], 'accueil', tables)
+        self.export_html(cvi['cvi'], 'accueil', tables[0:2])
 
         file = open('/tmp/%s.json' % cvi['cvi'], 'a')
         try:
@@ -185,27 +173,38 @@ class ParcellaireSpider(scrapy.Spider):
         return scrapy.FormRequest.from_response(
             response,
             formname='formFdcConsultation',
-            formdata={'formFdcConsultation:j_idt172_newTab':
+            formdata={'javax.faces.partial.ajax': 'true',
+                      'javax.faces.source': 'formFdcConsultation:j_idt172',
+                      'javax.faces.partial.execute':
+                      'formFdcConsultation:j_idt172',
+                      'javax.faces.partial.render':
+                      '+formFdcConsultation:j_idt172',
+                      'javax.faces.behavior.event': 'tabChange',
+                      'javax.faces.partial.event': 'tabChange',
+                      'formFdcConsultation:j_idt172_contentLoad': 'true',
+                      'formFdcConsultation:j_idt172_newTab':
                       'formFdcConsultation:j_idt172:j_idt457',
                       'formFdcConsultation:j_idt172_tabindex': '3',
                       'formFdcConsultation:j_idt172_activeIndex': '3'},
             callback=self.fiche_parcellaire_plante,
-            meta={'cvi': cvi}
+            meta={'cvi': cvi},
         )
 
     def fiche_parcellaire_plante(self, response):
-        print(response.css(
-            r'#formFdcConsultation\:j_idt172\:pnlDttListeSpcvPlante').get())
-        print(response.meta['cvi'])
+        """ Parse l'onglet parcellaire planté """
+        cvi = response.meta['cvi']
+        return scrapy.Request(response.url, meta={'cvi': cvi})
 
     def parse(self, response):
         """ Méthode par défaut de parsage de page """
-        print(response.body)
-        return None
+        cvi = response.meta['cvi']
+        self.export_html(cvi['cvi'], 'parcellaire',
+                         response.text)
 
-    def export_html(self, cvi, name, contents):
+    @staticmethod
+    def export_html(cvi, name, contents):
         """ Permet de sauvegarder le HTML en cas de coupure """
-        file = open('/tmp/%s-%s.html' % (cvi, name), 'a')
+        file = open('/tmp/%s-%s.html' % (cvi, name), 'w')
         try:
             for content in contents:
                 file.write(content.encode('utf-8'))
