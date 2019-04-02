@@ -6,6 +6,7 @@ import os
 import re
 
 import scrapy
+from prodouane.items import CviItem
 
 
 class ParcellaireSpider(scrapy.Spider):
@@ -26,6 +27,8 @@ class ParcellaireSpider(scrapy.Spider):
         'prodouane/connexionProdouane?direct=fdc&sid=%s&app=118'
     url_accueil = 'https://pro.douane.gouv.fr/ncvi_foncier/prodouane/pages/' \
         'fdc/accueil.xhtml'
+    url_consultation = 'https://pro.douane.gouv.fr/ncvi_foncier/prodouane/' \
+        'pages/fdc/consultation.xhtml'
 
     starter = {'departement': 0, 'commune': 0, 'page': 1, 'index_cvi': 0}
 
@@ -133,7 +136,15 @@ class ParcellaireSpider(scrapy.Spider):
                 meta=response.meta
             )
         else:
-            return True
+            cvi = os.getenv('CVI')
+            response.meta['numero_cvi'] = cvi
+            return scrapy.FormRequest.from_response(
+                response,
+                formname='formFdc',
+                formdata={'formFdc:inputNumeroCvi': cvi},
+                callback=self.get_un_cvi,
+                meta=response.meta
+            )
 
     def update_communes(self, response):
         """ Mise à jour des communes en fonction du département
@@ -195,54 +206,25 @@ class ParcellaireSpider(scrapy.Spider):
                          str(response.meta['page']), 'list', response.text)
 
         numeros_cvi = re.findall(r'(\d+)</td>', response.text)
-        # response.meta['nb_cvi_page'] = len(numeros_cvi)
-
-        # if response.meta['index_cvi'] is response.meta['nb_cvi_page']:
-        #     response.meta['page'] = response.meta['page'] + 1
-        #     response.meta['index_cvi'] = 0
-        #     return scrapy.FormRequest.from_response(
-        #         response,
-        #         formname='formFdc',
-        #         meta=response.meta,
-        #         callback=self.get_total_page
-        #     )
 
         for numero_cvi in numeros_cvi:
             print(numero_cvi)
 
         response.meta['page'] = response.meta['page'] + 1
 
-        return scrapy.Request(self.url_accueil, meta=response.meta, callback=self.get_total_page)
-        # return scrapy.FormRequest.from_response(
-        #     response,
-        #     formname='formFdc',
-        #     meta=response.meta,
-        #     callback=self.get_total_page
-        # )
-        # return scrapy.FormRequest.from_response(
-        #     response,
-        #     formname='formFdc',
-        #     formdata={
-        #         'formFdc': 'formFdc',
-        #         'formFdc:selectDepartement': response.meta['departements'][response.meta['departement']],
-        #         'formFdc:selectCommune': response.meta['communes'][response.meta['commune']],
-        #         'formFdc:inputNumeroCvi': numeros_cvi[response.meta['index_cvi']],
-        #         'formFdc:j_idt213': 'Rechercher'
-        #         },
-        #     callback=self.get_un_cvi,
-        #     meta=response.meta
-        #     )
+        return scrapy.Request(self.url_accueil, meta=response.meta,
+                              callback=self.get_total_page)
 
     def get_un_cvi(self, response):
-        """ Fait une recherche avec un seul numéro de CVI """
+        """ On sélectionne le CVI recherché """
         cvi = CviItem()
-        cvi['cvi'] = response.css('td[id$=j_idt231]::text').get()
+        cvi['cvi'] = response.meta['numero_cvi']
         cvi['libelle'] = response.css('td[id$=j_idt233]::text').get()
-        cvi['commune'] = response.meta['commune']
+        cvi['commune'] = response.css('td[id$=j_idt235]::text').get()
         cvi['categorie'] = response.css(
-            'td[id$=j_idt235]::text').get()
-        cvi['activite'] = response.css(
             'td[id$=j_idt237]::text').get()
+        cvi['activite'] = response.css(
+            'td[id$=j_idt239]::text').get()
 
         response.meta['cvi'] = cvi
 
@@ -256,66 +238,13 @@ class ParcellaireSpider(scrapy.Spider):
         )
 
     def fiche_accueil(self, response):
-        """ Parse la page d'accueil de la fiche CVI """
-        print ('------------------- CVI: %s | %d/%d %s [page %d/%d]' % (
-               response.meta['cvi']['cvi'],
-               response.meta['index_cvi'] + 1,
-               response.meta['nb_cvi_page'],
-               response.meta['nom_commune'],
-               response.meta['page'],
-               response.meta['total_pages']
-               ))
-        # table_exploitation = response.css(
-        #     r'div[id=formFdcConsultation\:j_idt172\:j_idt173] table tr '
-        #     'td.fdcCoordonneCol2')
+        """ Parse la page d'accueil de la fiche CVI et on clique sur l'onglet
+        des parcellaires """
+        cvi = response.meta['cvi']
+        identifiant = '-'.join([cvi['cvi'][:2], cvi['commune'], cvi['cvi']])
+        response.meta['identifiant'] = identifiant
 
-        # exploitation = ExploitationItem()
-        # exploitation['cvi'] = table_exploitation[0].css('::text').get('')
-        # exploitation['siret'] = table_exploitation[1].css('::text').get()
-        # exploitation['nom'] = table_exploitation[2].css('::text').get().strip()
-        # exploitation['categorie'] = table_exploitation[3].css('::text').get()
-        # exploitation['type'] = table_exploitation[4].css('::text').get()
-        # exploitation['commune'] = table_exploitation[5].css('::text').get()
-        # exploitation['date_debut'] = table_exploitation[6].css('::text').get()
-        # exploitation['statut'] = table_exploitation[7].css('::text').get()
-
-        # table_exploitant = response.css(
-        #     r'div[id=formFdcConsultation\:j_idt172\:j_idt173]'
-        #     ' table:nth-child(2) td.fdcCoordonneCol2')
-
-        # exploitant = ExploitantItem()
-        # exploitant['cvi'] = table_exploitant[0].css('::text').get()
-        # exploitant['siren'] = table_exploitant[1].css('::text').get()
-        # exploitant['civilite'] = table_exploitant[2].css('::text').get()
-        # exploitant['nom'] = table_exploitant[3].css('::text').get()
-        # exploitant['prenom'] = table_exploitant[4].css('::text').get()
-        # exploitant['statut_juridique'] = \
-        #     table_exploitant[5].css('::text').get()
-        # exploitant['date_naissance'] = table_exploitant[6].css('::text').get()
-        # exploitant['adresse'] = table_exploitant[7].css('::text').get()
-        # exploitant['cp'] = table_exploitant[8].css('::text').get()
-        # exploitant['tel'] = table_exploitant[9].css('::text').get()
-        # exploitant['qualite'] = table_exploitant[10].css('::text').get()
-        # exploitant['email'] = table_exploitant[11].css('::text').get()
-        # exploitant['last_updated'] = table_exploitant[12].css('::text').get()
-
-        # cvi = response.meta['cvi']
-        # cvi['exploitation'] = exploitation
-        # cvi['exploitant'] = exploitant
-
-        # response.meta['cvi'] = cvi
-
-        # tables = response.css(
-        #     r'div[id=formFdcConsultation\:j_idt172\:j_idt173] table'
-        # ).getall()
-        # self.export_html(cvi['cvi'], 'accueil', tables[0:2])
-        self.export_html(response.meta['cvi']['cvi'], 'accueil', response.text)
-
-        # file = open('/tmp/export-cvi/%s.json' % cvi['cvi'], 'a')
-        # try:
-        #     JsonItemExporter(file).export_item(cvi)
-        # finally:
-        #     file.close()
+        self.export_html(identifiant, 'accueil', response.text)
 
         return scrapy.FormRequest.from_response(
             response,
@@ -323,14 +252,14 @@ class ParcellaireSpider(scrapy.Spider):
             formdata={'javax.faces.partial.ajax': 'true',
                       'javax.faces.source': 'formFdcConsultation:j_idt172',
                       'javax.faces.partial.execute':
-                      'formFdcConsultation:j_idt172',
+                          'formFdcConsultation:j_idt172',
                       'javax.faces.partial.render':
-                      '+formFdcConsultation:j_idt172',
+                          '+formFdcConsultation:j_idt172',
                       'javax.faces.behavior.event': 'tabChange',
                       'javax.faces.partial.event': 'tabChange',
                       'formFdcConsultation:j_idt172_contentLoad': 'true',
                       'formFdcConsultation:j_idt172_newTab':
-                      'formFdcConsultation:j_idt172:j_idt457',
+                          'formFdcConsultation:j_idt172:j_idt457',
                       'formFdcConsultation:j_idt172_tabindex': '3',
                       'formFdcConsultation:j_idt172_activeIndex': '3'},
             callback=self.fiche_parcellaire_plante,
@@ -338,34 +267,13 @@ class ParcellaireSpider(scrapy.Spider):
         )
 
     def fiche_parcellaire_plante(self, response):
-        """ Parse l'onglet parcellaire planté """
-        cvi = response.meta['cvi']
-        response.meta['index_cvi'] = response.meta['index_cvi'] + 1
-        self.export_html(cvi['cvi'], 'parcellaire',
-                         response.text)
-        return scrapy.Request(self.url_accueil, meta=response.meta,
-                              callback=self.reset_recherche)
-
-    def reset_recherche(self, response):
-        return scrapy.FormRequest.from_response(
-            response,
-            formname='formFdc',
-            formdata={
-                'formFdc': 'formFdc',
-                'formFdc:selectDepartement': response.meta['departements'][response.meta['departement']],
-                'formFdc:selectCommune': response.meta['communes'][response.meta['commune']],
-                'formFdc:inputNumeroCvi': '',
-                'formFdc:inputEvvLibelle': '',
-                'formFdc:j_idt213': 'Rechercher'
-                },
-            callback=self.get_total_page,
-            meta=response.meta
-        )
+        """ Une fois que les données parcellaires sont en session, on
+        recharge la page de consultation """
+        return scrapy.Request(self.url_consultation, meta=response.meta)
 
     def parse(self, response):
-        """ Méthode par défaut de parsage de page """
-        cvi = response.meta['cvi']
-        self.export_html(cvi['cvi'], 'parcellaire',
+        """ On récupère les informations de parcellaire """
+        self.export_html(response.meta['identifiant'], 'parcellaire',
                          response.text)
 
     @staticmethod
