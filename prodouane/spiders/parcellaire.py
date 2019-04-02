@@ -32,6 +32,10 @@ class ParcellaireSpider(scrapy.Spider):
 
     starter = {'departement': 0, 'commune': 0, 'page': 1, 'index_cvi': 0}
 
+    storage_directory = './parcellaire-cvi/'
+    list_directory = storage_directory + 'list/'
+    export_directory = storage_directory + 'parcellaires/'
+
     def start_requests(self):
         """ Requête appellée en premier pour le scraping """
         return [scrapy.Request(url=self.domain, callback=self.login)]
@@ -202,8 +206,9 @@ class ParcellaireSpider(scrapy.Spider):
         """ Récupère le nombre de CVI sur la page, on enregistre l'HTML au cas
         ou, et on affiche sur STDIN les CVI un par un et on incremente la page
         """
-        self.export_html(response.meta['nom_commune'] + '-page-' +
-                         str(response.meta['page']), 'list', response.text)
+        filename = response.meta['nom_commune'] + '-page-' + \
+            str(response.meta['page']) + '-liste'
+        self.export_html(self.list_directory, filename, response.text)
 
         numeros_cvi = re.findall(r'(\d+)</td>', response.text)
 
@@ -244,7 +249,8 @@ class ParcellaireSpider(scrapy.Spider):
         identifiant = '-'.join([cvi['cvi'][:2], cvi['commune'], cvi['cvi']])
         response.meta['identifiant'] = identifiant
 
-        self.export_html(identifiant, 'accueil', response.text)
+        self.export_html(self.export_directory, identifiant + '-accueil',
+                         response.text)
 
         return scrapy.FormRequest.from_response(
             response,
@@ -273,15 +279,18 @@ class ParcellaireSpider(scrapy.Spider):
 
     def parse(self, response):
         """ On récupère les informations de parcellaire """
-        self.export_html(response.meta['identifiant'], 'parcellaire',
+        self.export_html(self.export_directory,
+                         response.meta['identifiant'] + '-parcellaire',
                          response.text)
 
     @staticmethod
-    def export_html(cvi, name, contents):
+    def export_html(directory, name, content):
         """ Permet de sauvegarder le HTML en cas de coupure """
-        file = open('/tmp/export-cvi/%s-%s.html' % (cvi, name), 'w')
+        if not os.path.isdir(directory):
+            os.makedirs(directory, 0764)
+
+        file = open(directory + '%s.html' % name, 'w')
         try:
-            for content in contents:
-                file.write(content.encode('utf-8'))
+            file.write(content.encode('utf-8'))
         finally:
             file.close()
