@@ -6,9 +6,6 @@ import os
 import re
 
 import scrapy
-from scrapy.exporters import JsonItemExporter
-from prodouane.items import CviItem, ExploitationItem, ExploitantItem
-from prodouane.items import ParcellaireItem
 
 
 class ParcellaireSpider(scrapy.Spider):
@@ -30,7 +27,7 @@ class ParcellaireSpider(scrapy.Spider):
     url_accueil = 'https://pro.douane.gouv.fr/ncvi_foncier/prodouane/pages/' \
         'fdc/accueil.xhtml'
 
-    starter = {'departement': 0, 'commune': 0, 'page': 1, 'numero_cvi': 0}
+    starter = {'departement': 0, 'commune': 0, 'page': 1, 'index_cvi': 0}
 
     def start_requests(self):
         """ Requête appellée en premier pour le scraping """
@@ -71,38 +68,94 @@ class ParcellaireSpider(scrapy.Spider):
         )
 
     def connexion_prodouane(self, response):
-        """ On se re-connecte (?) à prodouane avec notre sid """
+        """ On se re-connecte (?) à prodouane avec notre sid et on GET la
+        page d'accueil de la liste des CVI en initialisant les compteurs de
+        communes / départements """
         return scrapy.Request(
             url=self.url_connexion_prodouane % response.meta['sid'],
             callback=self.accueil_fdc,
             meta=self.starter)
 
     def accueil_fdc(self, response):
-        """ Page d'accueil où l'on récupère les départements autorisés """
+        """ Page d'accueil où l'on récupère les départements et les communes
+        autorisés
+        Si un CVI est passé en variable d'environnement, on télécharge les
+        informations, sinon, on liste la liste des CVI par départements et par
+        communes
+        """
+        if os.getenv('CVI', None) is None:
+            response.meta['departements'] = response.css(
+                r'#formFdc\:selectDepartement option::attr(value)').getall()
+            response.meta['nb_departements'] = len(response.meta['departements'])
 
-        response.meta['departements'] = response.css(
-            r'#formFdc\:selectDepartement option::attr(value)').getall()
+            if response.meta['departement'] is response.meta['nb_departements']:
+                return False
 
-        response.meta['nb_departements'] = len(response.meta['departements'])
+            response.meta['communes'] = response.css(
+                r'#formFdc\:selectCommune option::attr(value)').getall()
+            response.meta['nb_communes'] = len(response.meta['communes'])
 
-        selected_commune = response.css(
-            r'#formFdc\:selectCommune option[selected]::attr(value)').get()
-        response.meta['commune'] = selected_commune
+            if response.meta['commune'] is response.meta['nb_communes']:
+                response.meta['commune'] = 0
+                response.meta['departement'] = response.meta['departement'] + 1
+                return scrapy.FormRequest.from_response(
+                    response, formname='formFdc', callback=self.update_communes,
+                    meta=response.meta,
+                    formdata={
+                        'formFdc:selectDepartement': response.meta['departements'][response.meta['departement']],
+                        'javax.faces.source': 'formFdc:selectDepartement',
+                        'javax.faces.partial.event': 'change',
+                        'javax.faces.partial.execute': 'formFdc:selectDepartement @component',
+                        'javax.faces.partial.render': '@component',
+                        'javax.faces.behavior.event': 'change',
+                        'org.richfaces.ajax.component': 'formFdc:selectDepartement',
+                        'rfExt': 'null',
+                        'AJAX:EVENTS_COUNT': '1',
+                        'javax.faces.partial.ajax': 'true'
+                    }
+                )
 
-        return scrapy.FormRequest.from_response(
-            response,
-            formname='formFdc',
-            callback=self.get_total_page,
-            meta=response.meta
-        )
+            response.meta['noms_communes'] = response.css(
+                r'#formFdc\:selectCommune option::text').getall()
+            response.meta['nom_commune'] = \
+                response.meta['noms_communes'][response.meta['commune']]
+
+            return scrapy.FormRequest.from_response(
+                response,
+                formname='formFdc',
+                formdata={
+                    'formFdc:selectDepartement':
+                    response.meta['departements'][response.meta['departement']],
+                    'formFdc:selectCommune':
+                        response.meta['communes'][response.meta['commune']]
+                    },
+                callback=self.get_total_page,
+                meta=response.meta
+            )
+        else:
+            return True
+
+    def update_communes(self, response):
+        """ Mise à jour des communes en fonction du département
+        Fonction appellée lorsque la dernière commune d'un département est
+        finie
+        """
+        return scrapy.Request(self.url_accueil, callback=self.accueil_fdc,
+                              meta=response.meta)
 
     def get_total_page(self, response):
-        """ Récupère le nombre de page de la commune """
+        """ Récupère le nombre de page de la commune, et on requetes chacune
+        d'elle pour avoir la liste de CVI
+        Si on arrive à la dernière page, on change de commune """
         response.meta['total_pages'] = len(response.css(
             r'#formFdc\:dttListeEvvOA\:scrollerId '
             '.rf-ds-nmb-btn').getall())
 
-        if response.meta['total_pages'] < response.meta['page']:
+        if response.meta['total_pages'] == 0:
+            response.meta['total_pages'] = 1
+
+        if response.meta['page'] > response.meta['total_pages']:
+            response.meta['page'] = 1
             response.meta['commune'] = response.meta['commune'] + 1
             return scrapy.FormRequest.from_response(
                 response,
@@ -111,11 +164,6 @@ class ParcellaireSpider(scrapy.Spider):
                 meta=response.meta
             )
 
-        communes = response.css(
-            r'#formFdc\:selectCommune option::attr(value)').getall()
-        response.meta['nb_communes'] = len(communes)
-
-        print('------------------- page : %d' % response.meta['page'])
         return scrapy.FormRequest.from_response(
             response,
             formname='formFdc',
@@ -140,41 +188,50 @@ class ParcellaireSpider(scrapy.Spider):
         )
 
     def get_liste_cvi(self, response):
-        """ Récupère le nombre de CVI sur la page """
-        self.export_html(response.meta['commune'] + '-page-' +
+        """ Récupère le nombre de CVI sur la page, on enregistre l'HTML au cas
+        ou, et on affiche sur STDIN les CVI un par un et on incremente la page
+        """
+        self.export_html(response.meta['nom_commune'] + '-page-' +
                          str(response.meta['page']), 'list', response.text)
 
         numeros_cvi = re.findall(r'(\d+)</td>', response.text)
-        response.meta['nb_cvi_page'] = len(numeros_cvi)
+        # response.meta['nb_cvi_page'] = len(numeros_cvi)
 
-        if response.meta['numero_cvi'] is response.meta['nb_cvi_page']:
-            response.meta['page'] = response.meta['page'] + 1
-            response.meta['numero_cvi'] = 0
-            return scrapy.FormRequest.from_response(
-                response,
-                formname='formFdc',
-                meta=response.meta,
-                callback=self.get_total_page
-            )
+        # if response.meta['index_cvi'] is response.meta['nb_cvi_page']:
+        #     response.meta['page'] = response.meta['page'] + 1
+        #     response.meta['index_cvi'] = 0
+        #     return scrapy.FormRequest.from_response(
+        #         response,
+        #         formname='formFdc',
+        #         meta=response.meta,
+        #         callback=self.get_total_page
+        #     )
 
-        print('------------------- CVI : %d / %d [page %d]' %
-              (response.meta['numero_cvi'] + 1,
-               response.meta['nb_cvi_page'],
-               response.meta['page']))
+        for numero_cvi in numeros_cvi:
+            print(numero_cvi)
 
-        return scrapy.FormRequest.from_response(
-            response,
-            formname='formFdc',
-            formdata={
-                'formFdc': 'formFdc',
-                'formFdc:selectDepartement': response.meta['departements'][response.meta['departement']],
-                'formFdc:selectCommune': response.meta['commune'],
-                'formFdc:inputNumeroCvi': numeros_cvi[response.meta['numero_cvi']],
-                'formFdc:j_idt213': 'Rechercher'
-                },
-            callback=self.get_un_cvi,
-            meta=response.meta
-            )
+        response.meta['page'] = response.meta['page'] + 1
+
+        return scrapy.Request(self.url_accueil, meta=response.meta, callback=self.get_total_page)
+        # return scrapy.FormRequest.from_response(
+        #     response,
+        #     formname='formFdc',
+        #     meta=response.meta,
+        #     callback=self.get_total_page
+        # )
+        # return scrapy.FormRequest.from_response(
+        #     response,
+        #     formname='formFdc',
+        #     formdata={
+        #         'formFdc': 'formFdc',
+        #         'formFdc:selectDepartement': response.meta['departements'][response.meta['departement']],
+        #         'formFdc:selectCommune': response.meta['communes'][response.meta['commune']],
+        #         'formFdc:inputNumeroCvi': numeros_cvi[response.meta['index_cvi']],
+        #         'formFdc:j_idt213': 'Rechercher'
+        #         },
+        #     callback=self.get_un_cvi,
+        #     meta=response.meta
+        #     )
 
     def get_un_cvi(self, response):
         """ Fait une recherche avec un seul numéro de CVI """
@@ -188,7 +245,6 @@ class ParcellaireSpider(scrapy.Spider):
             'td[id$=j_idt237]::text').get()
 
         response.meta['cvi'] = cvi
-        print('------------------- CVI n : %s' % cvi['cvi'])
 
         return scrapy.FormRequest.from_response(
             response,
@@ -201,6 +257,14 @@ class ParcellaireSpider(scrapy.Spider):
 
     def fiche_accueil(self, response):
         """ Parse la page d'accueil de la fiche CVI """
+        print ('------------------- CVI: %s | %d/%d %s [page %d/%d]' % (
+               response.meta['cvi']['cvi'],
+               response.meta['index_cvi'] + 1,
+               response.meta['nb_cvi_page'],
+               response.meta['nom_commune'],
+               response.meta['page'],
+               response.meta['total_pages']
+               ))
         # table_exploitation = response.css(
         #     r'div[id=formFdcConsultation\:j_idt172\:j_idt173] table tr '
         #     'td.fdcCoordonneCol2')
@@ -276,7 +340,7 @@ class ParcellaireSpider(scrapy.Spider):
     def fiche_parcellaire_plante(self, response):
         """ Parse l'onglet parcellaire planté """
         cvi = response.meta['cvi']
-        response.meta['numero_cvi'] = response.meta['numero_cvi'] + 1
+        response.meta['index_cvi'] = response.meta['index_cvi'] + 1
         self.export_html(cvi['cvi'], 'parcellaire',
                          response.text)
         return scrapy.Request(self.url_accueil, meta=response.meta,
@@ -289,7 +353,7 @@ class ParcellaireSpider(scrapy.Spider):
             formdata={
                 'formFdc': 'formFdc',
                 'formFdc:selectDepartement': response.meta['departements'][response.meta['departement']],
-                'formFdc:selectCommune': response.meta['commune'],
+                'formFdc:selectCommune': response.meta['communes'][response.meta['commune']],
                 'formFdc:inputNumeroCvi': '',
                 'formFdc:inputEvvLibelle': '',
                 'formFdc:j_idt213': 'Rechercher'
