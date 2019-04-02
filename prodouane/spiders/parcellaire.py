@@ -90,64 +90,70 @@ class ParcellaireSpider(scrapy.Spider):
         informations, sinon, on liste la liste des CVI par départements et par
         communes
         """
-        if os.getenv('CVI', None) is None:
-            response.meta['departements'] = response.css(
-                r'#formFdc\:selectDepartement option::attr(value)').getall()
-            response.meta['nb_departements'] = len(response.meta['departements'])
+        meta = response.meta
 
-            if response.meta['departement'] is response.meta['nb_departements']:
+        if os.getenv('CVI', None) is None:
+            meta['departements'] = response.css(
+                r'#formFdc\:selectDepartement option::attr(value)').getall()
+            meta['nb_departements'] = len(meta['departements'])
+
+            if meta['departement'] is meta['nb_departements']:
                 return False
 
-            response.meta['communes'] = response.css(
+            meta['communes'] = response.css(
                 r'#formFdc\:selectCommune option::attr(value)').getall()
-            response.meta['nb_communes'] = len(response.meta['communes'])
+            meta['nb_communes'] = len(meta['communes'])
 
-            if response.meta['commune'] is response.meta['nb_communes']:
-                response.meta['commune'] = 0
-                response.meta['departement'] = response.meta['departement'] + 1
+            if meta['commune'] is meta['nb_communes']:
+                meta['commune'] = 0
+                meta['departement'] = meta['departement'] + 1
                 return scrapy.FormRequest.from_response(
-                    response, formname='formFdc', callback=self.update_communes,
-                    meta=response.meta,
+                    response, formname='formFdc',
+                    callback=self.update_communes,
+                    meta=meta,
                     formdata={
-                        'formFdc:selectDepartement': response.meta['departements'][response.meta['departement']],
+                        'formFdc:selectDepartement':
+                            meta['departements'][meta['departement']],
                         'javax.faces.source': 'formFdc:selectDepartement',
                         'javax.faces.partial.event': 'change',
-                        'javax.faces.partial.execute': 'formFdc:selectDepartement @component',
+                        'javax.faces.partial.execute':
+                            'formFdc:selectDepartement @component',
                         'javax.faces.partial.render': '@component',
                         'javax.faces.behavior.event': 'change',
-                        'org.richfaces.ajax.component': 'formFdc:selectDepartement',
+                        'org.richfaces.ajax.component':
+                            'formFdc:selectDepartement',
                         'rfExt': 'null',
                         'AJAX:EVENTS_COUNT': '1',
                         'javax.faces.partial.ajax': 'true'
                     }
                 )
 
-            response.meta['noms_communes'] = response.css(
+            meta['noms_communes'] = response.css(
                 r'#formFdc\:selectCommune option::text').getall()
-            response.meta['nom_commune'] = \
-                response.meta['noms_communes'][response.meta['commune']]
+            meta['nom_commune'] = \
+                meta['noms_communes'][meta['commune']]
 
             return scrapy.FormRequest.from_response(
                 response,
                 formname='formFdc',
                 formdata={
                     'formFdc:selectDepartement':
-                    response.meta['departements'][response.meta['departement']],
+                    meta['departements'][meta['departement']],
                     'formFdc:selectCommune':
-                        response.meta['communes'][response.meta['commune']]
+                        meta['communes'][meta['commune']]
                     },
                 callback=self.get_total_page,
-                meta=response.meta
+                meta=meta
             )
         else:
             cvi = os.getenv('CVI')
-            response.meta['numero_cvi'] = cvi
+            meta['numero_cvi'] = cvi
             return scrapy.FormRequest.from_response(
                 response,
                 formname='formFdc',
                 formdata={'formFdc:inputNumeroCvi': cvi},
                 callback=self.get_un_cvi,
-                meta=response.meta
+                meta=meta
             )
 
     def update_communes(self, response):
@@ -287,7 +293,7 @@ class ParcellaireSpider(scrapy.Spider):
     def export_html(directory, name, content):
         """ Permet de sauvegarder le HTML en cas de coupure """
         if not os.path.isdir(directory):
-            os.makedirs(directory, 0764)
+            os.makedirs(directory, 0o764)
 
         file = open(directory + '%s.html' % name, 'w')
         try:
