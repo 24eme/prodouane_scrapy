@@ -1,8 +1,9 @@
 # Export des documents du portail prodouane
 
-## Dépendance
+## Dépendances
 
     python-scrapy catdoc
+    [beautifulsoup](https://www.crummy.com/software/BeautifulSoup/#Download) [lxml](https://lxml.de/installation.html) # pour les parcellaires
 
 ## Lancer le téléchargement des documents
 
@@ -12,11 +13,11 @@ Ainsi pour télécharger les DR mise à disposition du compte `login` (dont le m
 
     PRODOUANE_ANNEE=2016 PRODOUANE_USER='login' PRODOUANE_PASS='pass' scrapy crawl dr
 
-Il est possible de remplacer `dr` par `sv11` ou `sv12` pour télécharger respectivement les SV11 et SV12.
+Il est possible de remplacer `dr` par `sv11`, `sv12` ou `parcellaire` pour télécharger respectivement les SV11, SV12 et Parcellaires.
 
-Les documents au format pdf, html et xls sont mis à dispoition dans le répertoire `documents/`
+Les documents au format pdf, html et xls sont mis à disposition dans le répertoire `documents/`
 
-Une commande générique permet de télécharger l'un des trois types de documents pour un CVI et une année données :
+Une commande générique permet de télécharger l'un des trois types de documents pour un CVI et une année donnée :
 
     bash bin/download_douane.sh DOCUMENT ANNÉE CVI
 
@@ -25,6 +26,10 @@ Soit pour la dr de 2015 du CVI 1234512345 :
     bash bin/download_douane.sh dr 2015 1234512345
 
 Les identifiants et mot de passe doivent avant été indiqué dans le fichier `bin/config.inc`.
+
+### Notes
+
+L'année n'est pas requise pour les parcellaires.
 
 ## Formatage des xls en csv
 
@@ -35,3 +40,9 @@ La conversion de xls en csv se fait à l'aide de xls2csv disponible dans le paqu
 Pour formater les xls des déclarations en csv exploitable
 
     bash posttraitement/dr_xls2csv.sh chemin_vers_le_fichier_xls campagne
+
+### Parcellaire
+
+Pour formater le HTML en csv il faut lancer le script
+
+    python posttraitement/parcellaire_to_csv.py <numero_cvi>

@@ -32,9 +32,7 @@ class ParcellaireSpider(scrapy.Spider):
 
     starter = {'departement': 0, 'commune': 0, 'page': 1, 'index_cvi': 0}
 
-    storage_directory = './parcellaire-cvi/'
-    list_directory = storage_directory + 'list/'
-    export_directory = storage_directory + 'parcellaires/'
+    storage_directory = './documents/'
 
     def start_requests(self):
         """ Requête appellée en premier pour le scraping """
@@ -209,13 +207,9 @@ class ParcellaireSpider(scrapy.Spider):
         )
 
     def get_liste_cvi(self, response):
-        """ Récupère le nombre de CVI sur la page, on enregistre l'HTML au cas
-        ou, et on affiche sur STDIN les CVI un par un et on incremente la page
+        """ Récupère le nombre de CVI sur la page et on affiche sur STDIN
+        les CVI un par un et on incremente la page
         """
-        filename = response.meta['nom_commune'] + '-page-' + \
-            str(response.meta['page']) + '-liste'
-        self.export_html(self.list_directory, filename, response.text)
-
         numeros_cvi = re.findall(r'(\d+)</td>', response.text)
 
         for numero_cvi in numeros_cvi:
@@ -252,10 +246,10 @@ class ParcellaireSpider(scrapy.Spider):
         """ Parse la page d'accueil de la fiche CVI et on clique sur l'onglet
         des parcellaires """
         cvi = response.meta['cvi']
-        identifiant = '-'.join([cvi['cvi'][:2], cvi['commune'], cvi['cvi']])
+        identifiant = '-'.join(['parcellaire', cvi['cvi']])
         response.meta['identifiant'] = identifiant
 
-        self.export_html(self.export_directory, identifiant + '-accueil',
+        self.export_html(self.storage_directory, identifiant + '-accueil',
                          response.text)
 
         return scrapy.FormRequest.from_response(
@@ -285,7 +279,7 @@ class ParcellaireSpider(scrapy.Spider):
 
     def parse(self, response):
         """ On récupère les informations de parcellaire """
-        self.export_html(self.export_directory,
+        self.export_html(self.storage_directory,
                          response.meta['identifiant'] + '-parcellaire',
                          response.text)
 
