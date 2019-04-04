@@ -27,9 +27,9 @@ Soit pour la dr de 2015 du CVI 1234512345 :
 
 Les identifiants et mot de passe doivent avant été indiqué dans le fichier `bin/config.inc`.
 
-### Notes
+Pour télécharger les parcellaires, le script est :
 
-L'année n'est pas requise pour les parcellaires.
+    bash bin/download_parcellaire.sh
 
 ## Formatage des xls en csv
 

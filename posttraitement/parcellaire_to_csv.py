@@ -16,7 +16,7 @@ headers = [
     'Superficie', 'Campage', 'Ecart pied', 'Ecart rang']
 
 numero_cvi = sys.argv[1]
-directory = '../prodouane/spiders/documents/'
+directory = './documents/'
 file = 'parcellaire-' + numero_cvi + '-%s.html'
 
 # Premier onglet
