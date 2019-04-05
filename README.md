@@ -3,7 +3,7 @@
 ## Dépendances
 
     python-scrapy catdoc
-    [beautifulsoup](https://www.crummy.com/software/BeautifulSoup/#Download) [lxml](https://lxml.de/installation.html) # pour les parcellaires
+    beautifulsoup lxml # pour les parcellaires
 
 ## Lancer le téléchargement des documents
 
