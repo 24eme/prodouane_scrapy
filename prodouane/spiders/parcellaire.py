@@ -95,9 +95,6 @@ class ParcellaireSpider(scrapy.Spider):
                 r'#formFdc\:selectDepartement option::attr(value)').getall()
             meta['nb_departements'] = len(meta['departements'])
 
-            if meta['departement'] is meta['nb_departements']:
-                return False
-
             meta['communes'] = response.css(
                 r'#formFdc\:selectCommune option::attr(value)').getall()
             meta['nb_communes'] = len(meta['communes'])
@@ -105,6 +102,10 @@ class ParcellaireSpider(scrapy.Spider):
             if meta['commune'] is meta['nb_communes']:
                 meta['commune'] = 0
                 meta['departement'] = meta['departement'] + 1
+
+                if meta['departement'] is meta['nb_departements']:
+                    return False
+
                 return scrapy.FormRequest.from_response(
                     response, formname='formFdc',
                     callback=self.update_communes,
