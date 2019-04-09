@@ -3,6 +3,7 @@
 """ Transforme les .html en csv """
 
 import sys
+import re
 import csv
 from bs4 import BeautifulSoup, SoupStrainer
 
@@ -47,8 +48,11 @@ with open(directory + file % 'parcellaire', 'rb') as html_file:
 
         parcellaire['Commune'] = infos_parcelles[0]
         parcellaire['Lieu dit'] = infos_parcelles[1]
-        parcellaire['Section'] = infos_parcelles[2].strip()
-        parcellaire['Numero parcelle'] = infos_parcelles[2]
+
+        match = re.search(r'([A-Z]+)(\d+)', infos_parcelles[2])
+        parcellaire['Section'] = match.group(1)
+        parcellaire['Numero parcelle'] = match.group(2).lstrip('0')
+
         parcellaire['Produit'] = infos_parcelles[3].encode('utf-8')
         parcellaire['Cepage'] = infos_parcelles[4]
         parcellaire['Superficie'] = infos_parcelles[5]
