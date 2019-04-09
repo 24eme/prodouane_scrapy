@@ -4,7 +4,7 @@
 
 cd $(dirname $0)/../ > /dev/null 2>&1
 
-if ! test "$PRODOUANE_USER" || test "$PRODOUANE_PASS"; then
+if ! test "$PRODOUANE_USER" || ! test "$PRODOUANE_PASS"; then
 	echo "Authentification mal configurée dans le fichier de config"
 	exit 1
 fi
