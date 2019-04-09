@@ -60,10 +60,10 @@ with open(directory + file % 'parcellaire', 'rb') as html_file:
         parcellaire['Ecart pied'] = infos_parcelles[8]
         parcellaire['Ecart rang'] = infos_parcelles[9]
 
-        liste_parcellaire.append(parcellaire)
+        liste_parcellaire.append(parcellaire.copy())
 
 if len(liste_parcellaire):
-    with open(numero_cvi + '.csv', 'a') as f:
+    with open(numero_cvi + '.csv', 'w') as f:
         w = csv.DictWriter(f, headers)
         w.writeheader()
         w.writerows(liste_parcellaire)
