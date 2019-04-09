@@ -55,7 +55,12 @@ with open(directory + file % 'parcellaire', 'rb') as html_file:
 
         parcellaire['Produit'] = infos_parcelles[3].encode('utf-8')
         parcellaire['Cepage'] = infos_parcelles[4]
-        parcellaire['Superficie'] = infos_parcelles[5]
+
+        superficie = re.search(r'(\d+)Ha (\d+)Ar (\d+)Ca', infos_parcelles[5])
+        parcellaire['Superficie'] = '{},{}{}'.format(superficie.group(1),
+                                                     superficie.group(2),
+                                                     superficie.group(3)
+                                                     ).rstrip('0')
         parcellaire['Campage'] = infos_parcelles[6]
         parcellaire['Ecart pied'] = infos_parcelles[8]
         parcellaire['Ecart rang'] = infos_parcelles[9]
