@@ -9,7 +9,7 @@ if ! test "$PRODOUANE_USER" || ! test "$PRODOUANE_PASS"; then
 	exit 1
 fi
 
-$tmpfile = $(mktemp /tmp/$0.XXXXXX)
+tmpfile=$(mktemp /tmp/$(basename $0).XXXXXX)
 
 PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" scrapy crawl parcellaire > $tmpfile
 
