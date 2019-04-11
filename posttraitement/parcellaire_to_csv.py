@@ -3,6 +3,7 @@
 """ Transforme les .html en csv """
 
 import sys
+import os
 import re
 import csv
 from bs4 import BeautifulSoup, SoupStrainer
@@ -17,7 +18,7 @@ headers = [
     'Superficie', 'Campage', 'Ecart pied', 'Ecart rang']
 
 numero_cvi = sys.argv[1]
-directory = './documents/'
+directory = os.path.dirname(os.path.realpath(__file__)) + '/../documents/'
 file = 'parcellaire-' + numero_cvi + '-%s.html'
 
 # Premier onglet
