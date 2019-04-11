@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if ! type scrapy > /dev/null 2>&1; then
+	echo "Le binaire scrapy n'existe pas"
+	exit 1
+fi
+
 . $(dirname $0)/config.inc
 
 cd $(dirname $0)/../ > /dev/null 2>&1
