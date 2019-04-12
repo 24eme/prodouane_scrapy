@@ -5,14 +5,8 @@ if ! type scrapy > /dev/null 2>&1; then
 	exit 1
 fi
 
-if [ $# -ne 1 ]; then
-	echo "Il manque un paramètre"
-	exit 1
-fi
-
-cvi=$1
-
 . $(dirname $0)/config.inc
+
 cd $(dirname $0)/../ > /dev/null 2>&1
 
 if ! test "$PRODOUANE_USER" || ! test "$PRODOUANE_PASS"; then
@@ -20,4 +14,12 @@ if ! test "$PRODOUANE_USER" || ! test "$PRODOUANE_PASS"; then
 	exit 1
 fi
 
-CVI="$cvi" PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" scrapy crawl parcellaire
+tmpfile=$(mktemp /tmp/$(basename $0).XXXXXX)
+
+PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" scrapy crawl parcellaire > $tmpfile
+
+cat $tmpfile | while read cvi; do
+	CVI="$cvi" PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" scrapy crawl parcellaire
+done
+
+rm $tmpfile
