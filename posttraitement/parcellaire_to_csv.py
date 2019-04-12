@@ -54,7 +54,11 @@ with open(directory + file % 'parcellaire', 'rb') as html_file:
         parcellaire['Section'] = match.group(1)
         parcellaire['Numero parcelle'] = match.group(2).lstrip('0')
 
-        parcellaire['Produit'] = infos_parcelles[3].encode('utf-8')
+        if infos_parcelles[3]:
+            parcellaire['Produit'] = infos_parcelles[3].encode('utf-8')
+        else:
+            parcellaire['Produit'] = ''
+
         parcellaire['Cepage'] = infos_parcelles[4]
 
         superficie = re.search(r'(\d+)Ha (\d+)Ar (\d+)Ca', infos_parcelles[5])
