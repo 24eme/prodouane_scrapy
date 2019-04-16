@@ -35,6 +35,8 @@ with open(directory + file % 'accueil', 'rb') as html_file:
     parcellaire['Commune Operateur'] = tds[16].string.split(' ', 1)[1]
     parcellaire['Email Operateur'] = tds[19].stripped_string
 
+    date_maj = tds[20].string or '00/00/0000'
+
 # Deuxième onglet
 with open(directory + file % 'parcellaire', 'rb') as html_file:
     tables = SoupStrainer('table')
@@ -75,7 +77,14 @@ with open(directory + file % 'parcellaire', 'rb') as html_file:
         liste_parcellaire.append(parcellaire.copy())
 
 if len(liste_parcellaire):
-    with open(directory + 'parcellaire-' + numero_cvi + '.csv', 'w') as f:
+    date_transform = re.search(r'(\d+)/(\d+)/(\d+)', date_maj)
+    date_maj = '{}{}{}'.format(date_transform.group(3),
+                               date_transform.group(2),
+                               date_transform.group(1))
+
+    outputfile = 'parcellaire-' + numero_cvi + '-' + date_maj + '.csv'
+
+    with open(directory + outputfile, 'w') as f:
         w = csv.DictWriter(f, headers)
         w.writeheader()
         w.writerows(liste_parcellaire)
