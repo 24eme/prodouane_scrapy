@@ -75,7 +75,7 @@ with open(directory + file % 'parcellaire', 'rb') as html_file:
         liste_parcellaire.append(parcellaire.copy())
 
 if len(liste_parcellaire):
-    with open(directory + numero_cvi + '.csv', 'w') as f:
+    with open(directory + 'parcellaire-' + numero_cvi + '.csv', 'w') as f:
         w = csv.DictWriter(f, headers)
         w.writeheader()
         w.writerows(liste_parcellaire)
