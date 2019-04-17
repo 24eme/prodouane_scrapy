@@ -85,6 +85,6 @@ if len(liste_parcellaire):
     outputfile = 'parcellaire-' + numero_cvi + '-' + date_maj + '.csv'
 
     with open(directory + outputfile, 'w') as f:
-        w = csv.DictWriter(f, headers)
+        w = csv.DictWriter(f, headers, delimiter=';')
         w.writeheader()
         w.writerows(liste_parcellaire)
