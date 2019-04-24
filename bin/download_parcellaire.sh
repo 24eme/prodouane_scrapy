@@ -21,3 +21,10 @@ if ! test "$PRODOUANE_USER" || ! test "$PRODOUANE_PASS"; then
 fi
 
 CVI="$cvi" PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" scrapy crawl parcellaire
+
+if [ ! -f "./documents/parcellaire-${cvi}-parcellaire.html" ]; then
+	echo "Échec du scraping"
+	exit 2
+fi
+
+python posttraitement/parcellaire_to_csv.py $cvi
