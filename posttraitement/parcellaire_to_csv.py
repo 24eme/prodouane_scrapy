@@ -15,7 +15,7 @@ headers = [
     'CVI Operateur', 'Siret Operateur', 'Nom Operateur', 'Adresse Operateur',
     'CP Operateur', 'Commune Operateur', 'Email Operateur', 'Commune',
     'Lieu dit', 'Section', 'Numero parcelle', 'Produit', 'Cepage',
-    'Superficie', 'Campage', 'Ecart pied', 'Ecart rang']
+    'Superficie', 'Campage', 'Ecart pied', 'Ecart rang', 'Mode savoir faire']
 
 numero_cvi = sys.argv[1]
 directory = os.path.dirname(os.path.realpath(__file__)) + '/../documents/'
@@ -73,6 +73,7 @@ with open(directory + file % 'parcellaire', 'rb') as html_file:
         parcellaire['Campage'] = infos_parcelles[6]
         parcellaire['Ecart pied'] = infos_parcelles[8]
         parcellaire['Ecart rang'] = infos_parcelles[9]
+        parcellaire['Mode savoir faire'] = infos_parcelles[11].encode('utf-8')
 
         liste_parcellaire.append(parcellaire.copy())
 
