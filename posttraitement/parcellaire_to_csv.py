@@ -29,10 +29,19 @@ with open(directory + file % 'accueil', 'rb') as html_file:
     tds = soup.select('td.fdcCoordonneCol2')
     parcellaire['CVI Operateur'] = tds[0].string
     parcellaire['Siret Operateur'] = tds[1].string
-    parcellaire['Nom Operateur'] = tds[2].string.strip()
-    parcellaire['Adresse Operateur'] = tds[15].string
-    parcellaire['CP Operateur'] = tds[16].string.split(' ', 1)[0]
-    parcellaire['Commune Operateur'] = tds[16].string.split(' ', 1)[1]
+    parcellaire['Nom Operateur'] = tds[2].string.encode('utf-8').strip()
+
+    if tds[15].string:
+        parcellaire['Adresse Operateur'] = tds[15].string.encode('utf-8')
+    else:
+        parcellaire['Adresse Operateur'] = ''
+
+    parcellaire['CP Operateur'] = tds[16].string \
+                                         .encode('utf-8') \
+                                         .split(' ', 1)[0]
+    parcellaire['Commune Operateur'] = tds[16].string \
+                                              .encode('utf-8') \
+                                              .split(' ', 1)[1]
     parcellaire['Email Operateur'] = tds[19].stripped_string
 
     date_maj = tds[20].string or '00/00/0000'
@@ -49,8 +58,12 @@ with open(directory + file % 'parcellaire', 'rb') as html_file:
         for td in tr.td.next_siblings:
             infos_parcelles.append(td.string)
 
-        parcellaire['Commune'] = infos_parcelles[0]
-        parcellaire['Lieu dit'] = infos_parcelles[1]
+        parcellaire['Commune'] = infos_parcelles[0].encode('utf-8')
+
+        if infos_parcelles[1]:
+            parcellaire['Lieu dit'] = infos_parcelles[1].encode('utf-8')
+        else:
+            parcellaire['Lieu dit'] = ''
 
         match = re.search(r'([A-Z]+)(\d+)', infos_parcelles[2])
         parcellaire['Section'] = match.group(1)
@@ -61,7 +74,7 @@ with open(directory + file % 'parcellaire', 'rb') as html_file:
         else:
             parcellaire['Produit'] = ''
 
-        parcellaire['Cepage'] = infos_parcelles[4]
+        parcellaire['Cepage'] = infos_parcelles[4].encode('utf-8')
 
         superficie = re.search(r'(\d+)Ha (\d+)Ar (\d+)Ca', infos_parcelles[5])
         parcellaire['Superficie'] = '{:01d}.{}{}'.format(
@@ -73,7 +86,12 @@ with open(directory + file % 'parcellaire', 'rb') as html_file:
         parcellaire['Campage'] = infos_parcelles[6]
         parcellaire['Ecart pied'] = infos_parcelles[8]
         parcellaire['Ecart rang'] = infos_parcelles[9]
-        parcellaire['Mode savoir faire'] = infos_parcelles[11].encode('utf-8')
+
+        if infos_parcelles[11]:
+            parcellaire['Mode savoir faire'] = \
+                infos_parcelles[11].encode('utf-8')
+        else:
+            parcellaire['Mode savoir faire'] = ''
 
         liste_parcellaire.append(parcellaire.copy())
 
