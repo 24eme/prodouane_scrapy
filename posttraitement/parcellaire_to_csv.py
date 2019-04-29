@@ -58,6 +58,9 @@ with open(directory + file % 'parcellaire', 'rb') as html_file:
         for td in tr.td.next_siblings:
             infos_parcelles.append(td.string)
 
+        if infos_parcelles[10] != 'PROD':
+            continue
+
         parcellaire['Commune'] = infos_parcelles[0].encode('utf-8')
 
         if infos_parcelles[1]:
