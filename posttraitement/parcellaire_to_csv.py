@@ -8,6 +8,16 @@ import re
 import csv
 from bs4 import BeautifulSoup, SoupStrainer
 
+
+def transform_superficie(superficie):
+    superficie = re.search(r'(\d+)Ha (\d+)Ar (\d+)Ca', superficie)
+    return '{:01d}.{}{}'.format(
+        int(superficie.group(1)),
+        superficie.group(2),
+        superficie.group(3)
+    ).rstrip('0')
+
+
 parcellaire = {}
 liste_parcellaire = []
 
@@ -15,7 +25,8 @@ headers = [
     'CVI Operateur', 'Siret Operateur', 'Nom Operateur', 'Adresse Operateur',
     'CP Operateur', 'Commune Operateur', 'Email Operateur', 'Commune',
     'Lieu dit', 'Section', 'Numero parcelle', 'Produit', 'Cepage',
-    'Superficie', 'Campage', 'Ecart pied', 'Ecart rang', 'Mode savoir faire']
+    'Superficie', 'Superficie cadastrale', 'Campagne', 'Ecart pied',
+    'Ecart rang', 'Mode savoir faire']
 
 numero_cvi = sys.argv[1]
 directory = os.path.dirname(os.path.realpath(__file__)) + '/../documents/'
@@ -73,20 +84,19 @@ with open(directory + file % 'parcellaire', 'rb') as html_file:
         parcellaire['Numero parcelle'] = match.group(2).lstrip('0')
 
         if infos_parcelles[3]:
+            parcellaire['Superficie cadastrale'] = transform_superficie(
+                infos_parcelles[3].parent['title']
+            )
             parcellaire['Produit'] = infos_parcelles[3].encode('utf-8')
         else:
             parcellaire['Produit'] = ''
+            parcellaire['Superficie cadastrale'] = ''
 
         parcellaire['Cepage'] = infos_parcelles[4].encode('utf-8')
 
-        superficie = re.search(r'(\d+)Ha (\d+)Ar (\d+)Ca', infos_parcelles[5])
-        parcellaire['Superficie'] = '{:01d}.{}{}'.format(
-            int(superficie.group(1)),
-            superficie.group(2),
-            superficie.group(3)
-        ).rstrip('0')
+        parcellaire['Superficie'] = transform_superficie(infos_parcelles[5])
 
-        parcellaire['Campage'] = infos_parcelles[6]
+        parcellaire['Campagne'] = infos_parcelles[6]
         parcellaire['Ecart pied'] = infos_parcelles[8]
         parcellaire['Ecart rang'] = infos_parcelles[9]
 
