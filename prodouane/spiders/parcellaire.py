@@ -59,12 +59,15 @@ class ParcellaireSpider(scrapy.Spider):
 
     def get_sid(self, response):
         """ On récupère le sid """
-        self.log('Extraction du sid')
-        sid = response.css(
-            '#wdformAppli input[name=sessionidT]'
-        ).attrib['value']
 
-        self.log('Valeur trouvée : %s' % sid)
+        args = {}
+        for i in response.css('#wdformAppli input'):
+            args[i.xpath('@name')[0].extract()] = i.xpath('@value')[0].extract()
+        args[response.css('#wdformAppli textarea').xpath('@name')[0].extract()] = response.css('#wdformAppli textarea::text').extract()
+
+        sid = args['sessionidT']
+
+        self.log(sid)
         self.log('Requete vers: %s' % self.url_cvi)
 
         return scrapy.Request(
