@@ -228,12 +228,12 @@ class ParcellaireSpider(scrapy.Spider):
         """ On sélectionne le CVI recherché """
         cvi = CviItem()
         cvi['cvi'] = response.meta['numero_cvi']
-        cvi['libelle'] = response.css('td[id$=j_idt233]::text').get()
-        cvi['commune'] = response.css('td[id$=j_idt235]::text').get()
+        cvi['libelle'] = response.css('td[id$=j_idt233]::text').extract()
+        cvi['commune'] = response.css('td[id$=j_idt235]::text').extract()
         cvi['categorie'] = response.css(
-            'td[id$=j_idt237]::text').get()
+            'td[id$=j_idt237]::text').extract()
         cvi['activite'] = response.css(
-            'td[id$=j_idt239]::text').get()
+            'td[id$=j_idt239]::text').extract()
 
         response.meta['cvi'] = cvi
 
@@ -254,7 +254,7 @@ class ParcellaireSpider(scrapy.Spider):
         response.meta['identifiant'] = identifiant
 
         self.export_html(self.storage_directory, identifiant + '-accueil',
-                         response.text)
+                         response.body)
 
         return scrapy.FormRequest.from_response(
             response,
@@ -285,7 +285,7 @@ class ParcellaireSpider(scrapy.Spider):
         """ On récupère les informations de parcellaire """
         self.export_html(self.storage_directory,
                          response.meta['identifiant'] + '-parcellaire',
-                         response.text)
+                         response.body)
 
     @staticmethod
     def export_html(directory, name, content):
@@ -295,6 +295,6 @@ class ParcellaireSpider(scrapy.Spider):
 
         file = open(directory + '%s.html' % name, 'w')
         try:
-            file.write(content.encode('utf-8'))
+            file.write(content)
         finally:
             file.close()
