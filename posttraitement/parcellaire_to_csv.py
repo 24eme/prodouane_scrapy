@@ -27,7 +27,7 @@ headers = [
     'CP Operateur', 'Commune Operateur', 'Email Operateur', 'Commune',
     'Lieu dit', 'Section', 'Numero parcelle', 'Produit', 'Cepage',
     'Superficie', 'Superficie cadastrale', 'Campagne', 'Ecart pied',
-    'Ecart rang', 'Mode savoir faire']
+    'Ecart rang', 'Mode savoir faire', 'Statut']
 
 numero_cvi = sys.argv[1]
 directory = os.path.dirname(os.path.realpath(__file__)) + '/../documents/'
@@ -70,9 +70,6 @@ with open(directory + file % 'parcellaire', 'rb') as html_file:
         for td in tr.td.next_siblings:
             infos_parcelles.append(td.string)
 
-        if infos_parcelles[10] != 'PROD':
-            continue
-
         parcellaire['Commune'] = infos_parcelles[0].encode('utf-8')
 
         if infos_parcelles[1]:
@@ -106,6 +103,8 @@ with open(directory + file % 'parcellaire', 'rb') as html_file:
                 infos_parcelles[11].encode('utf-8')
         else:
             parcellaire['Mode savoir faire'] = ''
+
+        parcellaire['Statut'] = infos_parcelles[10]
 
         liste_parcellaire.append(parcellaire.copy())
 
