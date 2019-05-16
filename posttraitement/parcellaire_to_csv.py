@@ -85,7 +85,7 @@ with open(directory + file % 'parcellaire', 'rb') as html_file:
             parcellaire['Superficie cadastrale'] = transform_superficie(
                 infos_parcelles[3].parent['title']
             )
-            parcellaire['Produit'] = infos_parcelles[3].encode('utf-8')
+            parcellaire['Produit'] = infos_parcelles[3].encode('utf-8').replace('Ctes ', 'Côtes de ').replace(' Ste-', ' Sainte ').replace(' rs', ' rosé').replace(' rg', ' rouge')
         else:
             parcellaire['Produit'] = ''
             parcellaire['Superficie cadastrale'] = ''
