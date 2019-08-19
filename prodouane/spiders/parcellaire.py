@@ -228,7 +228,7 @@ class ParcellaireSpider(scrapy.Spider):
         response.meta['page'] = response.meta['page'] + 1
 
         return scrapy.Request(self.url_accueil, meta=response.meta,
-                              callback=self.get_total_page)
+                              callback=self.get_total_page, dont_filter = True)
 
     def get_un_cvi(self, response):
         """ On sélectionne le CVI recherché """
