@@ -94,12 +94,9 @@ class ParcellaireSpider(scrapy.Spider):
         meta = response.meta
 
         if os.getenv('CVI', None) is None:
-            meta['departements'] = response.css(
-                r'#formFdc\:selectDepartement option::attr(value)').getall()
+            meta['departements'] = response.css('#formFdc\:selectDepartement')[0].css('option::attr(value)').extract()
             meta['nb_departements'] = len(meta['departements'])
-
-            meta['communes'] = response.css(
-                r'#formFdc\:selectCommune option::attr(value)').getall()
+            meta['communes'] = response.css('#formFdc\:selectCommune')[0].css('option::attr(value)').extract()
             meta['nb_communes'] = len(meta['communes'])
 
             if meta['commune'] is meta['nb_communes']:
@@ -130,10 +127,8 @@ class ParcellaireSpider(scrapy.Spider):
                     }
                 )
 
-            meta['noms_communes'] = response.css(
-                r'#formFdc\:selectCommune option::text').getall()
-            meta['nom_commune'] = \
-                meta['noms_communes'][meta['commune']]
+            meta['noms_communes'] = response.css('#formFdc\:selectCommune')[0].css('option::attr(value)').extract()
+            meta['nom_commune'] = meta['noms_communes'][meta['commune']]
 
             return scrapy.FormRequest.from_response(
                 response,
@@ -170,10 +165,7 @@ class ParcellaireSpider(scrapy.Spider):
         """ Récupère le nombre de page de la commune, et on requetes chacune
         d'elle pour avoir la liste de CVI
         Si on arrive à la dernière page, on change de commune """
-        response.meta['total_pages'] = len(response.css(
-            r'#formFdc\:dttListeEvvOA\:scrollerId '
-            '.rf-ds-nmb-btn').getall())
-
+        response.meta['total_pages'] = len(response.css('#formFdc\:dttListeEvvOA\:scrollerId')[0].css('.rf-ds-nmb-btn').extract())
         if response.meta['total_pages'] == 0:
             response.meta['total_pages'] = 1
 
@@ -214,7 +206,7 @@ class ParcellaireSpider(scrapy.Spider):
         """ Récupère le nombre de CVI sur la page et on affiche sur STDIN
         les CVI un par un et on incremente la page
         """
-        numeros_cvi = re.findall(r'(\d+)</td>', response.text)
+        numeros_cvi = re.findall(r'(\d+)</td>', response.body)
 
         for numero_cvi in numeros_cvi:
             print(numero_cvi)
