@@ -91,6 +91,9 @@ class ParcellaireSpider(scrapy.Spider):
         informations, sinon, on liste la liste des CVI par départements et par
         communes
         """
+
+        self.log('accueil_fdc')
+
         meta = response.meta
 
         if os.getenv('CVI', None) is None:
@@ -158,6 +161,9 @@ class ParcellaireSpider(scrapy.Spider):
         Fonction appellée lorsque la dernière commune d'un département est
         finie
         """
+
+        self.log('update_communes')
+
         return scrapy.Request(self.url_accueil, callback=self.accueil_fdc,
                               meta=response.meta)
 
@@ -165,9 +171,14 @@ class ParcellaireSpider(scrapy.Spider):
         """ Récupère le nombre de page de la commune, et on requetes chacune
         d'elle pour avoir la liste de CVI
         Si on arrive à la dernière page, on change de commune """
+
+        self.log('get_total_page')
+
         response.meta['total_pages'] = len(response.css('#formFdc\:dttListeEvvOA\:scrollerId')[0].css('.rf-ds-nmb-btn').extract())
         if response.meta['total_pages'] == 0:
             response.meta['total_pages'] = 1
+
+        self.log('total_pages %s' % response.meta['total_pages'])
 
         if response.meta['page'] > response.meta['total_pages']:
             response.meta['page'] = 1
@@ -206,6 +217,9 @@ class ParcellaireSpider(scrapy.Spider):
         """ Récupère le nombre de CVI sur la page et on affiche sur STDIN
         les CVI un par un et on incremente la page
         """
+
+        self.log('get_liste_cvi')
+
         numeros_cvi = re.findall(r'(\d+)</td>', response.body)
 
         for numero_cvi in numeros_cvi:
@@ -218,6 +232,9 @@ class ParcellaireSpider(scrapy.Spider):
 
     def get_un_cvi(self, response):
         """ On sélectionne le CVI recherché """
+
+        self.log('get_un_cvi')
+
         cvi = CviItem()
         cvi['cvi'] = response.meta['numero_cvi']
         cvi['libelle'] = response.css('td[id$=j_idt233]::text').extract()
@@ -241,6 +258,9 @@ class ParcellaireSpider(scrapy.Spider):
     def fiche_accueil(self, response):
         """ Parse la page d'accueil de la fiche CVI et on clique sur l'onglet
         des parcellaires """
+
+        self.log('fiche_accueil')
+
         cvi = response.meta['cvi']
         identifiant = '-'.join(['parcellaire', cvi['cvi']])
         response.meta['identifiant'] = identifiant
@@ -271,10 +291,16 @@ class ParcellaireSpider(scrapy.Spider):
     def fiche_parcellaire_plante(self, response):
         """ Une fois que les données parcellaires sont en session, on
         recharge la page de consultation """
+
+        self.log('fiche_parcellaire_plante')
+
         return scrapy.Request(self.url_consultation, meta=response.meta)
 
     def parse(self, response):
         """ On récupère les informations de parcellaire """
+
+        self.log('parse')
+
         self.export_html(self.storage_directory,
                          response.meta['identifiant'] + '-parcellaire',
                          response.body)
@@ -282,6 +308,9 @@ class ParcellaireSpider(scrapy.Spider):
     @staticmethod
     def export_html(directory, name, content):
         """ Permet de sauvegarder le HTML en cas de coupure """
+
+        self.log('export_html')
+
         if not os.path.isdir(directory):
             os.makedirs(directory, 0o764)
 
