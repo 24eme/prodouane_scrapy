@@ -309,8 +309,6 @@ class ParcellaireSpider(scrapy.Spider):
     def export_html(directory, name, content):
         """ Permet de sauvegarder le HTML en cas de coupure """
 
-        self.log('export_html')
-
         if not os.path.isdir(directory):
             os.makedirs(directory, 0o764)
 
