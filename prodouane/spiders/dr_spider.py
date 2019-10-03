@@ -1,6 +1,8 @@
+# -*- coding: utf-8 -*-
 import scrapy
 from scrapy.http import HtmlResponse
 import os
+import re
 
 class QuotesSpider(scrapy.Spider):
     name = "dr"
@@ -10,33 +12,45 @@ class QuotesSpider(scrapy.Spider):
 #                       }
 
     def start_requests(self):
-        yield scrapy.Request(url="https://pro.douane.gouv.fr/", callback=self.login)
+        yield scrapy.Request(url="https://www.douane.gouv.fr/", callback=self.prelogin)
+
+    def prelogin(self, response):
+        yield scrapy.Request(url="https://www.douane.gouv.fr/saml_login", callback=self.login)
 
     def login(self, response):
-        yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/WDsession.asp', formdata={"login":os.environ['PRODOUANE_USER'],"pass":os.environ['PRODOUANE_PASS']}, callback=self.dr_postlogin)
+        formdata={"user":os.environ['PRODOUANE_USER'],"password":os.environ['PRODOUANE_PASS']}
+        formdata['token'] = response.xpath('//*[@name="token"]/@value').extract_first()
+        formdata['url'] = response.xpath('//*[@name="url"]/@value').extract_first()
+        yield scrapy.FormRequest.from_response(response, formdata=formdata, callback=self.postlogin)
 
-    def dr_postlogin(self, response):
-        self.log('dr_login')
-#        with open("quotes-dr_postlogin.html", 'wb') as f:
+    def postlogin(self, response):
+        self.log('postlogin')
+#        with open("quotes-postlogin.html", 'wb') as f:
 #            f.write(response.body)
-        yield scrapy.Request(url='https://pro.douane.gouv.fr/wdactuapplif.asp?wdAppli=118',  callback=self.dr_postmenu)
+        action = response.xpath('//*[@id="form"]/@action').extract_first()
+        formdata={}
+        formdata['RelayState'] = response.xpath('//*[@name="RelayState"]/@value').extract_first()
+        formdata['SAMLResponse'] = response.xpath('//*[@name="SAMLResponse"]/@value').extract_first()
+        yield scrapy.FormRequest(url=action, formdata=formdata, callback=self.redirectsaml,             dont_filter = True)
 
-    def dr_postmenu(self, response):
+    def redirectsaml(self, response):
+#        with open("quotes-redirectsaml.html", 'wb') as f:
+#            f.write(response.body)
+        yield scrapy.Request(url='https://www.douane.gouv.fr/service-en-ligne/redirection/PORTAIL_VITI',  callback=self.embedviti)
+
+    def embedviti(self, response):
+        self.log('embedviti')
+        url = response.xpath('//*[@name="frame-ts-context"]/@src').extract_first()
+        sid = re.sub(r'&.*', '', re.sub(r'.*sid=', '', url))
+        yield scrapy.Request(url=url,  callback=self.multiservice, meta={'sid': sid})
+
+    def multiservice(self, response):
+        self.log('multiservice')
         cvi = ''
         if 'CVI' in os.environ:
             cvi = os.environ['CVI']
-        yield scrapy.Request(url='https://pro.douane.gouv.fr/wdroute.asp?btn=118&rap=3&cat=3',  callback=self.dr_login, meta={'departement': 0, 'commune': 0, 'annee': os.environ['PRODOUANE_ANNEE'], "cvi": cvi})
-
-    def dr_login(self, response):
-        self.log('dr_login')
-#        with open("quotes-dr_login.html", 'wb') as f:
-#            f.write(response.body)
-        args = {}
-        for i in response.css('#wdformAppli input'):
-            args[i.xpath('@name')[0].extract()] = i.xpath('@value')[0].extract()
-        args[response.css('#wdformAppli textarea').xpath('@name')[0].extract()] = response.css('#wdformAppli textarea::text').extract()
-
-        yield scrapy.Request(url='https://pro.douane.gouv.fr/ncvi_recolte/prodouane/connexionProdouane?sid=%s&app=%s&code_teleservice=%s' % (args['sessionidT'], args['idappliT'], args['codeT']),  callback=self.dr_connexion, meta=response.meta)
+        sid = response.meta['sid']
+        yield scrapy.Request(url='https://www.douane.gouv.fr/ncvi-web-recolte-prodouane/connexionProdouane?sid=%s&app=118' % sid, callback=self.dr_accueil, meta={'departement': 0, 'commune': 0, 'annee': os.environ['PRODOUANE_ANNEE'], "cvi": cvi, "sid": sid})
 
     def get_input_args(self, response, cssid):
         args = {}
@@ -45,8 +59,8 @@ class QuotesSpider(scrapy.Spider):
                 args[i.xpath('@name')[0].extract()] = i.xpath('@value')[0].extract()
         return args
 
-    def dr_connexion(self, response):
-        self.log('dr_connexion')
+    def dr_accueil(self, response):
+        self.log('dr_accueil')
 #        with open("quotes-dr-connexion.html", 'wb') as f:
 #            f.write(response.body)
 
@@ -77,14 +91,14 @@ class QuotesSpider(scrapy.Spider):
         args['javax.faces.ViewState'] = inputs['javax.faces.ViewState']
         args["formFiltre:_idJsp138"] = "formFiltre:_idJsp138"
 
-        yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_recolte/prodouane/jsp/accueilOrganisme.jsf?javax.portlet.faces.DirectLink=true', formdata=args, callback=self.dr_communes, meta=response.meta)
+        yield scrapy.FormRequest(url='https://www.douane.gouv.fr/ncvi-web-recolte-prodouane/jsp/accueilOrganisme.jsf?javax.portlet.faces.DirectLink=true', formdata=args, callback=self.dr_communes, meta=response.meta)
 
     def dr_communes(self, response):
         meta = response.meta
         response = HtmlResponse(url=response.url, body=response.body)
         self.log('dr_communes')
-#        with open("quotes-dr-commune.html", 'wb') as f:
-#            f.(response.body)
+#       with open("quotes-dr-commune.html", 'wb') as f:
+#          f.write(response.body)
 
         communes = response.css('option::attr(value)').extract()
         inputs = self.get_input_args(response, '')
@@ -107,8 +121,8 @@ class QuotesSpider(scrapy.Spider):
         meta['nb_communes']  = len(communes)
 
         self.log('cvi: %s' % meta['cvi'])
-
-        yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_recolte/prodouane/jsp/accueilOrganisme.jsf', formdata=args, callback=self.dr_page_1, meta=meta)
+        
+        yield scrapy.FormRequest(url='https://www.douane.gouv.fr/ncvi-web-recolte-prodouane/jsp/accueilOrganisme.jsf', formdata=args, callback=self.dr_page_1, meta=meta)
 
     def dr_page_1(self, response):
         self.log('dr_page_1')
@@ -123,13 +137,13 @@ class QuotesSpider(scrapy.Spider):
                 'formDeclaration_SUBMIT':"1",
                 'autoScroll':"0,0",
                 }
-        yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_recolte/prodouane/jsp/accueilOrganisme.jsf', formdata=args, callback=self.dr_tableau_cvi, meta=response.meta)
+        yield scrapy.FormRequest(url='https://www.douane.gouv.fr/ncvi-web-recolte-prodouane/jsp/accueilOrganisme.jsf', formdata=args, callback=self.dr_tableau_cvi, meta=response.meta)
 
     def dr_tableau_cvi(self, response):
         self.log('dr_tableau_cvi')
 
-#        with open("quotes-dr-tableau.html", 'wb') as f:
-#            f.write(response.body)
+#       with open("quotes-dr-tableau.html", 'wb') as f:
+#           f.write(response.body)
 
         info = []
         nb_docs = 0
@@ -166,7 +180,7 @@ class QuotesSpider(scrapy.Spider):
                         'autoScroll':"0,0",
                         }
                 response.meta['id'] = 0
-                yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_recolte/prodouane/jsp/accueilOrganisme.jsf', formdata=myargs, callback=self.dr_tableau_cvi, meta=response.meta)
+                yield scrapy.FormRequest(url='https://www.douane.gouv.fr/ncvi-web-recolte-prodouane/jsp/accueilOrganisme.jsf', formdata=myargs, callback=self.dr_tableau_cvi, meta=response.meta)
             else:
                 response.meta['page'] = 0
                 response.meta['id'] = 0
@@ -175,7 +189,7 @@ class QuotesSpider(scrapy.Spider):
                     response.meta['departement'] = response.meta['departement'] + 1
                     response.meta['commune'] = 0
                 if (response.meta['nb_departements'] > response.meta['departement']):
-                    yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_recolte/prodouane/jsp/accueilOrganisme.jsf?commune=%d&dep=%d' % (response.meta['commune'], response.meta['departement']), callback=self.dr_connexion, meta=response.meta)
+                    yield scrapy.FormRequest(url='https://www.douane.gouv.fr/ncvi-web-recolte-prodouane/jsp/accueilOrganisme.jsf?commune=%d&dep=%d' % (response.meta['commune'], response.meta['departement']), callback=self.dr_accueil, meta=response.meta)
         elif (len(info) > id):
             self.log('id %s : %d (%d)' % (info[id]['cvi'], id, len(info)) )
             i = info[id]
@@ -190,7 +204,7 @@ class QuotesSpider(scrapy.Spider):
             response.meta['id'] = id
             response.meta['info'] = info
 
-            yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_recolte/prodouane/jsp/accueilOrganisme.jsf', formdata=myargs, callback=self.dr_html_dr, meta=response.meta)
+            yield scrapy.FormRequest(url='https://www.douane.gouv.fr/ncvi-web-recolte-prodouane/jsp/accueilOrganisme.jsf', formdata=myargs, callback=self.dr_html_dr, meta=response.meta)
         else:
             self.log('no document found for %s' % response.meta['cvi'])
 
@@ -213,10 +227,10 @@ class QuotesSpider(scrapy.Spider):
 
             response.meta['javaxViewState'] = inputs['javax.faces.ViewState']
             response.meta['dr_html_inputs'] = inputs
-            yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_recolte/prodouane/jsp/saisieDeclarationNormale.jsf', formdata=args, callback=self.dr_pdf_dr, meta=response.meta)
+            yield scrapy.FormRequest(url='https://www.douane.gouv.fr/ncvi-web-recolte-prodouane/jsp/saisieDeclarationNormale.jsf', formdata=args, callback=self.dr_pdf_dr, meta=response.meta)
         else:
             response.meta['id'] = response.meta['id'] + 1
-            yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_recolte/prodouane/jsp/accueilOrganisme.jsf?%d,%d,%d,%d' % (response.meta['departement'], response.meta['commune'], response.meta['page'], response.meta['id']), callback=self.dr_page_1, meta=response.meta)
+            yield scrapy.FormRequest(url='https://www.douane.gouv.fr/ncvi-web-recolte-prodouane/jsp/accueilOrganisme.jsf?%d,%d,%d,%d' % (response.meta['departement'], response.meta['commune'], response.meta['page'], response.meta['id']), callback=self.dr_page_1, meta=response.meta)
 
     def dr_pdf_dr(self,response):
         self.log('dr_pdf_dr')
@@ -235,7 +249,7 @@ class QuotesSpider(scrapy.Spider):
                }
 
         response.meta['dr_html_inputs'] = {}
-        yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_recolte/prodouane/jsp/saisieDeclarationNormale.jsf', formdata=args, callback=self.dr_tableur_dr, meta=response.meta)
+        yield scrapy.FormRequest(url='https://www.douane.gouv.fr/ncvi-web-recolte-prodouane/jsp/saisieDeclarationNormale.jsf', formdata=args, callback=self.dr_tableur_dr, meta=response.meta)
 
     def dr_tableur_dr(self, response):
         self.log('dr_tableur_dr')
@@ -245,6 +259,5 @@ class QuotesSpider(scrapy.Spider):
         self.log('Saved file %s' % filename)
 
         response.meta['id'] = response.meta['id'] + 1
-        self.log('len(cvi) : %d' % len(response.meta['cvi']))
         if (not len(response.meta['cvi'])):
-            yield scrapy.FormRequest(url='https://pro.douane.gouv.fr/ncvi_recolte/prodouane/jsp/accueilOrganisme.jsf?%d,%d,%d,%d' % (response.meta['departement'], response.meta['commune'], response.meta['page'], response.meta['id']), callback=self.dr_page_1, meta=response.meta)
+            yield scrapy.FormRequest(url='https://www.douane.gouv.fr/ncvi-web-recolte-prodouane/jsp/accueilOrganisme.jsf?%d,%d,%d,%d' % (response.meta['departement'], response.meta['commune'], response.meta['page'], response.meta['id']), callback=self.dr_page_1, meta=response.meta)
