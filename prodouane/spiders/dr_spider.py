@@ -31,25 +31,29 @@ class QuotesSpider(scrapy.Spider):
         formdata={}
         formdata['RelayState'] = response.xpath('//*[@name="RelayState"]/@value').extract_first()
         formdata['SAMLResponse'] = response.xpath('//*[@name="SAMLResponse"]/@value').extract_first()
-        yield scrapy.FormRequest(url=action, formdata=formdata, callback=self.redirectsaml,             dont_filter = True)
+        yield scrapy.FormRequest(url=action, formdata=formdata, callback=self.redirectsaml, dont_filter = True)
 
     def redirectsaml(self, response):
+        self.log('redirectsaml')
 #        with open("quotes-redirectsaml.html", 'wb') as f:
 #            f.write(response.body)
-        yield scrapy.Request(url='https://www.douane.gouv.fr/service-en-ligne/redirection/PORTAIL_VITI',  callback=self.embedviti)
-
-    def embedviti(self, response):
-        self.log('embedviti')
-        url = response.xpath('//*[@name="frame-ts-context"]/@src').extract_first()
-        sid = re.sub(r'&.*', '', re.sub(r'.*sid=', '', url))
-        yield scrapy.Request(url=url,  callback=self.multiservice, meta={'sid': sid})
+        yield scrapy.Request(url='https://www.douane.gouv.fr/service-en-ligne/redirection/PORTAIL_VITI',  callback=self.multiservice)
 
     def multiservice(self, response):
         self.log('multiservice')
+#        with open("quotes-multiservice.html", 'wb') as f:
+#            f.write(response.body)
+
+        sid = ''
+        for redir in response.request.meta.get('redirect_urls'):
+            if re.search('sid=', redir):
+                sid = re.sub(r'&.*', '', re.sub(r'.*sid=', '', redir))
+                break
+
         cvi = ''
         if 'CVI' in os.environ:
             cvi = os.environ['CVI']
-        sid = response.meta['sid']
+
         yield scrapy.Request(url='https://www.douane.gouv.fr/ncvi-web-recolte-prodouane/connexionProdouane?sid=%s&app=118' % sid, callback=self.dr_accueil, meta={'departement': 0, 'commune': 0, 'annee': os.environ['PRODOUANE_ANNEE'], "cvi": cvi, "sid": sid})
 
     def get_input_args(self, response, cssid):
