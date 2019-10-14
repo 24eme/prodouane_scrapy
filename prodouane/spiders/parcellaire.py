@@ -2,87 +2,64 @@
 
 """ Parse le site des douanes pour l'extraction des parcellaires """
 
+import scrapy
 import os
 import re
 
-import scrapy
 from prodouane.items import CviItem
-
 
 class ParcellaireSpider(scrapy.Spider):
     """ Spider pour les parcellaires """
+    name = 'parcellaire'
 
     custom_settings = {'COOKIES_DEBUG': True, 'DUPEFILTER_DEBUG': True,
                        'DUPEFILTER_CLASS': 'scrapy.dupefilters.BaseDupeFilter',
                        'CONCURRENT_REQUESTS': 1}
-
-    name = 'parcellaire'
-    domain = 'https://pro.douane.gouv.fr/'
-    url_login = 'https://pro.douane.gouv.fr/WDsession.asp'
-    url_menu = 'https://pro.douane.gouv.fr/wdactuapplif.asp?wdAppli=118'
-    url_appli = 'https://pro.douane.gouv.fr/wdroute.asp?btn=118&rap=3&cat=3'
-    url_cvi = 'https://pro.douane.gouv.fr/ncvi_intervenant/prodouane/' \
-        'portailNcviProdouane?sid=%s&app=118&code_teleservice=PORTAIL_VITI'
-    url_connexion_prodouane = 'https://pro.douane.gouv.fr/ncvi_foncier/' \
-        'prodouane/connexionProdouane?direct=fdc&sid=%s&app=118'
-    url_accueil = 'https://pro.douane.gouv.fr/ncvi_foncier/prodouane/pages/' \
-        'fdc/accueil.xhtml'
-    url_consultation = 'https://pro.douane.gouv.fr/ncvi_foncier/prodouane/' \
-        'pages/fdc/consultation.xhtml'
 
     starter = {'departement': 0, 'commune': 0, 'page': 1, 'index_cvi': 0}
 
     storage_directory = './documents/'
 
     def start_requests(self):
-        """ Requête appellée en premier pour le scraping """
-        return [scrapy.Request(url=self.domain, callback=self.login)]
+        return [scrapy.Request(url='https://www.douane.gouv.fr/', callback=self.prelogin)]
+
+    def prelogin(self, response):
+        yield scrapy.Request(url="https://www.douane.gouv.fr/saml_login", callback=self.login)
 
     def login(self, response):
-        """ Envoi des informations de session pour se loguer """
-        return scrapy.FormRequest(
-            url=self.url_login,
-            formdata={
-                "login": os.environ['PRODOUANE_USER'],
-                "pass": os.environ['PRODOUANE_PASS']
-            },
-            callback=self.menu
-        )
+        formdata={"user":os.environ['PRODOUANE_USER'],"password":os.environ['PRODOUANE_PASS']}
+        formdata['token'] = response.xpath('//*[@name="token"]/@value').extract_first()
+        formdata['url'] = response.xpath('//*[@name="url"]/@value').extract_first()
+        yield scrapy.FormRequest.from_response(response, formdata=formdata, callback=self.postlogin)
 
-    def menu(self, response):
-        """ On clique sur le bouton pour acceder au portail viticole """
-        return scrapy.Request(url=self.url_menu, callback=self.appli)
+    def postlogin(self, response):
+        self.log('postlogin')
+#        with open("quotes-postlogin.html", 'wb') as f:
+#            f.write(response.body)
+        action = response.xpath('//*[@id="form"]/@action').extract_first()
+        formdata={}
+        formdata['RelayState'] = response.xpath('//*[@name="RelayState"]/@value').extract_first()
+        formdata['SAMLResponse'] = response.xpath('//*[@name="SAMLResponse"]/@value').extract_first()
+        yield scrapy.FormRequest(url=action, formdata=formdata, callback=self.redirectsaml, dont_filter = True)
 
-    def appli(self, response):
-        """ On clique sur le bouton « Entrer » du portail """
-        return scrapy.Request(url=self.url_appli, callback=self.get_sid)
+    def redirectsaml(self, response):
+        self.log('redirectsaml')
+#        with open("quotes-redirectsaml.html", 'wb') as f:
+#            f.write(response.body)
+        yield scrapy.Request(url='https://www.douane.gouv.fr/service-en-ligne/redirection/PORTAIL_VITI',  callback=self.multiservice)
 
-    def get_sid(self, response):
-        """ On récupère le sid """
+    def multiservice(self, response):
+        self.log('multiservice')
+#        with open("quotes-multiservice.html", 'wb') as f:
+#            f.write(response.body)
 
-        args = {}
-        for i in response.css('#wdformAppli input'):
-            args[i.xpath('@name')[0].extract()] = i.xpath('@value')[0].extract()
-        args[response.css('#wdformAppli textarea').xpath('@name')[0].extract()] = response.css('#wdformAppli textarea::text').extract()
+        sid = ''
+        for redir in response.request.meta.get('redirect_urls'):
+            if re.search('sid=', redir):
+                sid = re.sub(r'&.*', '', re.sub(r'.*sid=', '', redir))
+                break
 
-        sid = args['sessionidT']
-
-        self.log(sid)
-        self.log('Requete vers: %s' % self.url_cvi)
-
-        return scrapy.Request(
-            url=self.url_cvi % sid,
-            callback=self.connexion_prodouane, meta={'sid': sid}
-        )
-
-    def connexion_prodouane(self, response):
-        """ On se re-connecte (?) à prodouane avec notre sid et on GET la
-        page d'accueil de la liste des CVI en initialisant les compteurs de
-        communes / départements """
-        return scrapy.Request(
-            url=self.url_connexion_prodouane % response.meta['sid'],
-            callback=self.accueil_fdc,
-            meta=self.starter)
+        yield scrapy.Request(url='https://www.douane.gouv.fr/ncvi-web-foncier-prodouane/connexionProdouane?direct=fdc&sid=%s&app=118' % sid, callback=self.accueil_fdc, meta=self.starter)
 
     def accueil_fdc(self, response):
         """ Page d'accueil où l'on récupère les départements et les communes
@@ -96,56 +73,7 @@ class ParcellaireSpider(scrapy.Spider):
 
         meta = response.meta
 
-        if os.getenv('CVI', None) is None:
-            meta['departements'] = response.css('#formFdc\:selectDepartement')[0].css('option::attr(value)').extract()
-            meta['nb_departements'] = len(meta['departements'])
-            meta['communes'] = response.css('#formFdc\:selectCommune')[0].css('option::attr(value)').extract()
-            meta['nb_communes'] = len(meta['communes'])
-
-            if meta['commune'] is meta['nb_communes']:
-                meta['commune'] = 0
-                meta['departement'] = meta['departement'] + 1
-
-                if meta['departement'] is meta['nb_departements']:
-                    return False
-
-                return scrapy.FormRequest.from_response(
-                    response, formname='formFdc',
-                    callback=self.update_communes,
-                    meta=meta,
-                    formdata={
-                        'formFdc:selectDepartement':
-                            meta['departements'][meta['departement']],
-                        'javax.faces.source': 'formFdc:selectDepartement',
-                        'javax.faces.partial.event': 'change',
-                        'javax.faces.partial.execute':
-                            'formFdc:selectDepartement @component',
-                        'javax.faces.partial.render': '@component',
-                        'javax.faces.behavior.event': 'change',
-                        'org.richfaces.ajax.component':
-                            'formFdc:selectDepartement',
-                        'rfExt': 'null',
-                        'AJAX:EVENTS_COUNT': '1',
-                        'javax.faces.partial.ajax': 'true'
-                    }
-                )
-
-            meta['noms_communes'] = response.css('#formFdc\:selectCommune')[0].css('option::attr(value)').extract()
-            meta['nom_commune'] = meta['noms_communes'][meta['commune']]
-
-            return scrapy.FormRequest.from_response(
-                response,
-                formname='formFdc',
-                formdata={
-                    'formFdc:selectDepartement':
-                    meta['departements'][meta['departement']],
-                    'formFdc:selectCommune':
-                        meta['communes'][meta['commune']]
-                    },
-                callback=self.get_total_page,
-                meta=meta
-            )
-        else:
+        if os.getenv('CVI', None):
             cvi = os.getenv('CVI')
             meta['numero_cvi'] = cvi
             return scrapy.FormRequest.from_response(
@@ -156,6 +84,55 @@ class ParcellaireSpider(scrapy.Spider):
                 meta=meta
             )
 
+        meta['departements'] = response.css('#formFdc\:selectDepartement')[0].css('option::attr(value)').extract()
+        meta['nb_departements'] = len(meta['departements'])
+        meta['communes'] = response.css('#formFdc\:selectCommune')[0].css('option::attr(value)').extract()
+        meta['nb_communes'] = len(meta['communes'])
+
+        if meta['commune'] is meta['nb_communes']:
+            meta['commune'] = 0
+            meta['departement'] = meta['departement'] + 1
+
+            if meta['departement'] is meta['nb_departements']:
+                return False
+
+            return scrapy.FormRequest.from_response(
+                response, formname='formFdc',
+                callback=self.update_communes,
+                meta=meta,
+                formdata={
+                    'formFdc:selectDepartement':
+                        meta['departements'][meta['departement']],
+                    'javax.faces.source': 'formFdc:selectDepartement',
+                    'javax.faces.partial.event': 'change',
+                    'javax.faces.partial.execute':
+                        'formFdc:selectDepartement @component',
+                    'javax.faces.partial.render': '@component',
+                    'javax.faces.behavior.event': 'change',
+                    'org.richfaces.ajax.component':
+                        'formFdc:selectDepartement',
+                    'rfExt': 'null',
+                    'AJAX:EVENTS_COUNT': '1',
+                    'javax.faces.partial.ajax': 'true'
+                }
+            )
+
+        meta['noms_communes'] = response.css('#formFdc\:selectCommune')[0].css('option::attr(value)').extract()
+        meta['nom_commune'] = meta['noms_communes'][meta['commune']]
+
+        return scrapy.FormRequest.from_response(
+            response,
+            formname='formFdc',
+            formdata={
+                'formFdc:selectDepartement':
+                meta['departements'][meta['departement']],
+                'formFdc:selectCommune':
+                    meta['communes'][meta['commune']]
+                },
+            callback=self.get_total_page,
+            meta=meta
+        )
+
     def update_communes(self, response):
         """ Mise à jour des communes en fonction du département
         Fonction appellée lorsque la dernière commune d'un département est
@@ -164,7 +141,7 @@ class ParcellaireSpider(scrapy.Spider):
 
         self.log('update_communes')
 
-        return scrapy.Request(self.url_accueil, callback=self.accueil_fdc,
+        return scrapy.Request('https://www.douane.gouv.fr/ncvi-web-foncier-prodouane/pages/fdc/accueil.xhtml', callback=self.accueil_fdc,
                               meta=response.meta)
 
     def get_total_page(self, response):
@@ -227,7 +204,7 @@ class ParcellaireSpider(scrapy.Spider):
 
         response.meta['page'] = response.meta['page'] + 1
 
-        return scrapy.Request(self.url_accueil, meta=response.meta,
+        return scrapy.Request('https://www.douane.gouv.fr/ncvi-web-foncier-prodouane/pages/fdc/accueil.xhtml', meta=response.meta,
                               callback=self.get_total_page, dont_filter = True)
 
     def get_un_cvi(self, response):
@@ -246,14 +223,14 @@ class ParcellaireSpider(scrapy.Spider):
 
         response.meta['cvi'] = cvi
 
-        return scrapy.FormRequest.from_response(
-            response,
-            formname='formFdc',
-            formdata={'formFdc:dttListeEvvOA:0:j_idt242':
-                      'formFdc:dttListeEvvOA:0:j_idt242'},
-            callback=self.fiche_accueil,
-            meta=response.meta
-        )
+        args={}
+        args['formFdc']='formFdc'
+        args['formFdc:inputNumeroCvi']=cvi['cvi']
+        args['javax.faces.ViewState']=response.xpath('//*[@name="javax.faces.ViewState"]/@value')[0].extract()
+        args['formFdc:dttListeEvvOA:0:j_idt238']='formFdc:dttListeEvvOA:0:j_idt238'
+
+        return scrapy.FormRequest(url='https://www.douane.gouv.fr/ncvi-web-foncier-prodouane/pages/fdc/accueil.xhtml', formdata=args,
+                                 callback=self.fiche_accueil, meta=response.meta)
 
     def fiche_accueil(self, response):
         """ Parse la page d'accueil de la fiche CVI et on clique sur l'onglet
@@ -294,7 +271,7 @@ class ParcellaireSpider(scrapy.Spider):
 
         self.log('fiche_parcellaire_plante')
 
-        return scrapy.Request(self.url_consultation, meta=response.meta)
+        return scrapy.Request('https://www.douane.gouv.fr/ncvi-web-foncier-prodouane/pages/fdc/consultation.xhtml', meta=response.meta)
 
     def parse(self, response):
         """ On récupère les informations de parcellaire """
