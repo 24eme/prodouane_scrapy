@@ -19,18 +19,18 @@ class QuotesSpider(scrapy.Spider):
 
     def login(self, response):
         formdata={"user":os.environ['PRODOUANE_USER'],"password":os.environ['PRODOUANE_PASS']}
-        formdata['token'] = response.xpath('//*[@name="token"]/@value').extract_first()
-        formdata['url'] = response.xpath('//*[@name="url"]/@value').extract_first()
+        formdata['token'] = response.xpath('//*[@name="token"]/@value')[0].extract()
+        formdata['url'] = response.xpath('//*[@name="url"]/@value')[0].extract()
         yield scrapy.FormRequest.from_response(response, formdata=formdata, callback=self.postlogin)
 
     def postlogin(self, response):
         self.log('postlogin')
 #        with open("quotes-postlogin.html", 'wb') as f:
 #            f.write(response.body)
-        action = response.xpath('//*[@id="form"]/@action').extract_first()
+        action = response.xpath('//*[@id="form"]/@action')[0].extract()
         formdata={}
-        formdata['RelayState'] = response.xpath('//*[@name="RelayState"]/@value').extract_first()
-        formdata['SAMLResponse'] = response.xpath('//*[@name="SAMLResponse"]/@value').extract_first()
+        formdata['RelayState'] = response.xpath('//*[@name="RelayState"]/@value')[0].extract()
+        formdata['SAMLResponse'] = response.xpath('//*[@name="SAMLResponse"]/@value')[0].extract()
         yield scrapy.FormRequest(url=action, formdata=formdata, callback=self.redirectsaml, dont_filter = True)
 
     def redirectsaml(self, response):
