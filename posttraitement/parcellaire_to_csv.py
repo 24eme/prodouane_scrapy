@@ -98,11 +98,14 @@ with open(directory + file % 'parcellaire', 'rb') as html_file:
         parcellaire['Ecart pied'] = infos_parcelles[8]
         parcellaire['Ecart rang'] = infos_parcelles[9]
 
-        if infos_parcelles[11]:
-            parcellaire['Mode savoir faire'] = \
-                infos_parcelles[11].encode('utf-8')
-        else:
-            parcellaire['Mode savoir faire'] = ''
+        try:
+            if infos_parcelles[11]:
+                parcellaire['Mode savoir faire'] = \
+                    infos_parcelles[11].encode('utf-8')
+            else:
+                parcellaire['Mode savoir faire'] = ''
+        except IndexError:
+                parcellaire['Mode savoir faire'] = ''
 
         parcellaire['Statut'] = infos_parcelles[10]
 
