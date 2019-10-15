@@ -58,68 +58,67 @@ with open(directory + file % 'accueil', 'rb') as html_file:
 
     date_maj = tds[20].string or '00/00/0000'
 
-# Deuxième onglet
-with open(directory + file % 'parcellaire', 'rb') as html_file:
-    tables = SoupStrainer('table')
+    # Deuxième onglet
+    with open(directory + file % 'parcellaire', 'rb') as html_file:
+        tables = SoupStrainer('table')
 
-    soup = BeautifulSoup(html_file, 'lxml', parse_only=tables)
-    trs = soup.find_all('tr', class_='rf-cst-r')
-    for tr in trs:
-        infos_parcelles = []
-        infos_parcelles.append(tr.td.string)
-        for td in tr.td.next_siblings:
-            infos_parcelles.append(td.string)
+        soup = BeautifulSoup(html_file, 'lxml', parse_only=tables)
+        trs = soup.find_all('tr', class_='rf-cst-r')
+        for tr in trs:
+            infos_parcelles = []
+            infos_parcelles.append(tr.td.string)
+            for td in tr.td.next_siblings:
+                infos_parcelles.append(td.string)
 
-        parcellaire['Commune'] = infos_parcelles[0].encode('utf-8')
+            parcellaire['Commune'] = infos_parcelles[0].encode('utf-8')
 
-        if infos_parcelles[1]:
-            parcellaire['Lieu dit'] = infos_parcelles[1].encode('utf-8')
-        else:
-            parcellaire['Lieu dit'] = ''
-
-        match = re.search(r'([A-Z]+)(\d+)', infos_parcelles[2])
-        parcellaire['Section'] = match.group(1)
-        parcellaire['Numero parcelle'] = match.group(2).lstrip('0')
-
-        if infos_parcelles[3]:
-            parcellaire['Superficie cadastrale'] = transform_superficie(
-                infos_parcelles[3].parent['title']
-            )
-            parcellaire['Produit'] = infos_parcelles[3].encode('utf-8').replace('Ctes ', 'Côtes de ').replace(' Ste-', ' Sainte ').replace(' rs', ' rosé').replace(' rg', ' rouge')
-        else:
-            parcellaire['Produit'] = ''
-            parcellaire['Superficie cadastrale'] = ''
-
-        parcellaire['Cepage'] = infos_parcelles[4].encode('utf-8')
-
-        parcellaire['Superficie'] = transform_superficie(infos_parcelles[5])
-
-        parcellaire['Campagne'] = infos_parcelles[6]
-        parcellaire['Ecart pied'] = infos_parcelles[8]
-        parcellaire['Ecart rang'] = infos_parcelles[9]
-
-        try:
-            if infos_parcelles[11]:
-                parcellaire['Mode savoir faire'] = \
-                    infos_parcelles[11].encode('utf-8')
+            if infos_parcelles[1]:
+                parcellaire['Lieu dit'] = infos_parcelles[1].encode('utf-8')
             else:
-                parcellaire['Mode savoir faire'] = ''
-        except IndexError:
-                parcellaire['Mode savoir faire'] = ''
+                parcellaire['Lieu dit'] = ''
 
-        parcellaire['Statut'] = infos_parcelles[10].encode('utf-8')
+            match = re.search(r'([A-Z]+)(\d+)', infos_parcelles[2])
+            parcellaire['Section'] = match.group(1)
+            parcellaire['Numero parcelle'] = match.group(2).lstrip('0')
 
-        liste_parcellaire.append(parcellaire.copy())
+            if infos_parcelles[3]:
+                parcellaire['Superficie cadastrale'] = transform_superficie(
+                    infos_parcelles[3].parent['title']
+                )
+                parcellaire['Produit'] = infos_parcelles[3].encode('utf-8').replace('Ctes ', 'Côtes de ').replace(' Ste-', ' Sainte ').replace(' rs', ' rosé').replace(' rg', ' rouge')
+            else:
+                parcellaire['Produit'] = ''
+                parcellaire['Superficie cadastrale'] = ''
 
-if len(liste_parcellaire):
-    date_transform = re.search(r'(\d+)/(\d+)/(\d+)', date_maj)
-    date_maj = '{}{}{}'.format(date_transform.group(3),
-                               date_transform.group(2),
-                               date_transform.group(1))
+            parcellaire['Cepage'] = infos_parcelles[4].encode('utf-8')
 
-    outputfile = 'parcellaire-' + numero_cvi + '-' + date_maj + '.csv'
+            parcellaire['Superficie'] = transform_superficie(infos_parcelles[5])
 
-    with open(directory + outputfile, 'w') as f:
-        w = csv.DictWriter(f, headers, delimiter=';')
-        w.writeheader()
-        w.writerows(liste_parcellaire)
+            parcellaire['Campagne'] = infos_parcelles[6]
+            parcellaire['Ecart pied'] = infos_parcelles[8]
+            parcellaire['Ecart rang'] = infos_parcelles[9]
+
+            try:
+                if infos_parcelles[11]:
+                    parcellaire['Mode savoir faire'] = \
+                        infos_parcelles[11].encode('utf-8')
+                else:
+                    parcellaire['Mode savoir faire'] = ''
+            except IndexError:
+                    parcellaire['Mode savoir faire'] = ''
+
+            parcellaire['Statut'] = infos_parcelles[10].encode('utf-8')
+
+            liste_parcellaire.append(parcellaire.copy())
+
+            date_transform = re.search(r'(\d+)/(\d+)/(\d+)', date_maj)
+            date_maj = '{}{}{}'.format(date_transform.group(3),
+                                       date_transform.group(2),
+                                       date_transform.group(1))
+
+            outputfile = 'parcellaire-' + numero_cvi + '-' + date_maj + '.csv'
+            print(outputfile)
+            with open(directory + outputfile, 'w') as f:
+                w = csv.DictWriter(f, headers, delimiter=';')
+                w.writeheader()
+                w.writerows(liste_parcellaire)
