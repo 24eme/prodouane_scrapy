@@ -111,14 +111,15 @@ with open(directory + file % 'accueil', 'rb') as html_file:
 
             liste_parcellaire.append(parcellaire.copy())
 
-            date_transform = re.search(r'(\d+)/(\d+)/(\d+)', date_maj)
-            date_maj = '{}{}{}'.format(date_transform.group(3),
-                                       date_transform.group(2),
-                                       date_transform.group(1))
+            if date_maj:
+                date_transform = re.search(r'(\d+)/(\d+)/(\d+)', date_maj)
+                date_maj = '{}{}{}'.format(date_transform.group(3),
+                                           date_transform.group(2),
+                                           date_transform.group(1))
 
-            outputfile = 'parcellaire-' + numero_cvi + '-' + date_maj + '.csv'
-            print(outputfile)
-            with open(directory + outputfile, 'w') as f:
-                w = csv.DictWriter(f, headers, delimiter=';')
-                w.writeheader()
-                w.writerows(liste_parcellaire)
+                outputfile = 'parcellaire-' + numero_cvi + '-' + date_maj + '.csv'
+                print(outputfile)
+                with open(directory + outputfile, 'w') as f:
+                    w = csv.DictWriter(f, headers, delimiter=';')
+                    w.writeheader()
+                    w.writerows(liste_parcellaire)
