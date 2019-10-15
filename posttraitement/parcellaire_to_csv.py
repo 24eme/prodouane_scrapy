@@ -107,7 +107,7 @@ with open(directory + file % 'parcellaire', 'rb') as html_file:
         except IndexError:
                 parcellaire['Mode savoir faire'] = ''
 
-        parcellaire['Statut'] = infos_parcelles[10]
+        parcellaire['Statut'] = infos_parcelles[10].encode('utf-8')
 
         liste_parcellaire.append(parcellaire.copy())
 
