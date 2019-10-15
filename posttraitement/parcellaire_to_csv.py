@@ -118,7 +118,7 @@ with open(directory + file % 'accueil', 'rb') as html_file:
                                        date_transform.group(1))
 
             outputfile = 'parcellaire-' + numero_cvi + '-' + date_maj + '.csv'
-            print(outputfile)
+
             with open(directory + outputfile, 'w') as f:
                 w = csv.DictWriter(f, headers, delimiter=';')
                 w.writeheader()
