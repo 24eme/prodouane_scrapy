@@ -18,23 +18,40 @@ def transform_superficie(superficie):
         superficie.group(3)
     ).rstrip('0')
 
+def generate_idu(code_communes, section, num_parc):
+
+    return "%s0000%s0%s"%(code_communes, section, num_parc);
+
+def parse_csv_to_array(data):
+    communes = {};
+
+    for line in data:
+        commune = line.split(';');
+        communes[commune[1].rstrip()] = commune[0].rstrip();
+    return communes;
 
 parcellaire = {}
 liste_parcellaire = []
 
 headers = [
     'CVI Operateur', 'Siret Operateur', 'Nom Operateur', 'Adresse Operateur',
-    'CP Operateur', 'Commune Operateur', 'Email Operateur', 'Commune',
+    'CP Operateur', 'Commune Operateur', 'Email Operateur', 'IDU', 'Commune',
     'Lieu dit', 'Section', 'Numero parcelle', 'Produit', 'Cepage',
     'Superficie', 'Superficie cadastrale', 'Campagne', 'Ecart pied',
     'Ecart rang', 'Mode savoir faire', 'Statut']
 
 numero_cvi = sys.argv[1]
 directory = os.path.dirname(os.path.realpath(__file__)) + '/../documents/'
-file = 'parcellaire-' + numero_cvi + '-%s.html'
+filename = 'parcellaire-' + numero_cvi + "-%s.html"
+
+communesFile = 'communes.csv';
+listCommunes = [];
+with open(directory + communesFile, 'r') as communesfile:
+    data = communesfile.readlines();
+    listCommunes = parse_csv_to_array(data);
 
 # Premier onglet
-with open(directory + file % 'accueil', 'rb') as html_file:
+with open(directory + filename % 'accueil', 'rb') as html_file:
     tables = SoupStrainer('table')
 
     soup = BeautifulSoup(html_file, 'lxml', parse_only=tables)
@@ -59,7 +76,7 @@ with open(directory + file % 'accueil', 'rb') as html_file:
     date_maj = tds[20].string or '00/00/0000'
 
     # Deuxième onglet
-    with open(directory + file % 'parcellaire', 'rb') as html_file:
+    with open(directory + filename % 'parcellaire', 'rb') as html_file:
         tables = SoupStrainer('table')
 
         soup = BeautifulSoup(html_file, 'lxml', parse_only=tables)
@@ -80,6 +97,9 @@ with open(directory + file % 'accueil', 'rb') as html_file:
             match = re.search(r'([A-Z]+)(\d+)', infos_parcelles[2])
             parcellaire['Section'] = match.group(1)
             parcellaire['Numero parcelle'] = match.group(2).lstrip('0')
+
+            if(listCommunes[parcellaire['Commune']]):
+                parcellaire['IDU'] = generate_idu(listCommunes[parcellaire['Commune']], parcellaire['Section'], parcellaire['Numero parcelle']);
 
             if infos_parcelles[3]:
                 parcellaire['Superficie cadastrale'] = transform_superficie(
@@ -107,7 +127,10 @@ with open(directory + file % 'accueil', 'rb') as html_file:
             except IndexError:
                     parcellaire['Mode savoir faire'] = ''
 
-            parcellaire['Statut'] = infos_parcelles[10].encode('utf-8')
+            try:
+                parcellaire['Statut'] = infos_parcelles[10].encode('utf-8')
+            except AttributeError:
+                parcellaire['Statut'] = ''
 
             liste_parcellaire.append(parcellaire.copy())
 
