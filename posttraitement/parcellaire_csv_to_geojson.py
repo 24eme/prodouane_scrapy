@@ -85,7 +85,7 @@ if(inputfile != -1):
         
         outputfile = 'cadastre-' + parcellaires[0]['CVI Operateur'] + '-parcelles.json';
 
-        with open(directory + outputfile, 'w') as outfile:
+        with open(directory + outputfile, 'w+') as outfile:
             for parcellaire in parcellaires:
                 
                 geojson = get_geoJson_parcelle(tmp_dir, parcellaire);
