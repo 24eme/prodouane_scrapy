@@ -18,7 +18,6 @@ def get_idu_from_csv(csv_file):
     csv_reader = csv.reader(csv_file, delimiter=';')
     line_count = 0
     for row in csv_reader:
-        print row
         break
 
 def get_file_parcellaire(numero_cvi, directory):
@@ -84,13 +83,13 @@ if(inputfile != -1):
         list_geojson_idu.append({'features': obj});
         
         outputfile = 'cadastre-' + parcellaires[0]['CVI Operateur'] + '-parcelles.json';
+        if(not os.path.isfile(directory + outputfile)):
+            open(directory + outputfile, 'a').close();
 
-        with open(directory + outputfile, 'w+') as outfile:
+        with open(directory + outputfile, 'w') as outfile:
             for parcellaire in parcellaires:
                 
                 geojson = get_geoJson_parcelle(tmp_dir, parcellaire);
-                print parcellaire['IDU']
                 obj.append(geojson);
-                
             json.dump(list_geojson_idu, outfile);
 
