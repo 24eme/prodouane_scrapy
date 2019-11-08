@@ -4,6 +4,7 @@
 
     python-scrapy catdoc
     beautifulsoup lxml # pour les parcellaires
+    python-wget # pour télécharger les geojson depuis cadastre
 
 ## Lancer le téléchargement des documents
 
