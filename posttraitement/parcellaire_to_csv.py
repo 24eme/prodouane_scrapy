@@ -63,12 +63,12 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
 
     soup = BeautifulSoup(html_file, 'lxml', parse_only=tables)
     tds = soup.select('td.fdcCoordonneCol2')
-    parcellaire['CVI Operateur'] = tds[0].string.encode('ascii', 'ignore')
-    parcellaire['Siret Operateur'] = tds[1].string.encode('ascii', 'ignore')
-    parcellaire['Nom Operateur'] = tds[2].string.encode('ascii', 'ignore').strip()
+    parcellaire['CVI Operateur'] = tds[0].string.encode('utf-8', 'replace')
+    parcellaire['Siret Operateur'] = tds[1].string.encode('utf-8', 'replace')
+    parcellaire['Nom Operateur'] = tds[2].string.encode('utf-8', 'replace').strip()
     
     if tds[15].string:
-        parcellaire['Adresse Operateur'] = tds[15].string.encode('ascii', 'ignore')
+        parcellaire['Adresse Operateur'] = tds[15].string.encode('utf-8', 'replace')
     else:
         parcellaire['Adresse Operateur'] = ''
 
@@ -87,14 +87,14 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
         trs = soup.find_all('tr', class_='rf-cst-r')
         for tr in trs:
             infos_parcelles = []
-            infos_parcelles.append(tr.td.string.encode('ascii', 'ignore'))
+            infos_parcelles.append(tr.td.string.encode('utf-8', 'replace'))
             for td in tr.td.next_siblings:
                 infos_parcelles.append(td.string)
 
-            parcellaire['Commune'] = infos_parcelles[0].encode('ascii', 'ignore')
+            parcellaire['Commune'] = infos_parcelles[0].encode('utf-8', 'replace')
 
             if infos_parcelles[1]:
-                parcellaire['Lieu dit'] = infos_parcelles[1].string.encode('ascii', 'ignore')
+                parcellaire['Lieu dit'] = infos_parcelles[1].string.encode('utf-8', 'replace')
             else:
                 parcellaire['Lieu dit'] = ''
 
@@ -111,7 +111,7 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
                 )
                 produit = infos_parcelles[3]
 
-                parcellaire['Produit'] = infos_parcelles[3].encode('ascii', 'ignore').replace('Ctes ', u'Côtes de '.encode('ascii', 'ignore')).replace(' Ste-', ' Sainte '.encode('ascii', 'ignore')).replace(' rs', u' rosé'.encode('ascii', 'ignore')).replace(' rg', ' rouge')            
+                parcellaire['Produit'] = infos_parcelles[3].encode('utf-8', 'replace').replace('Ctes ', u'Côtes '.encode('utf-8', 'replace')).replace(' Ste-', ' Sainte '.encode('utf-8', 'replace')).replace(' rs', u' rosé'.encode('utf-8', 'replace')).replace(' rg', ' rouge')            
  
             else:
                 parcellaire['Produit'] = ''
@@ -128,14 +128,14 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
             try:
                 if infos_parcelles[11]:
                     parcellaire['Mode savoir faire'] = \
-                        infos_parcelles[11].encode('ascii', 'ignore')
+                        infos_parcelles[11].encode('utf-8', 'replace')
                 else:
                     parcellaire['Mode savoir faire'] = ''
             except IndexError:
                     parcellaire['Mode savoir faire'] = ''
 
             try:
-                parcellaire['Statut'] = infos_parcelles[10].encode('ascii', 'ignore')
+                parcellaire['Statut'] = infos_parcelles[10].encode('utf-8', 'replace')
             except AttributeError:
                 parcellaire['Statut'] = ''
 
