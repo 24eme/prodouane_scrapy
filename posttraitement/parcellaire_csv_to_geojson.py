@@ -12,14 +12,6 @@ import gzip
 import json
 
 
-from bs4 import BeautifulSoup, SoupStrainer
-
-def get_idu_from_csv(csv_file):
-    csv_reader = csv.reader(csv_file, delimiter=';')
-    line_count = 0
-    for row in csv_reader:
-        break
-
 def get_file_parcellaire(numero_cvi, directory):
     for file in os.listdir(directory):
         if(re.findall('parcellaire-'+numero_cvi+'.csv', file)):
