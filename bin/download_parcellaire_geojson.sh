@@ -15,3 +15,8 @@ if [ ! -f "./documents/parcellaire-${cvi}.csv" ]; then
 fi
 
 python posttraitement/parcellaire_csv_to_geojson.py $cvi
+
+if [ ! -f "./documents/cadastre-${cvi}-parcelles.csv" ]; then
+	echo "parcelles inexistantes"
+	exit 1
+fi

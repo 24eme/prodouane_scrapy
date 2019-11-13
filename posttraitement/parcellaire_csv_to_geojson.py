@@ -82,6 +82,10 @@ if(inputfile != -1):
             for parcellaire in parcellaires:
                 
                 geojson = get_geoJson_parcelle(tmp_dir, parcellaire);
-                obj.append(geojson);
-            json.dump(list_geojson_idu, outfile);
+                if(geojson):
+                    obj.append(geojson);
+            if(list_geojson_idu[1].get('features')):
+                json.dump(list_geojson_idu, outfile);
+            else:
+                os.remove(directory + outputfile);
 
