@@ -39,17 +39,16 @@ def get_geoJson_parcelle(directory, parcelle):
     num_commune = parcellaire['CVI Operateur'];
     idu = parcellaire['IDU'];
     file_geojson_name = get_geoJson_commune(directory, num_commune, idu);
-    idu_parc = {};
+    
     with gzip.open(directory + file_geojson_name, 'rb') as f:
         list_geojson = json.load(f);
+        
         for parcelle in list_geojson["features"]:
             if(parcelle['properties']['id'] == idu):
                 
-                idu_parc[idu] = [];
                 parcelle['properties']['parcellaires'] = parcellaire;
-                idu_parc[idu].append(parcelle);
 
-                return idu_parc;
+                return parcelle;
     
 def my_cache_download(directory, file):
 
@@ -69,10 +68,10 @@ if(inputfile != -1):
     with open(directory+inputfile, 'r') as csv_file:
 
         parcellaires = parse_csv_to_array(csv_file);
-        list_geojson_idu = [];
-        list_geojson_idu.append({'type': 'FeatureCollection'});
+        list_geojson_idu = {};
         obj = [];
-        list_geojson_idu.append({'features': obj});
+        list_geojson_idu = {'type': 'FeatureCollection', 'features': obj};
+        
         
         outputfile = 'cadastre-' + parcellaires[0]['CVI Operateur'] + '-parcelles.json';
         if(not os.path.isfile(directory + outputfile)):
@@ -84,7 +83,7 @@ if(inputfile != -1):
                 geojson = get_geoJson_parcelle(tmp_dir, parcellaire);
                 if(geojson):
                     obj.append(geojson);
-            if(list_geojson_idu[1].get('features')):
+            if(bool(list_geojson_idu['features'])):
                 json.dump(list_geojson_idu, outfile);
             else:
                 os.remove(directory + outputfile);
