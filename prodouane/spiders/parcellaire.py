@@ -227,7 +227,7 @@ class ParcellaireSpider(scrapy.Spider):
         args['formFdc']='formFdc'
         args['formFdc:inputNumeroCvi']=cvi['cvi']
         args['javax.faces.ViewState']=response.xpath('//*[@name="javax.faces.ViewState"]/@value')[0].extract()
-        args['formFdc:dttListeEvvOA:0:j_idt238']='formFdc:dttListeEvvOA:0:j_idt238'
+        args['formFdc:dttListeEvvOA:0:j_idt240']='formFdc:dttListeEvvOA:0:j_idt240'
 
         return scrapy.FormRequest(url='https://www.douane.gouv.fr/ncvi-web-foncier-prodouane/pages/fdc/accueil.xhtml', formdata=args,
                                  callback=self.fiche_accueil, meta=response.meta)
@@ -249,18 +249,18 @@ class ParcellaireSpider(scrapy.Spider):
             response,
             formname='formFdcConsultation',
             formdata={'javax.faces.partial.ajax': 'true',
-                      'javax.faces.source': 'formFdcConsultation:j_idt172',
+                      'javax.faces.source': 'formFdcConsultation:j_idt174',
                       'javax.faces.partial.execute':
-                          'formFdcConsultation:j_idt172',
+                          'formFdcConsultation:j_idt174',
                       'javax.faces.partial.render':
-                          '+formFdcConsultation:j_idt172',
+                          '+formFdcConsultation:j_idt174',
                       'javax.faces.behavior.event': 'tabChange',
                       'javax.faces.partial.event': 'tabChange',
-                      'formFdcConsultation:j_idt172_contentLoad': 'true',
-                      'formFdcConsultation:j_idt172_newTab':
-                          'formFdcConsultation:j_idt172:j_idt457',
-                      'formFdcConsultation:j_idt172_tabindex': '3',
-                      'formFdcConsultation:j_idt172_activeIndex': '3'},
+                      'formFdcConsultation:j_idt174_contentLoad': 'true',
+                      'formFdcConsultation:j_idt174_newTab':
+                          'formFdcConsultation:j_idt174:j_idt459',
+                      'formFdcConsultation:j_idt174_tabindex': '3',
+                      'formFdcConsultation:j_idt174_activeIndex': '3'},
             callback=self.fiche_parcellaire_plante,
             meta=response.meta
         )
