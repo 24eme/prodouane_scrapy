@@ -35,9 +35,9 @@ def get_geoJson_commune(directory, cvi, idu):
         wget.download(url%(dept, num_commune, num_commune), directory + outputfile);
     return outputfile;
 
-def get_geoJson_parcelle(directory, parcelle):
-    num_commune = parcellaire['CVI Operateur'];
-    idu = parcellaire['IDU'];
+def get_geoJson_parcelle(directory, parcellaire):
+    num_commune = parcellaire[0]['CVI Operateur'];
+    idu = parcellaire[0]['IDU'];
     file_geojson_name = get_geoJson_commune(directory, num_commune, idu);
     
     with gzip.open(directory + file_geojson_name, 'rb') as f:
@@ -45,7 +45,7 @@ def get_geoJson_parcelle(directory, parcelle):
         
         for parcelle in list_geojson["features"]:
             if(parcelle['properties']['id'] == idu):
-                
+                #check if parcelle contains more than one cepage
                 parcelle['properties']['parcellaires'] = parcellaire;
 
                 return parcelle;
@@ -53,6 +53,18 @@ def get_geoJson_parcelle(directory, parcelle):
 def my_cache_download(directory, file):
 
     return os.path.isfile(directory + file);
+
+def create_array_assoc(parcellaires):
+    assoc = {};
+    cepages = [];
+    for parcellaire in parcellaires:
+        cepages.append(parcellaire);
+        for p in parcellaires:
+            if(parcellaire['IDU'] == p['IDU'] and parcellaire['Cepage'] != p['Cepage']):
+                cepages.append(p);
+        assoc[parcellaire['IDU']] = cepages;
+        cepages = [];
+    return assoc;
 
 parcellaire = {}
 
@@ -68,21 +80,24 @@ if(inputfile != -1):
     with open(directory+inputfile, 'r') as csv_file:
 
         parcellaires = parse_csv_to_array(csv_file);
+        parcellaires = create_array_assoc(parcellaires);
+        
         list_geojson_idu = {};
         obj = [];
         list_geojson_idu = {'type': 'FeatureCollection', 'features': obj};
         
         
-        outputfile = 'cadastre-' + parcellaires[0]['CVI Operateur'] + '-parcelles.json';
+        outputfile = 'cadastre-' + numero_cvi + '-parcelles.json';
         if(not os.path.isfile(directory + outputfile)):
             open(directory + outputfile, 'a').close();
-
+            
         with open(directory + outputfile, 'w') as outfile:
-            for parcellaire in parcellaires:
-                
-                geojson = get_geoJson_parcelle(tmp_dir, parcellaire);
+            for idu in parcellaires:
+                geojson = get_geoJson_parcelle(tmp_dir, parcellaires[idu]);
+            
                 if(geojson):
                     obj.append(geojson);
+
             if(bool(list_geojson_idu['features'])):
                 json.dump(list_geojson_idu, outfile);
             else:
