@@ -112,9 +112,9 @@ class QuotesSpider(scrapy.Spider):
         args['javax.faces.ViewState'] = inputs['javax.faces.ViewState']
         args[meta['campagne_name']] = meta['campagne_selected']
         args['formFiltre:selectDepartement'] = str(meta['departement_selected'])
-        args['formFiltre:selectCommune'] = communes[meta['commune']]
+        args['formFiltre:selectCommune'] = "17048"
         args['formFiltre:inputNumeroCvi'] = meta['cvi']
-        args['formFiltre:_idJsp143'] = "Rechercher"
+        args['formFiltre:_idJsp147'] = "Rechercher"
         args['autoScroll'] = "0,0"
         args['formFiltre:_idcl'] = ""
         args['formFiltre:_link_hidden_'] = ""
@@ -220,12 +220,12 @@ class QuotesSpider(scrapy.Spider):
         self.log('Saved file %s' % filename)
 
         inputs = self.get_input_args(response, '')
-        if (inputs.get('formSaisirDNR:_idJsp424', 0) or inputs.get('formSaisirDNR:_idJsp442', 0)):
+        print(inputs);
+        if (inputs.get('formSaisirDNR:_idJsp445', 0) or inputs.get('formSaisirDNR:_idJsp446', 0)):
             args = {
                    'javax.faces.ViewState': inputs['javax.faces.ViewState'],
-                   'formSaisirDNR:_idJsp160': inputs['formSaisirDNR:_idJsp160'],
-                   'formSaisirDNR:_idJsp423': "Imprimer",
-                   'formSaisirDNR:_idJsp441': "Imprimer",
+                   'formSaisirDNR:_idJsp169': inputs['formSaisirDNR:_idJsp169'],
+                   'formSaisirDNR:_idJsp445': "Imprimer",
                    'formSaisirDNR_SUBMIT': "1",
             }
 
