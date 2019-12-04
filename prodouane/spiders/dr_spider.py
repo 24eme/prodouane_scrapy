@@ -90,10 +90,10 @@ class QuotesSpider(scrapy.Spider):
         args['AJAXREQUEST'] = "_viewRoot"
         args['formFiltre:selectDepartement'] = departements[response.meta['departement']]
         args['formFiltre:selectCommune'] = communes[0]
-        args['formFiltre:_idJsp135']="10"
+        args['formFiltre:_idJsp139']="10"
         args['formFiltre_SUBMIT']="1"
         args['javax.faces.ViewState'] = inputs['javax.faces.ViewState']
-        args["formFiltre:_idJsp138"] = "formFiltre:_idJsp138"
+        args["formFiltre:_idJsp142"] = "formFiltre:_idJsp142"
 
         yield scrapy.FormRequest(url='https://www.douane.gouv.fr/ncvi-web-recolte-prodouane/jsp/accueilOrganisme.jsf?javax.portlet.faces.DirectLink=true', formdata=args, callback=self.dr_communes, meta=response.meta)
 
@@ -112,7 +112,7 @@ class QuotesSpider(scrapy.Spider):
         args['javax.faces.ViewState'] = inputs['javax.faces.ViewState']
         args[meta['campagne_name']] = meta['campagne_selected']
         args['formFiltre:selectDepartement'] = str(meta['departement_selected'])
-        args['formFiltre:selectCommune'] = "17048"
+        args['formFiltre:selectCommune'] = communes[meta['commune']]
         args['formFiltre:inputNumeroCvi'] = meta['cvi']
         args['formFiltre:_idJsp147'] = "Rechercher"
         args['autoScroll'] = "0,0"
