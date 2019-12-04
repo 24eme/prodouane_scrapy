@@ -246,9 +246,8 @@ class QuotesSpider(scrapy.Spider):
         inputs = response.meta['dr_html_inputs']
         args = {
                 'javax.faces.ViewState': inputs['javax.faces.ViewState'],
-                'formSaisirDNR:_idJsp160': inputs['formSaisirDNR:_idJsp160'],
-                'formSaisirDNR:_idJsp424': "Exporter",
-                'formSaisirDNR:_idJsp442': "Exporter",
+                'formSaisirDNR:_idJsp169': inputs['formSaisirDNR:_idJsp169'],
+                'formSaisirDNR:_idJsp446': "Exporter",
                 'formSaisirDNR_SUBMIT': "1",
                }
 
