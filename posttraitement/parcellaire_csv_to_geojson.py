@@ -22,33 +22,41 @@ def parse_csv_to_array(data):
     csv_reader = csv.DictReader(csv_file, delimiter=';')
     return [r for r in csv_reader];
     
-def get_geoJson_commune(directory, cvi, idu):
+def get_geoJson_commune(directory, cvi, idu, millesime):
     #https://cadastre.data.gouv.fr/data/etalab-cadastre/2019-10-01/geojson/communes/13/13002/cadastre-13002-parcelles.json.gz
 
-    url = 'https://cadastre.data.gouv.fr/data/etalab-cadastre/latest/geojson/communes/%s/%s/cadastre-%s-parcelles.json.gz';
+    url = 'https://cadastre.data.gouv.fr/data/etalab-cadastre/%s/geojson/communes/%s/%s/cadastre-%s-parcelles.json.gz';
     dept = idu[0:2];
     num_commune = idu[0:5];
 
     outputfile = 'cadastre-' + num_commune + '-parcelles.json.gz';
     if(not my_cache_download(directory, outputfile)):
         #file doesn't exist
-        wget.download(url%(dept, num_commune, num_commune), directory + outputfile);
+        wget.download(url%(millesime,dept, num_commune, num_commune), directory + outputfile);
     return outputfile;
 
 def get_geoJson_parcelle(directory, parcellaire):
     num_commune = parcellaire[0]['CVI Operateur'];
     idu = parcellaire[0]['IDU'];
-    file_geojson_name = get_geoJson_commune(directory, num_commune, idu);
-    
-    with gzip.open(directory + file_geojson_name, 'rb') as f:
-        list_geojson = json.load(f);
-        
-        for parcelle in list_geojson["features"]:
-            if(parcelle['properties']['id'] == idu):
-                #check if parcelle contains more than one cepage
-                parcelle['properties']['parcellaires'] = parcellaire;
+    millesimes = ['2017-07-06', '2017-10-12',
+                '2018-01-02', '2018-04-03','2018-06-29',
+                '2018-10-01', '2019-01-01', '2019-04-01',
+                '2019-07-01', 'latest'
+                ];
+    for millesime in millesimes:
+        file_geojson_name = get_geoJson_commune(directory, num_commune, idu, millesime);
 
-                return parcelle;
+        with gzip.open(directory + file_geojson_name, 'rb') as f:
+            list_geojson = json.load(f);
+            
+            for parcelle in list_geojson["features"]:
+                if(parcelle['properties']['id'] == idu):
+                    #check if parcelle contains more than one cepage
+                    parcelle['properties']['parcellaires'] = parcellaire;
+
+                    return parcelle;
+            #parcelle doesn't found in that millesime downloaded
+            #make new downloading and process
     
 def my_cache_download(directory, file):
 

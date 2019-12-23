@@ -21,13 +21,16 @@ def transform_superficie(superficie):
 def generate_idu(code_communes, section, num_parc):
     code_parc = num_parc;
     length = len(num_parc);
+    zeros = '';
     if(length == 1):
         code_parc = '000' + num_parc;
     if(length == 2):
         code_parc = '00' + num_parc;
     if(length == 3):
-        code_parc = '0' + num_parc;
-    return "%s0000%s%s"%(code_communes, section, code_parc);
+        code_parc = '0' + num_parc;    
+    for zero in range(5-len(section)):
+        zeros = zeros+ '0';
+    return "%s%s%s%s"%(code_communes, zeros,section, code_parc);
 
 def parse_csv_to_array(data):
     communes = {};
