@@ -54,4 +54,11 @@ Pour télécharger les geojson des parcellaire dépuis le site web https://cadas
 
 !! vérifier le droit d'accès www sur le fichier bin/download_parcellaire_geojson.sh
 
-sh bin/download_parcellaire_geojson.sh cvi?
+	sh bin/download_parcellaire_geojson.sh cvi?
+
+## Délimitation du parcellaire
+Pour télécharger la délimitation parcellaire des AOC (https://www.data.gouv.fr/fr/datasets/ ) puis les parse par commune.
+	
+	python delimite.py
+
+!! si ne fonctionne pas vérifier l'url du téléchargement
