@@ -59,7 +59,7 @@ class ParcellaireSpider(scrapy.Spider):
                 sid = re.sub(r'&.*', '', re.sub(r'.*sid=', '', redir))
                 break
 
-        yield scrapy.Request(url='https://www.douane.gouv.fr/ncvi-web-foncier-prodouane/connexionProdouane?direct=fdc&sid=%s&app=118' % sid, callback=self.accueil_fdc, meta=self.starter)
+        yield scrapy.Request(url='https://www.douane.gouv.fr/ncvi-web-intervenant-prodouane/portailNcviProdouane?sid=%s&app=118&code_teleservice=PORTAIL_VITI' % sid, callback=self.accueil_fdc, meta=self.starter)
 
     def accueil_fdc(self, response):
         """ Page d'accueil où l'on récupère les départements et les communes
