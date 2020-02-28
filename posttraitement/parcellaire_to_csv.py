@@ -18,27 +18,33 @@ def transform_superficie(superficie):
         superficie.group(3)
     ).rstrip('0')
 
+
 def generate_idu(code_communes, section, num_parc):
-    code_parc = num_parc;
-    length = len(num_parc);
-    zeros = '';
-    if(length == 1):
-        code_parc = '000' + num_parc;
-    if(length == 2):
-        code_parc = '00' + num_parc;
-    if(length == 3):
-        code_parc = '0' + num_parc;    
+    code_parc = num_parc
+    length = len(num_parc)
+    zeros = ''
+
+    if length == 1:
+        code_parc = '000' + num_parc
+    if length == 2:
+        code_parc = '00' + num_parc
+    if length == 3:
+        code_parc = '0' + num_parc
+
     for zero in range(5-len(section)):
-        zeros = zeros+ '0';
-    return "%s%s%s%s"%(code_communes, zeros,section, code_parc);
+        zeros = zeros + '0'
+
+    return "%s0000%s%s" % (code_communes, section, code_parc)
+
 
 def parse_csv_to_array(data):
-    communes = {};
+    communes = {}
 
     for line in data:
-        commune = line.split(';');
-        communes[commune[1].rstrip()] = commune[0].rstrip();
-    return communes;
+        commune = line.split(';')
+        communes[commune[1].rstrip()] = commune[0].rstrip()
+    return communes
+
 
 parcellaire = {}
 liste_parcellaire = []
@@ -48,17 +54,18 @@ headers = [
     'CP Operateur', 'Commune Operateur', 'Email Operateur', 'IDU', 'Commune',
     'Lieu dit', 'Section', 'Numero parcelle', 'Produit', 'Cepage',
     'Superficie', 'Superficie cadastrale', 'Campagne', 'Ecart pied',
-    'Ecart rang', 'Mode savoir faire', 'Statut', 'Date MaJ']
+    'Ecart rang', 'Mode savoir faire', 'Statut', 'Date MaJ'
+]
 
 numero_cvi = sys.argv[1]
 directory = os.path.dirname(os.path.realpath(__file__)) + '/../documents/'
 filename = 'parcellaire-' + numero_cvi + "-%s.html"
 
-communesFile = 'communes.csv';
-listCommunes = [];
+communesFile = 'communes.csv'
+listCommunes = []
 with open(directory + communesFile, 'r') as communesfile:
-    data = communesfile.readlines();
-    listCommunes = parse_csv_to_array(data);
+    data = communesfile.readlines()
+    listCommunes = parse_csv_to_array(data)
 
 # Premier onglet
 with open(directory + filename % 'accueil', 'rb') as html_file:
@@ -67,24 +74,24 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
     soup = BeautifulSoup(html_file, 'lxml', parse_only=tables)
     tds = soup.select('td.fdcCoordonneCol2')
     parcellaire['CVI Operateur'] = tds[0].string.encode('utf-8', 'replace')
-    
+
     if tds[1].string:
         parcellaire['Siret Operateur'] = tds[1].string.encode('utf-8', 'replace')
     else:
-        parcellaire['Siret Operateur']= ""
+        parcellaire['Siret Operateur'] = ""
     parcellaire['Nom Operateur'] = tds[2].string.encode('utf-8', 'replace').strip()
-    
+
     if tds[15].string:
-        parcellaire['Adresse Operateur'] = tds[15].string.encode('utf-8', 'replace')
+        parcellaire['Adresse Operateur'] = tds[15].string.encode('utf8')
     else:
         parcellaire['Adresse Operateur'] = ""
 
-    parcellaire['CP Operateur'] = tds[16].string \
+    parcellaire['CP Operateur'] = tds[16].string.encode('utf8') \
                                          .split(' ', 1)[0]
     parcellaire['Commune Operateur'] = tds[16].string.encode('utf-8', 'replace').strip().split(' ', 1)[1]
     parcellaire['Email Operateur'] = tds[19].stripped_string
 
-    date_maj = tds[20].string or '00/00/0000'
+    date_maj = tds[20].string.encode('utf8') or '00/00/0000'
 
     # Deuxième onglet
     with open(directory + filename % 'parcellaire', 'rb') as html_file:
@@ -94,14 +101,14 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
         trs = soup.find_all('tr', class_='rf-cst-r')
         for tr in trs:
             infos_parcelles = []
-            infos_parcelles.append(tr.td.string.encode('utf-8', 'replace'))
+            infos_parcelles.append(tr.td.string.encode('utf8'))
             for td in tr.td.next_siblings:
                 infos_parcelles.append(td.string)
 
-            parcellaire['Commune'] = infos_parcelles[0].encode('utf-8', 'replace')
+            parcellaire['Commune'] = infos_parcelles[0]
 
             if infos_parcelles[1]:
-                parcellaire['Lieu dit'] = infos_parcelles[1].string.encode('utf-8', 'replace')
+                parcellaire['Lieu dit'] = infos_parcelles[1].string.encode('utf8')
             else:
                 parcellaire['Lieu dit'] = ""
 
@@ -109,8 +116,12 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
             parcellaire['Section'] = match.group(1)
             parcellaire['Numero parcelle'] = match.group(2).lstrip('0')
 
-            if(listCommunes[parcellaire['Commune']]):
-                parcellaire['IDU'] = generate_idu(listCommunes[parcellaire['Commune']], parcellaire['Section'], parcellaire['Numero parcelle']);
+            if parcellaire['Commune'] in listCommunes:
+                parcellaire['IDU'] = generate_idu(
+                    listCommunes[parcellaire['Commune']],
+                    parcellaire['Section'],
+                    parcellaire['Numero parcelle']
+                )
 
             if infos_parcelles[3]:
                 parcellaire['Superficie cadastrale'] = transform_superficie(
@@ -118,8 +129,13 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
                 )
                 produit = infos_parcelles[3]
 
-                parcellaire['Produit'] = infos_parcelles[3].encode('utf-8', 'replace').replace('Ctes ', u'Côtes '.encode('utf-8', 'replace')).replace(' Ste-', ' Sainte '.encode('utf-8', 'replace')).replace(' rs', u' rosé'.encode('utf-8', 'replace')).replace(' rg', ' rouge')            
- 
+                parcellaire['Produit'] = infos_parcelles[3] \
+                    .encode('utf8') \
+                    .replace('Ctes ', 'Côtes ') \
+                    .replace(' Ste-', ' Sainte ') \
+                    .replace(' rs', ' rosé') \
+                    .replace(' rg', ' rouge')
+
             else:
                 parcellaire['Produit'] = ""
                 parcellaire['Superficie cadastrale'] = ""
@@ -135,14 +151,14 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
             try:
                 if infos_parcelles[11]:
                     parcellaire['Mode savoir faire'] = \
-                        infos_parcelles[11].encode('utf-8', 'replace')
+                        infos_parcelles[11].encode('utf-8')
                 else:
-                    parcellaire['Mode savoir faire'] = "".encode('utf-8', 'replace')
+                    parcellaire['Mode savoir faire'] = ""
             except IndexError:
-                    parcellaire['Mode savoir faire'] = "".encode('utf-8', 'replace')
+                parcellaire['Mode savoir faire'] = ""
 
             try:
-                parcellaire['Statut'] = infos_parcelles[10].encode('utf-8', 'replace')
+                parcellaire['Statut'] = infos_parcelles[10].encode('utf8')
             except AttributeError:
                 parcellaire['Statut'] = ""
 

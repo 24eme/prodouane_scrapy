@@ -20,11 +20,11 @@ if ! test "$PRODOUANE_USER" || ! test "$PRODOUANE_PASS"; then
 	exit 3
 fi
 
-CVI="$cvi" PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" python2 /usr/bin/scrapy crawl parcellaire
+CVI="$cvi" PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" python2 ~/Code/virtualenv/scrapy/bin/scrapy crawl parcellaire
 
 if [ ! -f "./documents/parcellaire-${cvi}-parcellaire.html" ]; then
 	echo "Échec du scraping"
 	exit 4
 fi
 
-python posttraitement/parcellaire_to_csv.py $cvi
+python2 posttraitement/parcellaire_to_csv.py $cvi
