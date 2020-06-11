@@ -141,7 +141,7 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
                             .replace(' / lie', ' sur lie') \
                             .replace('Cx Loire', 'Coteaux de la Loire ')
                             .replace('Côtes Provence', 'Côtes de Provence')
-                        , re.I), re.I), re.I)).replace('  ', ' ')
+                        , flags=re.I), flags=re.I), flags=re.I)).replace('  ', ' ')
 
             else:
                 parcellaire['Produit'] = ""
