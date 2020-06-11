@@ -134,7 +134,10 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
                     .replace('Ctes ', 'Côtes ') \
                     .replace(' Ste-', ' Sainte ') \
                     .replace(' rs', ' rosé') \
-                    .replace(' rg', ' rouge')
+                    .replace(' rg', ' rouge') \
+                    .replace(' ros', ' rosé') \
+                    .replace(' bl', ' blanc') \
+                    .replace('Côtes Provence', 'Côtes de Provence')
 
             else:
                 parcellaire['Produit'] = ""
