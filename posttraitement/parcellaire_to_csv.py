@@ -79,7 +79,7 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
         parcellaire['Siret Operateur'] = tds[1].string.encode('utf-8', 'replace')
     else:
         parcellaire['Siret Operateur'] = ""
-    parcellaire['Nom Operateur'] = tds[2].string.encode('utf-8', 'replace').strip()
+    parcellaire['Nom Operateur'] = tds[2].string.encode('utf-8', 'replace').strip().replace('&amp;', '&').replace('&amp;', '&').replace('&amp;', '&')
 
     if tds[15].string:
         parcellaire['Adresse Operateur'] = tds[15].string.encode('utf8')
@@ -129,8 +129,9 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
                 )
                 produit = infos_parcelles[3]
 
-                parcellaire['Produit'] = re.sub(' $', '', re.sub(' ros($| )', ' rosé ',
+                parcellaire['Produit'] = re.sub('^  *', '', re.sub('  *$', '', re.sub(' ros($| )', ' rosé ',
                         re.sub(' bl($| )', ' blanc ',
+                        re.sub('Muscadet$', 'Muscadet AC',
                         re.sub('cx ancenis', 'Coteaux d\'Ancenis',
                         infos_parcelles[3] \
                             .encode('utf8') \
@@ -140,8 +141,11 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
                             .replace(' rg', ' rouge') \
                             .replace(' / lie', ' sur lie') \
                             .replace('Cx Loire', 'Coteaux de la Loire ')
+                            .replace('ctes Grandlieu', 'côtes de Grand lieu')
+                            .replace('  ANCENIS', 'Coteaux d\'Ancenis')
+                            .replace('Muscadet sur lie', 'Muscadet AC sur lie')
                             .replace('Côtes Provence', 'Côtes de Provence')
-                        , flags=re.I), flags=re.I), flags=re.I)).replace('  ', ' ')
+                        , flags=re.I), flags=re.I), flags=re.I)))).replace('  ', ' ')
 
             else:
                 parcellaire['Produit'] = ""
