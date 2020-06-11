@@ -129,15 +129,14 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
                 )
                 produit = infos_parcelles[3]
 
-                parcellaire['Produit'] = infos_parcelles[3] \
-                    .encode('utf8') \
-                    .replace('Ctes ', 'Côtes ') \
-                    .replace(' Ste-', ' Sainte ') \
-                    .replace(' rs', ' rosé') \
-                    .replace(' rg', ' rouge') \
-                    .replace(' ros', ' rosé') \
-                    .replace(' bl', ' blanc') \
-                    .replace('Côtes Provence', 'Côtes de Provence')
+                parcellaire['Produit'] = re.sub(' ros$', ' rosé',  re.sub(' bl$', ' blanc', infos_parcelles[3] \
+                        .encode('utf8') \
+                        .replace('Ctes ', 'Côtes ') \
+                        .replace(' Ste-', ' Sainte ') \
+                        .replace(' rs', ' rosé') \
+                        .replace(' rg', ' rouge') \
+                        .replace('Côtes Provence', 'Côtes de Provence')
+                    ))
 
             else:
                 parcellaire['Produit'] = ""
