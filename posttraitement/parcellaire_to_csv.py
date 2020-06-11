@@ -131,7 +131,7 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
 
                 parcellaire['Produit'] = re.sub(' $', '', re.sub(' ros($| )', ' rosé ',
                         re.sub(' bl($| )', ' blanc ',
-                        re.sub('CX ANCENIS', 'Coteaux d\'Ancenis',
+                        re.sub('cx ancenis', 'Coteaux d\'Ancenis',
                         infos_parcelles[3] \
                             .encode('utf8') \
                             .replace('Ctes ', 'Côtes ') \
@@ -139,10 +139,9 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
                             .replace(' rs', ' rosé') \
                             .replace(' rg', ' rouge') \
                             .replace(' / lie', ' sur lie') \
-                            .replace('  ', ' ') \
                             .replace('Cx Loire', 'Coteaux de la Loire ')
                             .replace('Côtes Provence', 'Côtes de Provence')
-                        , re.I), re.I), re.I))
+                        , re.I), re.I), re.I)).replace('  ', ' ')
 
             else:
                 parcellaire['Produit'] = ""
