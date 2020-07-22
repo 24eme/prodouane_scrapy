@@ -236,14 +236,14 @@ class ParcellaireSpider(scrapy.Spider):
             with open("debug/parcellaire-0080_get_un_cvi.html", 'wb') as f:
                 f.write(response.body)
 
+        cssid = int(response.css('td.fdcAccueilEvvColCode').xpath('@id').re_first(r'.*_idt([0-9]*)'))
+
         cvi = CviItem()
         cvi['cvi'] = response.meta['numero_cvi']
-        cvi['libelle'] = response.css('td[id$=j_idt233]::text').extract()
-        cvi['commune'] = response.css('td[id$=j_idt235]::text').extract()
-        cvi['categorie'] = response.css(
-            'td[id$=j_idt237]::text').extract()
-        cvi['activite'] = response.css(
-            'td[id$=j_idt239]::text').extract()
+        cvi['libelle']   = response.css('td[id$=j_idt' + str(cssid + 2) +']::text').extract()
+        cvi['commune']   = response.css('td[id$=j_idt' + str(cssid + 4) +']::text').extract()
+        cvi['categorie'] = response.css('td[id$=j_idt' + str(cssid + 6) +']::text').extract()
+        cvi['activite']  = response.css('td[id$=j_idt' + str(cssid + 8) +']::text').extract()
 
         self.log(cvi)
 
@@ -253,7 +253,7 @@ class ParcellaireSpider(scrapy.Spider):
         args['formFdc']='formFdc'
         args['formFdc:inputNumeroCvi']=cvi['cvi']
         args['javax.faces.ViewState']=response.xpath('//*[@name="javax.faces.ViewState"]/@value')[0].extract()
-        args['formFdc:dttListeEvvOA:0:j_idt240']='formFdc:dttListeEvvOA:0:j_idt240'
+        args['formFdc:dttListeEvvOA:0:j_idt' + str(cssid + 11)]='formFdc:dttListeEvvOA:0:j_idt' + str(cssid + 11)
 
         self.log(args)
         return scrapy.FormRequest(url='https://www.douane.gouv.fr/ncvi-web-foncier-prodouane/pages/fdc/accueil.xhtml', formdata=args,
