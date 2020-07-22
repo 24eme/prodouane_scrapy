@@ -10,7 +10,7 @@ import csv
 import wget
 import gzip
 import json
-
+import magic
 
 def get_file_parcellaire(numero_cvi, directory):
     for file in os.listdir(directory):
@@ -29,10 +29,10 @@ def get_geoJson_commune(directory, cvi, idu, millesime):
     dept = idu[0:2];
     num_commune = idu[0:5];
 
-    outputfile = 'cadastre-' + num_commune + '-parcelles.json.gz';
+    outputfile = 'cadastre-' + millesime +'-'+ num_commune + '-parcelles.json.gz';
     if(not my_cache_download(directory, outputfile)):
         #file doesn't exist
-        wget.download(url%(millesime,dept, num_commune, num_commune), directory + outputfile);
+        res = wget.download(url%(millesime,dept, num_commune, num_commune), directory + outputfile);
     return outputfile;
 
 def get_geoJson_parcelle(directory, parcellaire):
@@ -43,17 +43,16 @@ def get_geoJson_parcelle(directory, parcellaire):
                 '2018-10-01', '2019-01-01', '2019-04-01',
                 '2019-07-01', 'latest'
                 ];
-    for millesime in millesimes:
+    for millesime in millesimes[::-1]:
         file_geojson_name = get_geoJson_commune(directory, num_commune, idu, millesime);
-
-        with gzip.open(directory + file_geojson_name, 'rb') as f:
+        if magic.Magic(mime=True).from_file(directory + file_geojson_name) == 'application/gzip':
+          with gzip.open(directory + file_geojson_name, 'rb') as f:
             list_geojson = json.load(f);
             
             for parcelle in list_geojson["features"]:
                 if(parcelle['properties']['id'] == idu):
                     #check if parcelle contains more than one cepage
                     parcelle['properties']['parcellaires'] = parcellaire;
-
                     return parcelle;
             #parcelle doesn't found in that millesime downloaded
             #make new downloading and process
