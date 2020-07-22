@@ -34,7 +34,10 @@ def generate_idu(code_communes, section, num_parc):
     for zero in range(5-len(section)):
         zeros = zeros + '0'
 
-    return "%s0000%s%s" % (code_communes, section, code_parc)
+    if len(section) == 1:
+        section = '0' + section
+
+    return "%s000%s%s" % (code_communes, section, code_parc)
 
 
 def parse_csv_to_array(data):
