@@ -322,7 +322,7 @@ class ParcellaireSpider(scrapy.Spider):
         if not os.path.isdir(directory):
             os.makedirs(directory, 0o764)
 
-        file = open(directory + '%s.html' % name, 'w')
+        file = open(directory + '%s.html' % name, 'wb')
         try:
             file.write(content)
         finally:
