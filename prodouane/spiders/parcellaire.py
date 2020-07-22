@@ -34,8 +34,9 @@ class ParcellaireSpider(scrapy.Spider):
 
     def postlogin(self, response):
         self.log('postlogin')
-#        with open("quotes-postlogin.html", 'wb') as f:
-#            f.write(response.body)
+        if os.getenv('DEBUG', None):
+            with open("debug/parcellaire-0010_postlogin.html", 'wb') as f:
+                f.write(response.body)
         action = response.xpath('//*[@id="form"]/@action')[0].extract()
         formdata={}
         formdata['RelayState'] = response.xpath('//*[@name="RelayState"]/@value')[0].extract()
@@ -44,14 +45,16 @@ class ParcellaireSpider(scrapy.Spider):
 
     def redirectsaml(self, response):
         self.log('redirectsaml')
-#        with open("quotes-redirectsaml.html", 'wb') as f:
-#            f.write(response.body)
+        if os.getenv('DEBUG', None):
+            with open("debug/parcellaire-0020_redirectsaml.html", 'wb') as f:
+                f.write(response.body)
         yield scrapy.Request(url='https://www.douane.gouv.fr/service-en-ligne/redirection/PORTAIL_VITI',  callback=self.multiservice)
 
     def multiservice(self, response):
         self.log('multiservice')
-#        with open("quotes-multiservice.html", 'wb') as f:
-#            f.write(response.body)
+        if os.getenv('DEBUG', None):
+            with open("debug/parcellaire-0030_multiservice.html", 'wb') as f:
+                f.write(response.body)
 
         sid = ''
         for redir in response.request.meta.get('redirect_urls'):
@@ -76,6 +79,9 @@ class ParcellaireSpider(scrapy.Spider):
         """
 
         self.log('accueil_fdc')
+        if os.getenv('DEBUG', None):
+            with open("debug/parcellaire-0040_accueil_fdc.html", 'wb') as f:
+                f.write(response.body)
 
         meta = response.meta
 
@@ -146,6 +152,9 @@ class ParcellaireSpider(scrapy.Spider):
         """
 
         self.log('update_communes')
+        if os.getenv('DEBUG', None):
+            with open("debug/parcellaire-0050_update_communes.html", 'wb') as f:
+                f.write(response.body)
 
         return scrapy.Request('https://www.douane.gouv.fr/ncvi-web-foncier-prodouane/pages/fdc/accueil.xhtml', callback=self.accueil_fdc,
                               meta=response.meta)
@@ -156,6 +165,9 @@ class ParcellaireSpider(scrapy.Spider):
         Si on arrive à la dernière page, on change de commune """
 
         self.log('get_total_page')
+        if os.getenv('DEBUG', None):
+            with open("debug/parcellaire-0060_get_total_page.html", 'wb') as f:
+                f.write(response.body)
 
         response.meta['total_pages'] = len(response.css('#formFdc\:dttListeEvvOA\:scrollerId')[0].css('.rf-ds-nmb-btn').extract())
         if response.meta['total_pages'] == 0:
@@ -202,6 +214,9 @@ class ParcellaireSpider(scrapy.Spider):
         """
 
         self.log('get_liste_cvi')
+        if os.getenv('DEBUG', None):
+            with open("debug/parcellaire-0070_get_liste_cvi.html", 'wb') as f:
+                f.write(response.body)
 
         numeros_cvi = re.findall(r'(\d+)</td>', response.body)
 
@@ -217,6 +232,9 @@ class ParcellaireSpider(scrapy.Spider):
         """ On sélectionne le CVI recherché """
 
         self.log('get_un_cvi')
+        if os.getenv('DEBUG', None):
+            with open("debug/parcellaire-0080_get_un_cvi.html", 'wb') as f:
+                f.write(response.body)
 
         cvi = CviItem()
         cvi['cvi'] = response.meta['numero_cvi']
@@ -227,6 +245,8 @@ class ParcellaireSpider(scrapy.Spider):
         cvi['activite'] = response.css(
             'td[id$=j_idt239]::text').extract()
 
+        self.log(cvi)
+
         response.meta['cvi'] = cvi
 
         args={}
@@ -235,6 +255,7 @@ class ParcellaireSpider(scrapy.Spider):
         args['javax.faces.ViewState']=response.xpath('//*[@name="javax.faces.ViewState"]/@value')[0].extract()
         args['formFdc:dttListeEvvOA:0:j_idt240']='formFdc:dttListeEvvOA:0:j_idt240'
 
+        self.log(args)
         return scrapy.FormRequest(url='https://www.douane.gouv.fr/ncvi-web-foncier-prodouane/pages/fdc/accueil.xhtml', formdata=args,
                                  callback=self.fiche_accueil, meta=response.meta)
 
@@ -243,6 +264,9 @@ class ParcellaireSpider(scrapy.Spider):
         des parcellaires """
 
         self.log('fiche_accueil')
+        if os.getenv('DEBUG', None):
+            with open("debug/parcellaire-0090_fiche_accueil.html", 'wb') as f:
+                f.write(response.body)
 
         cvi = response.meta['cvi']
         identifiant = '-'.join(['parcellaire', cvi['cvi']])
@@ -276,6 +300,9 @@ class ParcellaireSpider(scrapy.Spider):
         recharge la page de consultation """
 
         self.log('fiche_parcellaire_plante')
+        if os.getenv('DEBUG', None):
+            with open("debug/parcellaire-0100_fiche_parcellaire_plante.html", 'wb') as f:
+                f.write(response.body)
 
         return scrapy.Request('https://www.douane.gouv.fr/ncvi-web-foncier-prodouane/pages/fdc/consultation.xhtml', meta=response.meta)
 
