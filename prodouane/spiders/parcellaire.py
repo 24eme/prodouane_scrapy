@@ -34,7 +34,7 @@ class ParcellaireSpider(scrapy.Spider):
 
     def postlogin(self, response):
         self.log('postlogin')
-        if os.getenv('DEBUG', None):
+        if os.getenv('PRODOUANE_DEBUG', None):
             with open("debug/parcellaire-0010_postlogin.html", 'wb') as f:
                 f.write(response.body)
         action = response.xpath('//*[@id="form"]/@action')[0].extract()
@@ -45,14 +45,14 @@ class ParcellaireSpider(scrapy.Spider):
 
     def redirectsaml(self, response):
         self.log('redirectsaml')
-        if os.getenv('DEBUG', None):
+        if os.getenv('PRODOUANE_DEBUG', None):
             with open("debug/parcellaire-0020_redirectsaml.html", 'wb') as f:
                 f.write(response.body)
         yield scrapy.Request(url='https://www.douane.gouv.fr/service-en-ligne/redirection/PORTAIL_VITI',  callback=self.multiservice)
 
     def multiservice(self, response):
         self.log('multiservice')
-        if os.getenv('DEBUG', None):
+        if os.getenv('PRODOUANE_DEBUG', None):
             with open("debug/parcellaire-0030_multiservice.html", 'wb') as f:
                 f.write(response.body)
 
@@ -79,7 +79,7 @@ class ParcellaireSpider(scrapy.Spider):
         """
 
         self.log('accueil_fdc')
-        if os.getenv('DEBUG', None):
+        if os.getenv('PRODOUANE_DEBUG', None):
             with open("debug/parcellaire-0040_accueil_fdc.html", 'wb') as f:
                 f.write(response.body)
 
@@ -152,7 +152,7 @@ class ParcellaireSpider(scrapy.Spider):
         """
 
         self.log('update_communes')
-        if os.getenv('DEBUG', None):
+        if os.getenv('PRODOUANE_DEBUG', None):
             with open("debug/parcellaire-0050_update_communes.html", 'wb') as f:
                 f.write(response.body)
 
@@ -165,7 +165,7 @@ class ParcellaireSpider(scrapy.Spider):
         Si on arrive à la dernière page, on change de commune """
 
         self.log('get_total_page')
-        if os.getenv('DEBUG', None):
+        if os.getenv('PRODOUANE_DEBUG', None):
             with open("debug/parcellaire-0060_get_total_page.html", 'wb') as f:
                 f.write(response.body)
 
@@ -214,7 +214,7 @@ class ParcellaireSpider(scrapy.Spider):
         """
 
         self.log('get_liste_cvi')
-        if os.getenv('DEBUG', None):
+        if os.getenv('PRODOUANE_DEBUG', None):
             with open("debug/parcellaire-0070_get_liste_cvi.html", 'wb') as f:
                 f.write(response.body)
 
@@ -232,7 +232,7 @@ class ParcellaireSpider(scrapy.Spider):
         """ On sélectionne le CVI recherché """
 
         self.log('get_un_cvi')
-        if os.getenv('DEBUG', None):
+        if os.getenv('PRODOUANE_DEBUG', None):
             with open("debug/parcellaire-0080_get_un_cvi.html", 'wb') as f:
                 f.write(response.body)
 
@@ -264,7 +264,7 @@ class ParcellaireSpider(scrapy.Spider):
         des parcellaires """
 
         self.log('fiche_accueil')
-        if os.getenv('DEBUG', None):
+        if os.getenv('PRODOUANE_DEBUG', None):
             with open("debug/parcellaire-0090_fiche_accueil.html", 'wb') as f:
                 f.write(response.body)
 
@@ -300,7 +300,7 @@ class ParcellaireSpider(scrapy.Spider):
         recharge la page de consultation """
 
         self.log('fiche_parcellaire_plante')
-        if os.getenv('DEBUG', None):
+        if os.getenv('PRODOUANE_DEBUG', None):
             with open("debug/parcellaire-0100_fiche_parcellaire_plante.html", 'wb') as f:
                 f.write(response.body)
 

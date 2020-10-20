@@ -4,6 +4,10 @@
 
 cd $(dirname $0)/../ > /dev/null 2>&1
 
+if test "$PRODOUANE_DOUANE"; then
+	mkdir -p debug
+fi
+
 if ! test "$PRODOUANE_USER" || ! test "$PRODOUANE_PASS" ; then
 	echo "Authentification non configurée dans le config.inc"
 	exit 1;

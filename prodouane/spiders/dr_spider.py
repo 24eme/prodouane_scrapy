@@ -18,15 +18,16 @@ class QuotesSpider(scrapy.Spider):
         yield scrapy.Request(url="https://www.douane.gouv.fr/saml_login", callback=self.login)
 
     def login(self, response):
-        formdata={"user":os.environ['PRODOUANE_USER'],"password":os.environ['PRODOUANE_PASS']}
+        formdata={"user":os.environ['PRODOUANE_USER'], "password":os.environ['PRODOUANE_PASS']}
         formdata['token'] = response.xpath('//*[@name="token"]/@value')[0].extract()
         formdata['url'] = response.xpath('//*[@name="url"]/@value')[0].extract()
         yield scrapy.FormRequest.from_response(response, formdata=formdata, callback=self.postlogin)
 
     def postlogin(self, response):
         self.log('postlogin')
-#        with open("quotes-postlogin.html", 'wb') as f:
-#            f.write(response.body)
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/dr_01_postlogin.html", 'wb') as f:
+                f.write(response.body)
         action = response.xpath('//*[@id="form"]/@action')[0].extract()
         formdata={}
         formdata['RelayState'] = response.xpath('//*[@name="RelayState"]/@value')[0].extract()
@@ -35,14 +36,16 @@ class QuotesSpider(scrapy.Spider):
 
     def redirectsaml(self, response):
         self.log('redirectsaml')
-#        with open("quotes-redirectsaml.html", 'wb') as f:
-#            f.write(response.body)
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/dr_02_redirectsaml.html", 'wb') as f:
+                f.write(response.body)
         yield scrapy.Request(url='https://www.douane.gouv.fr/service-en-ligne/redirection/PORTAIL_VITI',  callback=self.multiservice)
 
     def multiservice(self, response):
         self.log('multiservice')
-#        with open("quotes-multiservice.html", 'wb') as f:
-#            f.write(response.body)
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/dr_03_multiservice.html", 'wb') as f:
+                f.write(response.body)
 
         sid = ''
         for redir in response.request.meta.get('redirect_urls'):
@@ -65,8 +68,9 @@ class QuotesSpider(scrapy.Spider):
 
     def dr_accueil(self, response):
         self.log('dr_accueil')
-#        with open("quotes-dr-connexion.html", 'wb') as f:
-#            f.write(response.body)
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/dr_04_dr-connexion.html", 'wb') as f:
+                f.write(response.body)
 
         departements = response.css('#formFiltre tr')[1].css('td')[1].css('option::attr(value)').extract();
         inputs = self.get_input_args(response, '#formFiltre')
@@ -101,8 +105,9 @@ class QuotesSpider(scrapy.Spider):
         meta = response.meta
         response = HtmlResponse(url=response.url, body=response.body)
         self.log('dr_communes')
-#       with open("quotes-dr-commune.html", 'wb') as f:
-#          f.write(response.body)
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/dr_05_dr-commune.html", 'wb') as f:
+                f.write(response.body)
 
         communes = response.css('option::attr(value)').extract()
         inputs = self.get_input_args(response, '')
@@ -125,13 +130,14 @@ class QuotesSpider(scrapy.Spider):
         meta['nb_communes']  = len(communes)
 
         self.log('cvi: %s' % meta['cvi'])
-        
+
         yield scrapy.FormRequest(url='https://www.douane.gouv.fr/ncvi-web-recolte-prodouane/jsp/accueilOrganisme.jsf', formdata=args, callback=self.dr_page_1, meta=meta)
 
     def dr_page_1(self, response):
         self.log('dr_page_1')
-#        with open("quotes-dr-page1.html", 'wb') as f:
-#            f.write(response.body)
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/dr_06_dr-page1.html", 'wb') as f:
+                f.write(response.body)
         args = self.get_input_args(response, '#formFiltre')
         response.meta['javaxViewState'] = args['javax.faces.ViewState']
         args = {
@@ -146,8 +152,9 @@ class QuotesSpider(scrapy.Spider):
     def dr_tableau_cvi(self, response):
         self.log('dr_tableau_cvi')
 
-#       with open("quotes-dr-tableau.html", 'wb') as f:
-#           f.write(response.body)
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/dr_07_dr-tableau.html", 'wb') as f:
+                f.write(response.body)
 
         info = []
         nb_docs = 0
