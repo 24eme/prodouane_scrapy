@@ -318,6 +318,10 @@ class ParcellaireSpider(scrapy.Spider):
         if not os.path.isdir(directory):
             os.makedirs(directory, 0o764)
 
+        if os.getenv('PRODOUANE_DEBUG', None):
+            with open("debug/parcellaire-0900_result_%s.html" % re.sub('[0-9]+-', '', name), 'wb') as f:
+                f.write(content)
+
         file = open(directory + '%s.html' % name, 'wb')
         try:
             file.write(content)

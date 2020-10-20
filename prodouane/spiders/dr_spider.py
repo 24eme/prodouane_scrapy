@@ -226,6 +226,10 @@ class QuotesSpider(scrapy.Spider):
             f.write(response.body)
         self.log('Saved file %s' % filename)
 
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/dr_08_result.html", 'wb') as f:
+                f.write(response.body)
+
         inputs = self.get_input_args(response, '')
         print(inputs);
         if (inputs.get('formSaisirDNR:_idJsp445', 0) or inputs.get('formSaisirDNR:_idJsp446', 0)):

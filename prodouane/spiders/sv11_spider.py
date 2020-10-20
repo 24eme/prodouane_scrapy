@@ -226,6 +226,11 @@ class QuotesSpider(scrapy.Spider):
             f.write(response.body)
         self.log('Saved file %s' % filename)
 
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/sv11_08_result.html", 'wb') as f:
+                f.write(response.body)
+
+
         inputs = self.get_input_args(response, '')
         args = {
                'javax.faces.ViewState': inputs['javax.faces.ViewState'],
