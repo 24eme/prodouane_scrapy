@@ -1,6 +1,8 @@
 documents/*
 
 bin/config.inc
+bin/config.*.inc
+debug/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
