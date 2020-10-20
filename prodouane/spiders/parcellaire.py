@@ -64,13 +64,9 @@ class ParcellaireSpider(scrapy.Spider):
 
         self.starter['sid'] = sid
 
-        yield scrapy.Request(url='https://www.douane.gouv.fr/ncvi-web-intervenant-prodouane/portailNcviProdouane?sid=%s&app=118&code_teleservice=PORTAIL_VITI' % sid, callback=self.accueil_intervenant, meta=self.starter)
+        yield scrapy.Request(url='https://www.douane.gouv.fr/ncvi-web-foncier-prodouane/connexionProdouane?direct=fdc&code_teleservice=PORTAIL_VITI&sid=%s&app=118' % sid, callback=self.accueil_foncier, meta=self.starter)
 
-    def accueil_intervenant(self, response):
-        yield scrapy.Request(url='https://www.douane.gouv.fr/ncvi-web-foncier-prodouane/connexionProdouane?direct=fdc&sid=%s&app=118' % response.meta['sid'], callback=self.accueil_fdc, meta=response.meta)
-
-
-    def accueil_fdc(self, response):
+    def accueil_foncier(self, response):
         """ Page d'accueil où l'on récupère les départements et les communes
         autorisés
         Si un CVI est passé en variable d'environnement, on télécharge les
@@ -78,9 +74,9 @@ class ParcellaireSpider(scrapy.Spider):
         communes
         """
 
-        self.log('accueil_fdc')
+        self.log('accueil_foncier')
         if os.getenv('PRODOUANE_DEBUG', None):
-            with open("debug/parcellaire-0040_accueil_fdc.html", 'wb') as f:
+            with open("debug/parcellaire-0040_accueil_foncier.html", 'wb') as f:
                 f.write(response.body)
 
         meta = response.meta
