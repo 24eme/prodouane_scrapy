@@ -57,7 +57,7 @@ class QuotesSpider(scrapy.Spider):
         if 'CVI' in os.environ:
             cvi = os.environ['CVI']
 
-        yield scrapy.Request(url='https://www.douane.gouv.fr/ncvi-web-sv11-prodouane/connexionProdouane?sid=%s&app=118' % sid, callback=self.sv11_accueil, meta={'departement': 0, 'commune': 0, 'annee': os.environ['PRODOUANE_ANNEE'], "cvi": cvi, "sid": sid})
+        yield scrapy.Request(url='https://www.douane.gouv.fr/ncvi-web-sv11-prodouane/connexionProdouane?code_teleservice=PORTAIL_VITI&sid=%s&app=118' % sid, callback=self.sv11_accueil, meta={'departement': 0, 'commune': 0, 'annee': os.environ['PRODOUANE_ANNEE'], "cvi": cvi, "sid": sid})
 
     def get_input_args(self, response, cssid):
         args = {}
