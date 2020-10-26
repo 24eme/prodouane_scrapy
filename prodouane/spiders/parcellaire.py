@@ -81,13 +81,14 @@ class ParcellaireSpider(scrapy.Spider):
 
         meta = response.meta
 
+
         if os.getenv('CVI', None):
             cvi = os.getenv('CVI')
             meta['numero_cvi'] = cvi
             return scrapy.FormRequest.from_response(
                 response,
                 formname='formFdc',
-                formdata={'formFdc:inputNumeroCvi': cvi},
+                formdata={'formFdc:inputNumeroCvi': cvi, 'formFdc:selectDepartement': cvi[0:2], 'formFdc:selectCommune': "0"},
                 callback=self.get_un_cvi,
                 meta=meta
             )
