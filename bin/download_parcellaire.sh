@@ -6,7 +6,7 @@ if ! type scrapy > /dev/null 2>&1; then
 fi
 
 if [ $# -ne 1 ]; then
-	echo "Il manque un paramètre"
+	echo "Il manque un paramètre : CVI attendu"
 	exit 2
 fi
 
