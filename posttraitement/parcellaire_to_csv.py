@@ -142,12 +142,14 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
                             .replace(' Ste-', ' Sainte ') \
                             .replace(' rs', ' rosé') \
                             .replace(' rg', ' rouge') \
+                            .replace(' RG', ' rouge') \
                             .replace(' / lie', ' sur lie') \
                             .replace('Cx Loire', 'Coteaux de la Loire ')
                             .replace('ctes Grandlieu', 'côtes de Grand lieu')
                             .replace('  ANCENIS', 'Coteaux d\'Ancenis')
                             .replace('Muscadet sur lie', 'Muscadet AC sur lie')
                             .replace('Côtes Provence', 'Côtes de Provence')
+                            .replace('BOUCHES-RHONE', 'Bouches-du-Rhône')
                         , flags=re.I), flags=re.I), flags=re.I)))).replace('  ', ' ')
 
             else:
