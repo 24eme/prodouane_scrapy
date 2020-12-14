@@ -17,14 +17,14 @@ class QuotesSpider(scrapy.Spider):
     def prelogin(self, response):
         self.log('prelogin')
         if os.environ.get('PRODOUANE_DEBUG'):
-            with open("debug/dr_00_prelogin.html", 'wb') as f:
+            with open("debug/"+self.name+"_00_prelogin.html", 'wb') as f:
                 f.write(response.body)
         yield scrapy.Request(url="https://www.douane.gouv.fr/protect/", callback=self.login)
 
     def login(self, response):
         self.log('login')
         if os.environ.get('PRODOUANE_DEBUG'):
-            with open("debug/dr_01_login.html", 'wb') as f:
+            with open("debug/"+self.name+"_01_login.html", 'wb') as f:
                 f.write(response.body)
         formdata={"user":os.environ['PRODOUANE_USER'], "password":os.environ['PRODOUANE_PASS']}
         formdata['token'] = response.xpath('//*[@name="token"]/@value')[0].extract()
@@ -35,7 +35,7 @@ class QuotesSpider(scrapy.Spider):
     def postlogin(self, response):
         self.log('postlogin')
         if os.environ.get('PRODOUANE_DEBUG'):
-            with open("debug/dr_02_postlogin.html", 'wb') as f:
+            with open("debug/"+self.name+"_02_postlogin.html", 'wb') as f:
                 f.write(response.body)
         yield scrapy.Request(url='https://www.douane.gouv.fr/protect/redirect.php?code=PORTAIL_VITI',  callback=self.multiservice)
 
