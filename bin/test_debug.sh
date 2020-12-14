@@ -37,4 +37,7 @@ sed -i 's/input type="hidden" name="token" value="[0-9_]*"/input type="hidden" n
 
 cd debug
 
+echo
+echo "Comparaison"
+echo "================"
 git status -s | grep -v redirectsaml || echo TOUT EST OK
