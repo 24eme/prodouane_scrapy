@@ -4,15 +4,22 @@
 
 rm debug/*
 
+echo
 echo "test DR"
 echo "================"
 PRODOUANE_DEBUG=true bash bin/download_douane.sh dr 2019 $PRODOUANE_DEBUG_DR
+
+echo
 echo "test SV11"
 echo "================"
 PRODOUANE_DEBUG=true bash bin/download_douane.sh sv11 2019 $PRODOUANE_DEBUG_SV11
+
+echo
 echo "test SV12"
 echo "================"
 PRODOUANE_DEBUG=true bash bin/download_douane.sh sv12 2019 $PRODOUANE_DEBUG_SV12
+
+echo
 echo "test Parcellaire"
 echo "================"
 PRODOUANE_DEBUG=true bash bin/download_parcellaire.sh $PRODOUANE_DEBUG_PARCELLAIRE
