@@ -21,21 +21,29 @@ class ParcellaireSpider(scrapy.Spider):
     storage_directory = './documents/'
 
     def start_requests(self):
-        return [scrapy.Request(url='https://www.douane.gouv.fr/', callback=self.prelogin)]
+        yield scrapy.Request(url="https://www.douane.gouv.fr/", callback=self.prelogin, dont_filter = True)
 
     def prelogin(self, response):
-        yield scrapy.Request(url="https://www.douane.gouv.fr/saml_login", callback=self.login)
+        self.log('prelogin')
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/"+self.name+"_0000_prelogin.html", 'wb') as f:
+                f.write(response.body)
+        yield scrapy.Request(url="https://www.douane.gouv.fr/saml_login/", callback=self.login)
 
     def login(self, response):
-        formdata={"user":os.environ['PRODOUANE_USER'],"password":os.environ['PRODOUANE_PASS']}
+        self.log('login')
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/"+self.name+"_0001_login.html", 'wb') as f:
+                f.write(response.body)
+        formdata={"user":os.environ['PRODOUANE_USER'], "password":os.environ['PRODOUANE_PASS']}
         formdata['token'] = response.xpath('//*[@name="token"]/@value')[0].extract()
         formdata['url'] = response.xpath('//*[@name="url"]/@value')[0].extract()
         yield scrapy.FormRequest.from_response(response, formdata=formdata, callback=self.postlogin)
 
     def postlogin(self, response):
         self.log('postlogin')
-        if os.getenv('PRODOUANE_DEBUG', None):
-            with open("debug/parcellaire-0010_postlogin.html", 'wb') as f:
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/"+self.name+"_0010_postlogin.html", 'wb') as f:
                 f.write(response.body)
         action = response.xpath('//*[@id="form"]/@action')[0].extract()
         formdata={}
@@ -45,8 +53,8 @@ class ParcellaireSpider(scrapy.Spider):
 
     def redirectsaml(self, response):
         self.log('redirectsaml')
-        if os.getenv('PRODOUANE_DEBUG', None):
-            with open("debug/parcellaire-0020_redirectsaml.html", 'wb') as f:
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/"+self.name+"_0020_redirectsaml.html", 'wb') as f:
                 f.write(response.body)
         yield scrapy.Request(url='https://www.douane.gouv.fr/service-en-ligne/redirection/PORTAIL_VITI',  callback=self.multiservice)
 

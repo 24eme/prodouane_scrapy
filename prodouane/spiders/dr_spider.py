@@ -12,12 +12,20 @@ class QuotesSpider(scrapy.Spider):
 #                       }
 
     def start_requests(self):
-        yield scrapy.Request(url="https://www.douane.gouv.fr/", callback=self.prelogin)
+        yield scrapy.Request(url="https://www.douane.gouv.fr/", callback=self.prelogin, dont_filter = True)
 
     def prelogin(self, response):
-        yield scrapy.Request(url="https://www.douane.gouv.fr/saml_login", callback=self.login)
+        self.log('prelogin')
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/"+self.name+"_00_prelogin.html", 'wb') as f:
+                f.write(response.body)
+        yield scrapy.Request(url="https://www.douane.gouv.fr/saml_login/", callback=self.login)
 
     def login(self, response):
+        self.log('login')
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/"+self.name+"_01_login.html", 'wb') as f:
+                f.write(response.body)
         formdata={"user":os.environ['PRODOUANE_USER'], "password":os.environ['PRODOUANE_PASS']}
         formdata['token'] = response.xpath('//*[@name="token"]/@value')[0].extract()
         formdata['url'] = response.xpath('//*[@name="url"]/@value')[0].extract()
@@ -26,7 +34,7 @@ class QuotesSpider(scrapy.Spider):
     def postlogin(self, response):
         self.log('postlogin')
         if os.environ.get('PRODOUANE_DEBUG'):
-            with open("debug/dr_01_postlogin.html", 'wb') as f:
+            with open("debug/"+self.name+"_02_postlogin.html", 'wb') as f:
                 f.write(response.body)
         action = response.xpath('//*[@id="form"]/@action')[0].extract()
         formdata={}
