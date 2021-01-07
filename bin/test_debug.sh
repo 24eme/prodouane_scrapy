@@ -27,7 +27,7 @@ PRODOUANE_DEBUG=true bash bin/download_parcellaire.sh $PRODOUANE_DEBUG_PARCELLAI
 sed -i 's/value="[^"]*="/value="CLEANED"/g' debug/*
 sed -i 's/value="[0-9-][0-9]*:[0-9-]*"/value="CLEANED"/g' debug/*
 sed -i 's/CDATA\[[0-9-][0-9]*:[0-9-]*\]/CDATA[CLEANED]/g' debug/*
-sed -i 's/token=[^ "]*[ "]/token=CLEANED/g' debug/*
+sed -i 's/token=[^">]*\([">]\)/token=CLEANED\1/g' debug/*
 sed -i 's/views*_dom_id[":]*[^"]*"/view_dom_id:CLEANED/g' debug/*
 sed -i 's/RichFaces.panelTabs.*//' debug/*
 sed -i 's/permissionsHash":"[^"]*"/permissionsHash":"CLEANED"/' debug/*
