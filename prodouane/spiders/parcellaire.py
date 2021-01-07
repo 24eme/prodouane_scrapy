@@ -309,29 +309,94 @@ class ParcellaireSpider(scrapy.Spider):
             with open("debug/parcellaire-0100_fiche_parcellaire_plante.html", 'wb') as f:
                 f.write(response.body)
 
-        return scrapy.Request('https://www.douane.gouv.fr/ncvi-web-foncier-prodouane/pages/fdc/consultation.xhtml', meta=response.meta)
+        return scrapy.Request('https://www.douane.gouv.fr/ncvi-web-foncier-prodouane/pages/fdc/consultation.xhtml', meta=response.meta, callback=self.parse_parcellaire_plante)
 
-    def parse(self, response):
+    def parse_parcellaire_plante(self, response):
         """ On récupère les informations de parcellaire """
 
-        self.log('parse')
+        self.log('parse_parcellaire_plante')
 
-        self.export_html(self.storage_directory,
+        self.export_page(self.storage_directory,
                          response.meta['identifiant'] + '-parcellaire',
                          response.body)
 
+        meta = response.meta
+        meta['viewstate'] = response.xpath('//*[@name="javax.faces.ViewState"]/@value')[0].extract()
+
+        args = {
+            "formFdcConsultation": "formFdcConsultation",
+            "formFdcConsultation:j_idt174_activeIndex": "4",
+            "javax.faces.source": "formFdcConsultation:j_idt172",
+            "javax.faces.partial.event": "click",
+            "javax.faces.partial.execute": "formFdcConsultation:j_idt172 @component",
+            "javax.faces.partial.render": "@component",
+            "org.richfaces.ajax.component": "formFdcConsultation:j_idt172",
+            "formFdcConsultation:j_idt172": "formFdcConsultation:j_idt172",
+            "rfExt": "null",
+            "javax.faces.partial.ajax": "true",
+            'javax.faces.ViewState': meta['viewstate']
+        }
+
+        print(args)
+
+        return scrapy.FormRequest(url='https://www.douane.gouv.fr/ncvi-web-foncier-prodouane/pages/fdc/consultation.xhtml', formdata=args,
+            callback=self.parcellaire_prepdf,
+            meta=meta
+        )
+
+
+    def parcellaire_prepdf(self, response):
+        """ On ouvre la popup du pdf """
+
+        self.log('parcellaire_prepdf')
+
+        if os.getenv('PRODOUANE_DEBUG', None):
+            with open("debug/parcellaire-0300_parcellaire_prepdf.html", 'wb') as f:
+                f.write(response.body)
+
+        args = {
+            'releveForm': 'releveForm',
+            'releveForm:j_idt43': 'on',
+            'releveForm:j_idt45': 'on',
+            'releveForm:j_idt47': 'on',
+            'releveForm:j_idt51': 'on',
+            'releveForm:j_idt53': 'on',
+            'releveForm:j_idt65': 'on',
+            'releveForm:j_idt57:j_idt58:0:j_idt63': 'Toutes mes communes',
+            'releveForm:j_idt57:j_idt58:1:j_idt63': 'Tous mes produits',
+            'releveForm:j_idt57:j_idt58:2:j_idt63': 'Tous mes cepages',
+            'releveForm:j_idt57:j_idt58:3:j_idt63': 'Tous mes segments',
+            'releveForm:cmdLinkReleveParcellaireImprim': 'releveForm:cmdLinkReleveParcellaireImprim',
+            'javax.faces.ViewState': response.meta['viewstate']
+        }
+
+        print(args)
+
+        return scrapy.FormRequest(url='https://www.douane.gouv.fr/ncvi-web-foncier-prodouane/pages/fdc/consultation.xhtml', formdata=args,
+                                 callback=self.parcellaire_pdf, meta=response.meta)
+
+    def parcellaire_pdf(self, response):
+        """ On récupère le pdf du parcellaire """
+
+        self.log('parcellaire_pdf')
+
+        self.export_page(self.storage_directory,
+                         response.meta['identifiant'] + '-parcellaire',
+                         response.body, 'pdf')
+
+
     @staticmethod
-    def export_html(directory, name, content):
+    def export_page(directory, name, content, type='html'):
         """ Permet de sauvegarder le HTML en cas de coupure """
 
         if not os.path.isdir(directory):
             os.makedirs(directory, 0o764)
 
         if os.getenv('PRODOUANE_DEBUG', None):
-            with open("debug/parcellaire-0900_result_%s.html" % re.sub('[0-9]+-', '', name), 'wb') as f:
+            with open("debug/parcellaire-0900_result_%s.%s" % (re.sub('[0-9]+-', '', name), type), 'wb') as f:
                 f.write(content)
 
-        file = open(directory + '%s.html' % name, 'wb')
+        file = open(directory + '%s.%s' % (name, type), 'wb')
         try:
             file.write(content)
         finally:
