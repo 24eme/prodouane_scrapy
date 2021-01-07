@@ -277,7 +277,7 @@ class ParcellaireSpider(scrapy.Spider):
         identifiant = '-'.join(['parcellaire', cvi['cvi']])
         response.meta['identifiant'] = identifiant
 
-        self.export_html(self.storage_directory, identifiant + '-accueil',
+        self.export_page(self.storage_directory, identifiant + '-accueil',
                          response.body)
 
         return scrapy.FormRequest.from_response(
