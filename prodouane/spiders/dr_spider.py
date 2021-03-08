@@ -243,7 +243,9 @@ class QuotesSpider(scrapy.Spider):
         if (inputs.get('formSaisirDNR:_idJsp442', 0) or inputs.get('formSaisirDNR:_idJsp443', 0)):
             args = {
                    'javax.faces.ViewState': inputs['javax.faces.ViewState'],
-                   'formSaisirDNR:_idJsp169': inputs['formSaisirDNR:_idJsp169'],
+                   'formSaisirDNR:_idJsp158': inputs['formSaisirDNR:_idJsp158'],
+                   'formSaisirDNR:_idJsp161': inputs['formSaisirDNR:_idJsp161'],
+                   'formSaisirDNR:_idJsp164': inputs['formSaisirDNR:_idJsp164'],
                    'formSaisirDNR:_idJsp442': "Imprimer",
                    'formSaisirDNR_SUBMIT': "1",
             }
@@ -265,7 +267,9 @@ class QuotesSpider(scrapy.Spider):
         inputs = response.meta['dr_html_inputs']
         args = {
                 'javax.faces.ViewState': inputs['javax.faces.ViewState'],
-                'formSaisirDNR:_idJsp169': inputs['formSaisirDNR:_idJsp169'],
+                'formSaisirDNR:_idJsp158': inputs['formSaisirDNR:_idJsp158'],
+                'formSaisirDNR:_idJsp161': inputs['formSaisirDNR:_idJsp161'],
+                'formSaisirDNR:_idJsp164': inputs['formSaisirDNR:_idJsp164'],
                 'formSaisirDNR:_idJsp443': "Exporter",
                 'formSaisirDNR_SUBMIT': "1",
                }
