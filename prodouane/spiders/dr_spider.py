@@ -240,11 +240,11 @@ class QuotesSpider(scrapy.Spider):
 
         inputs = self.get_input_args(response, '')
         print(inputs);
-        if (inputs.get('formSaisirDNR:_idJsp445', 0) or inputs.get('formSaisirDNR:_idJsp446', 0)):
+        if (inputs.get('formSaisirDNR:_idJsp442', 0) or inputs.get('formSaisirDNR:_idJsp443', 0)):
             args = {
                    'javax.faces.ViewState': inputs['javax.faces.ViewState'],
                    'formSaisirDNR:_idJsp169': inputs['formSaisirDNR:_idJsp169'],
-                   'formSaisirDNR:_idJsp445': "Imprimer",
+                   'formSaisirDNR:_idJsp442': "Imprimer",
                    'formSaisirDNR_SUBMIT': "1",
             }
 
@@ -266,7 +266,7 @@ class QuotesSpider(scrapy.Spider):
         args = {
                 'javax.faces.ViewState': inputs['javax.faces.ViewState'],
                 'formSaisirDNR:_idJsp169': inputs['formSaisirDNR:_idJsp169'],
-                'formSaisirDNR:_idJsp446': "Exporter",
+                'formSaisirDNR:_idJsp443': "Exporter",
                 'formSaisirDNR_SUBMIT': "1",
                }
 
