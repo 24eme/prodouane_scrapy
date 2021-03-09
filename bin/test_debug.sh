@@ -66,6 +66,7 @@ sed -i 's/permissionsHash":"[^"]*"/permissionsHash":"CLEANED"/' debug/*
 sed -i 's/javax.faces.ViewState" value="[^"]*"/javax.faces.ViewState" value="CLEANED"/' debug/*
 sed -i 's/javax.faces.ViewState" value="[^"]*"/javax.faces.ViewState" value="CLEANED"/' debug/*
 sed -i 's/input type="hidden" name="token" value="[0-9_]*"/input type="hidden" name="token" value="CLEANED"/' debug/*
+sed -i 's/SAMLResponse" value="[^"]*"/SAMLResponse" value="CLEANED"/' debug/*
 
 cd debug
 
