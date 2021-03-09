@@ -2,7 +2,16 @@
 
 . bin/config.inc
 
+mkdir -p debug
 rm debug/*
+if ! test -d debug/.git ; then
+	cd debug
+	git init .
+	echo "*log" > .gitignore
+	git add .gitignore
+	git commit -m "commit initial avec gitignore pour les log"
+	cd -
+fi
 
 echo
 echo "test DR"
