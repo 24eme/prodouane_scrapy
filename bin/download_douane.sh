@@ -1,8 +1,6 @@
 #!/bin/bash
 
-. $(dirname $0)/config.inc
-
-cd $(dirname $0)/../ > /dev/null 2>&1
+. $(dirname $0)/common.inc
 
 if test "$PRODOUANE_DOUANE"; then
 	mkdir -p debug

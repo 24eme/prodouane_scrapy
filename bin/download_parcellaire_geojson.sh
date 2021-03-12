@@ -7,7 +7,7 @@ fi
 
 cvi=$1
 
-cd $(dirname $0)/../ > /dev/null 2>&1
+. $(dirname $0)/common.inc
 
 if [ ! -f "./documents/parcellaire-${cvi}.csv" ]; then
 	echo "Document inexistant"
