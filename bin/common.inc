@@ -1,3 +1,5 @@
+LANG=fr_FR.UTF-8
+
 if ! test "$PRODOUANE_CONFIG_FILENAME"; then
 PRODOUANE_CONFIG_FILENAME="config.inc"
 fi
