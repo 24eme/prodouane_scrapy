@@ -2,6 +2,10 @@ if ! test "$PRODOUANE_CONFIG_FILENAME"; then
 PRODOUANE_CONFIG_FILENAME="config.inc"
 fi
 
+if test -d $(dirname $0)/pyenv ; then
+    source $(dirname $0)/pyenv/bin/activate
+fi
+
 if ! test -f $(dirname $0)/$PRODOUANE_CONFIG_FILENAME ; then
     printf "ERROR:\tfichier de configuration ("$(dirname $0)"/"$PRODOUANE_CONFIG_FILENAME") non présent\n"
     printf "\tle nom du fichier est pesonnalisable via la variable de configuration PRODOUANE_CONFIG_FILENAME (par defaut config.inc)\n"
