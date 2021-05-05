@@ -26,4 +26,4 @@ if [ ! -f "./documents/parcellaire-${cvi}-parcellaire.html" ]; then
 	exit 4
 fi
 
-python2 posttraitement/parcellaire_to_csv.py $cvi
+python posttraitement/parcellaire_to_csv.py $cvi
