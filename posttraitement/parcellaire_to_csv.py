@@ -136,6 +136,9 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
                         re.sub(' bl($| )', ' blanc ',
                         re.sub('Muscadet$', 'Muscadet AC',
                         re.sub('cx ancenis', 'Coteaux d\'Ancenis',
+                        re.sub('AOC Alsace blanc.*', 'AOC Alsace Blanc',
+                        re.sub('AOC Alsace Grand Cru.*', 'AOC Alsace Grand Cru',
+                        re.sub('AOC Crémant d\'Alsace.*', 'AOC Crémant d\'Alsace',
                         infos_parcelles[3] \
                             .replace('Ctes ', 'Côtes ') \
                             .replace(' Ste-', ' Sainte ') \
@@ -149,7 +152,15 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
                             .replace('Muscadet sur lie', 'Muscadet AC sur lie')
                             .replace('Côtes Provence', 'Côtes de Provence')
                             .replace('BOUCHES-RHONE', 'Bouches-du-Rhône')
-                        , flags=re.I), flags=re.I), flags=re.I)))).replace('  ', ' ')
+                            .replace('Edelzwicker', '')
+                            .replace('Alsace blanc', 'AOC Alsace blanc')
+                            .replace('ALSACE BLANC', 'AOC Alsace blanc')
+                            .replace('Alsace Pinot Blanc', 'AOC Alsace blanc')
+                            .replace('Alsace Pinot Gris', 'AOC Alsace blanc')
+                            .replace('AGC', 'AOC Alsace Grand Cru')
+                            .replace('Alsace rosé (Pinot Noir)', 'AOC Alsace Pinot Noir Rosé')
+                            .replace('Crémant Alsace bl', "AOC Crémant d'Alsace")
+                        , flags=re.I), flags=re.I), flags=re.I), flags=re.I), flags=re.I), flags=re.I) ))).replace('  ', ' ')
 
             else:
                 parcellaire['Produit'] = ""
