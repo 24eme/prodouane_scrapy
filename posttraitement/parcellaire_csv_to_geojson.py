@@ -7,7 +7,7 @@ import sys
 import os
 import re
 import csv
-import urllib.request
+import urllib
 import gzip
 import json
 
@@ -33,7 +33,7 @@ def get_geoJson_commune(directory, cvi, idu, millesime):
         return outputfile
 
     #file doesn't exist
-    urllib.request.urlretrieve(url%(millesime,dept, num_commune, num_commune), outputfile)
+    urllib.urlretrieve(url%(millesime,dept, num_commune, num_commune), outputfile)
     return outputfile
 
 def get_geoJson_parcelle(directory, parcellaire):
