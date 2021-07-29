@@ -40,15 +40,6 @@ def generate_idu(code_communes, section, num_parc):
     return "%s000%s%s" % (code_communes, section, code_parc)
 
 
-def parse_csv_to_array(data):
-    communes = {}
-
-    for line in data:
-        commune = line.split(';')
-        communes[commune[1].rstrip()] = commune[0].rstrip()
-    return communes
-
-
 parcellaire = {}
 liste_parcellaire = []
 
@@ -63,12 +54,6 @@ headers = [
 numero_cvi = sys.argv[1]
 directory = os.path.dirname(os.path.realpath(__file__)) + '/../documents/'
 filename = 'parcellaire-' + numero_cvi + "-%s.html"
-
-communesFile = 'communes.csv'
-listCommunes = []
-with open(directory + communesFile, 'r') as communesfile:
-    data = communesfile.readlines()
-    listCommunes = parse_csv_to_array(data)
 
 # Premier onglet
 with open(directory + filename % 'accueil', 'rb') as html_file:
@@ -115,13 +100,12 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
             else:
                 parcellaire['Lieu dit'] = ""
 
-            match = re.search(r'([A-Z]*)(\d+)', infos_parcelles[2])
-            parcellaire['Section'] = match.group(1)
-            parcellaire['Numero parcelle'] = match.group(2).lstrip('0')
-
-            if parcellaire['Commune'] in listCommunes:
-                parcellaire['IDU'] = generate_idu(
-                    listCommunes[parcellaire['Commune']],
+            match = re.search(r'(\d{2})(\d+) +([A-Z0-9]+)(\d{4})', infos_parcelles[2])
+            CommuneId = match.group(1) + '%03d' % int(match.group(2))
+            parcellaire['Section'] = match.group(3)
+            parcellaire['Numero parcelle'] = match.group(4).lstrip('0')
+            parcellaire['IDU'] = generate_idu(
+                    CommuneId,
                     parcellaire['Section'],
                     parcellaire['Numero parcelle']
                 )
