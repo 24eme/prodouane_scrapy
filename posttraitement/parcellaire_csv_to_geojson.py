@@ -48,7 +48,7 @@ def get_geoJson_parcelle(directory, parcellaire):
         file_geojson_path = get_geoJson_commune(directory, num_commune, idu, millesime);
         if file_geojson_path.find('.gz'):
           with gzip.open(file_geojson_path, 'rb') as f:
-            list_geojson = json.load(f);
+            list_geojson = json.loads(f.read().decode('utf-8'));
             
             for parcelle in list_geojson["features"]:
                 if(parcelle['properties']['id'] == idu):
