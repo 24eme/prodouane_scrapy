@@ -115,7 +115,7 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
             else:
                 parcellaire['Lieu dit'] = ""
 
-            match = re.search(r'([A-Z]+)(\d+)', infos_parcelles[2])
+            match = re.search(r'([A-Z]*)(\d+)', infos_parcelles[2])
             parcellaire['Section'] = match.group(1)
             parcellaire['Numero parcelle'] = match.group(2).lstrip('0')
 
