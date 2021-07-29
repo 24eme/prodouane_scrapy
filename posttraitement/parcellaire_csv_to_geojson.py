@@ -7,10 +7,9 @@ import sys
 import os
 import re
 import csv
-import wget
+import urllib.request
 import gzip
 import json
-import magic
 
 def get_file_parcellaire(numero_cvi, directory):
     for file in os.listdir(directory):
@@ -29,11 +28,13 @@ def get_geoJson_commune(directory, cvi, idu, millesime):
     dept = idu[0:2];
     num_commune = idu[0:5];
 
-    outputfile = 'cadastre-' + millesime +'-'+ num_commune + '-parcelles.json.gz';
-    if(not my_cache_download(directory, outputfile)):
-        #file doesn't exist
-        res = wget.download(url%(millesime,dept, num_commune, num_commune), directory + outputfile);
-    return outputfile;
+    outputfile = directory + 'cadastre-' + millesime +'-'+ num_commune + '-parcelles.json.gz';
+    if(my_cache_download(outputfile)):
+        return outputfile
+
+    #file doesn't exist
+    urllib.request.urlretrieve(url%(millesime,dept, num_commune, num_commune), outputfile)
+    return outputfile
 
 def get_geoJson_parcelle(directory, parcellaire):
     num_commune = parcellaire[0]['CVI Operateur'];
@@ -44,9 +45,9 @@ def get_geoJson_parcelle(directory, parcellaire):
                 '2019-07-01', 'latest'
                 ];
     for millesime in millesimes[::-1]:
-        file_geojson_name = get_geoJson_commune(directory, num_commune, idu, millesime);
-        if magic.Magic(mime=True).from_file(directory + file_geojson_name) == 'application/gzip':
-          with gzip.open(directory + file_geojson_name, 'rb') as f:
+        file_geojson_path = get_geoJson_commune(directory, num_commune, idu, millesime);
+        if file_geojson_path.find('.gz'):
+          with gzip.open(file_geojson_path, 'rb') as f:
             list_geojson = json.load(f);
             
             for parcelle in list_geojson["features"]:
@@ -57,9 +58,9 @@ def get_geoJson_parcelle(directory, parcellaire):
             #parcelle doesn't found in that millesime downloaded
             #make new downloading and process
     
-def my_cache_download(directory, file):
+def my_cache_download(filepath):
 
-    return os.path.isfile(directory + file);
+    return os.path.isfile(filepath);
 
 def create_array_assoc(parcellaires):
     assoc = {};
