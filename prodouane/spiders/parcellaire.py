@@ -284,18 +284,18 @@ class ParcellaireSpider(scrapy.Spider):
             response,
             formname='formFdcConsultation',
             formdata={'javax.faces.partial.ajax': 'true',
-                      'javax.faces.source': 'formFdcConsultation:j_idt174',
+                      'javax.faces.source': 'formFdcConsultation:j_idt176',
                       'javax.faces.partial.execute':
-                          'formFdcConsultation:j_idt174',
+                          'formFdcConsultation:j_idt176',
                       'javax.faces.partial.render':
-                          '+formFdcConsultation:j_idt174',
+                          '+formFdcConsultation:j_idt176',
                       'javax.faces.behavior.event': 'tabChange',
                       'javax.faces.partial.event': 'tabChange',
-                      'formFdcConsultation:j_idt174_contentLoad': 'true',
-                      'formFdcConsultation:j_idt174_newTab':
-                          'formFdcConsultation:j_idt174:j_idt459',
-                      'formFdcConsultation:j_idt174_tabindex': '3',
-                      'formFdcConsultation:j_idt174_activeIndex': '3'},
+                      'formFdcConsultation:j_idt176_contentLoad': 'true',
+                      'formFdcConsultation:j_idt176_newTab':
+                          'formFdcConsultation:j_idt176:j_idt461',
+                      'formFdcConsultation:j_idt176_tabindex': '3',
+                      'formFdcConsultation:j_idt176_activeIndex': '3'},
             callback=self.fiche_parcellaire_plante,
             meta=response.meta
         )
@@ -325,13 +325,13 @@ class ParcellaireSpider(scrapy.Spider):
 
         args = {
             "formFdcConsultation": "formFdcConsultation",
-            "formFdcConsultation:j_idt174_activeIndex": "4",
-            "javax.faces.source": "formFdcConsultation:j_idt172",
+            "formFdcConsultation:j_idt176_activeIndex": "4",
+            "javax.faces.source": "formFdcConsultation:j_idt174",
             "javax.faces.partial.event": "click",
-            "javax.faces.partial.execute": "formFdcConsultation:j_idt172 @component",
+            "javax.faces.partial.execute": "formFdcConsultation:j_idt174 @component",
             "javax.faces.partial.render": "@component",
-            "org.richfaces.ajax.component": "formFdcConsultation:j_idt172",
-            "formFdcConsultation:j_idt172": "formFdcConsultation:j_idt172",
+            "org.richfaces.ajax.component": "formFdcConsultation:j_idt174",
+            "formFdcConsultation:j_idt174": "formFdcConsultation:j_idt174",
             "rfExt": "null",
             "javax.faces.partial.ajax": "true",
             'javax.faces.ViewState': meta['viewstate']
