@@ -2,6 +2,8 @@
 
 . bin/config.inc
 
+. $(dirname $0)/common.inc
+
 mkdir -p debug
 rm debug/*
 if ! test -d debug/.git ; then
