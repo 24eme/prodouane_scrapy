@@ -53,8 +53,8 @@ PRODOUANE_DEBUG=true bash bin/download_parcellaire.sh $PRODOUANE_DEBUG_PARCELLAI
 
 if test -f documents/parcellaire-"$PRODOUANE_DEBUG_PARCELLAIRE"-parcellaire.html ; then echo " HTML Parcellaire Présent :)"; else echo "Erreur pas de HTML parcellaire"; fi
 if test -f documents/parcellaire-"$PRODOUANE_DEBUG_PARCELLAIRE"-accueil.html ; then echo " HTML accueil Parcellaire Présent :)"; else echo "Erreur pas de HTML accueil Parcellaire"; fi
-if test -f documents/parcellaire-"$PRODOUANE_DEBUG_PARCELLAIRE"-parcellaire.pdf ; then echo " PDF Parcellaire Présent :)"; else echo "Erreur pas de PDF Parcellaire"; fi
-if test -f documents/parcellaire-"$PRODOUANE_DEBUG_PARCELLAIRE".csv ; then echo " CSV Parcellaire Présent :)"; else echo "Erreur pas de CSV Parcellaire"; fi
+if test -s documents/parcellaire-"$PRODOUANE_DEBUG_PARCELLAIRE"-parcellaire.pdf ; then echo " PDF Parcellaire Présent :)"; else echo "Erreur pas de PDF Parcellaire"; fi
+if test 0$(wc -l documents/parcellaire-"$PRODOUANE_DEBUG_PARCELLAIRE".csv | sed 's/ .*//') -gt 1 ; then echo " CSV Parcellaire Présent :)"; else echo "Erreur pas de CSV Parcellaire"; fi
 
 
 
