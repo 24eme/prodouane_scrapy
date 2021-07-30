@@ -32,8 +32,12 @@ def get_geoJson_commune(directory, cvi, idu, millesime):
     if(my_cache_download(outputfile)):
         return outputfile
 
-    #file doesn't exist
-    urllib.urlretrieve(url%(millesime,dept, num_commune, num_commune), outputfile)
+    try:
+        urllib.urlretrieve(url%(millesime,dept, num_commune, num_commune), outputfile)
+    except AttributeError:
+        from urllib import (parse, request)
+        request.urlretrieve(url%(millesime,dept, num_commune, num_commune), outputfile)
+
     return outputfile
 
 def get_geoJson_parcelle(directory, parcellaire):
