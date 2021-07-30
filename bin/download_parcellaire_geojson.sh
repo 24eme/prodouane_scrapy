@@ -14,4 +14,4 @@ if [ ! -f "./documents/parcellaire-${cvi}.csv" ]; then
 	exit 2
 fi
 
-python posttraitement/parcellaire_csv_to_geojson.py $cvi
+python3 posttraitement/parcellaire_csv_to_geojson.py $cvi 2>&1
