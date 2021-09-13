@@ -57,8 +57,15 @@ Pour télécharger les geojson des parcellaire dépuis le site web https://cadas
 	sh bin/download_parcellaire_geojson.sh cvi?
 
 ## Délimitation du parcellaire
-Pour télécharger la délimitation parcellaire des AOC (https://www.data.gouv.fr/fr/datasets/ ) puis les parse par commune.
-	
-	python delimite.py
 
-!! si ne fonctionne pas vérifier l'url du téléchargement
+Pour télécharger la délimitation parcellaire des AOC (https://www.data.gouv.fr/fr/datasets/ ) puis les parse par commune, il existe un script pour le faire.
+
+Il faut avant tout indiquer l'identifiant de l'appellation dans le ficheir `bin/config.inc` via la variable de configuration `APP_ID`.
+
+La liste des appellations est disponible dans le fichier [inao_id_app.csv](inao_id_app.csv).
+
+Puis il faut executer le script suivant :
+	
+	bash bin/get_delimination_aoc.sh
+
+!! si ne fonctionne pas vérifier l'url du téléchargement qui peut avoir changé sur data.gouv.fr
