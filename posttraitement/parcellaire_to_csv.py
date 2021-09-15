@@ -100,7 +100,7 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
             else:
                 parcellaire['Lieu dit'] = ""
 
-            match = re.search(r'(\d{2})(\d+) +([A-Z0-9]+)(\d{4})', infos_parcelles[2])
+            match = re.search(r'(\d{2})(\d{,4}) *([A-Z0-9]+)(\d{4})', infos_parcelles[2])
             CommuneId = match.group(1) + '%03d' % int(match.group(2))
             parcellaire['Section'] = match.group(3)
             parcellaire['Numero parcelle'] = match.group(4).lstrip('0')
