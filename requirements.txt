@@ -24,7 +24,7 @@ PyDispatcher==2.0.5
 PyHamcrest==2.0.2
 pyOpenSSL==20.0.1
 queuelib==1.6.1
-Scrapy==2.3.0
+Scrapy==2.5.1
 service-identity==21.1.0
 six==1.16.0
 soupsieve==2.1
