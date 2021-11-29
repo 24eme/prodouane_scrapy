@@ -99,13 +99,15 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
                 parcellaire['Lieu dit'] = re.sub(r' *\* *', '', infos_parcelles[1].string)
             else:
                 parcellaire['Lieu dit'] = ""
-            
+
             #vérifie que la 3ème colonne est bien un IDU sinon c'est sans doute une Superficies de programme d'arrachage
             try:
                 int(infos_parcelles[2][0:1])
             except ValueError:
                 continue
-            
+            except TypeError:
+                continue
+
             match = re.search(r'(\d{2})(\d{,4}) *([A-Z0-9]+)(\d{4})', infos_parcelles[2])
             CommuneId = match.group(1) + '%03d' % int(match.group(2))
             parcellaire['Section'] = match.group(3)
