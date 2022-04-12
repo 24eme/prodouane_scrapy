@@ -54,7 +54,7 @@ def get_geoJson_parcelle(directory, parcellaire):
     idu = parcellaire[0]['IDU'];
     millesimes = ['latest','2022-01-01','2021-10-01','2021-07-01','2021-04-01','2021-02-01','2020-10-01','2020-07-01','2020-01-01','2019-10-01','2019-07-01','2019-04-01','2019-01-01'];
     for millesime in millesimes[::-1]:
-        file_geojson_path = get_geoJson_commune(directory, num_commune, idu, millesime);
+        file_geojson_path = get_geoJson_commune(directory, idu[0:5], idu, millesime);
         if file_geojson_path.find('.gz'):
           try:
             with gzip.open(file_geojson_path, 'rb') as f:
