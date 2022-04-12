@@ -36,7 +36,16 @@ def get_geoJson_commune(directory, cvi, idu, millesime):
         urllib.urlretrieve(url%(millesime,dept, num_commune, num_commune), outputfile)
     except AttributeError:
         from urllib import (parse, request)
-        request.urlretrieve(url%(millesime,dept, num_commune, num_commune), outputfile)
+        try:
+            request.urlretrieve(url%(millesime,dept, num_commune, num_commune), outputfile)
+        except urllib.error.HTTPError as e:
+            return ""
+        except urllib.error.URLError as e:
+            return ""
+    except urllib.error.HTTPError as e:
+        return ""
+    except urllib.error.URLError as e:
+        return ""
 
     return outputfile
 
