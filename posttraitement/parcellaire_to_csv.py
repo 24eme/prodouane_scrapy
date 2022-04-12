@@ -37,7 +37,10 @@ def generate_idu(code_communes, section, num_parc):
     if len(section) == 1:
         section = '0' + section
 
-    return "%s000%s%s" % (code_communes, section, code_parc)
+    code_dep = code_communes[0:2]
+    code_fincommune = code_communes[-3:]
+
+    return "%s%s000%s%s" % (code_dep, code_fincommune, section, code_parc)
 
 
 parcellaire = {}
