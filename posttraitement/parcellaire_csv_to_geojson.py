@@ -52,11 +52,7 @@ def get_geoJson_commune(directory, cvi, idu, millesime):
 def get_geoJson_parcelle(directory, parcellaire):
     num_commune = parcellaire[0]['CVI Operateur'];
     idu = parcellaire[0]['IDU'];
-    millesimes = ['2017-07-06', '2017-10-12',
-                '2018-01-02', '2018-04-03','2018-06-29',
-                '2018-10-01', '2019-01-01', '2019-04-01',
-                '2019-07-01', 'latest'
-                ];
+    millesimes = ['latest','2022-01-01','2021-10-01','2021-07-01','2021-04-01','2021-02-01','2020-10-01','2020-07-01','2020-01-01','2019-10-01','2019-07-01','2019-04-01','2019-01-01'];
     for millesime in millesimes[::-1]:
         file_geojson_path = get_geoJson_commune(directory, num_commune, idu, millesime);
         if file_geojson_path.find('.gz'):
