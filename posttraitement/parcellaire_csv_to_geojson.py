@@ -51,16 +51,19 @@ def get_geoJson_parcelle(directory, parcellaire):
     for millesime in millesimes[::-1]:
         file_geojson_path = get_geoJson_commune(directory, num_commune, idu, millesime);
         if file_geojson_path.find('.gz'):
-          with gzip.open(file_geojson_path, 'rb') as f:
-            list_geojson = json.loads(f.read().decode('utf-8'));
-            
-            for parcelle in list_geojson["features"]:
+          try:
+            with gzip.open(file_geojson_path, 'rb') as f:
+              list_geojson = json.loads(f.read().decode('utf-8'));
+              
+              for parcelle in list_geojson["features"]:
                 if(parcelle['properties']['id'] == idu):
                     #check if parcelle contains more than one cepage
                     parcelle['properties']['parcellaires'] = parcellaire;
                     return parcelle;
-            #parcelle doesn't found in that millesime downloaded
-            #make new downloading and process
+          except: #Not a gz probably 404
+            continue
+          #parcelle doesn't found in that millesime downloaded
+          #make new downloading and process
     
 def my_cache_download(filepath):
 
