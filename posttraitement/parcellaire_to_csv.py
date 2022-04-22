@@ -155,6 +155,7 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
                             .replace('AGC', 'AOC Alsace Grand Cru')
                             .replace('Alsace rosé (Pinot Noir)', 'AOC Alsace Pinot Noir Rosé')
                             .replace('Crémant Alsace bl', "AOC Crémant d'Alsace")
+                            .replace('CDRV', 'Côtes du Rhône Villages')
                         , flags=re.I), flags=re.I), flags=re.I), flags=re.I), flags=re.I), flags=re.I) ))).replace('  ', ' ')
 
             else:
