@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. $(dirname $0)/common.inc
+. "$(dirname "$0")"/common.inc
 
 if ! type scrapy > /dev/null 2>&1; then
 	echo "Le binaire scrapy n'existe pas"
@@ -26,4 +26,4 @@ if [ ! -f "./documents/parcellaire-${cvi}-parcellaire.html" ]; then
 	exit 4
 fi
 
-python3 posttraitement/parcellaire_to_csv.py $cvi 2>&1
+python3 posttraitement/parcellaire_to_csv.py "$cvi" 2>&1
