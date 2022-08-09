@@ -26,4 +26,7 @@ if [ ! -f "./documents/parcellaire-${cvi}-parcellaire.html" ]; then
 	exit 4
 fi
 
+sed -i '/^<?xml /id' "./documents/parcellaire-${cvi}-accueil.html"
+sed -i '/^<?xml /id' "./documents/parcellaire-${cvi}-parcellaire.html"
+
 python3 posttraitement/parcellaire_to_csv.py "$cvi" 2>&1
