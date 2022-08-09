@@ -325,13 +325,13 @@ class ParcellaireSpider(scrapy.Spider):
 
         args = {
             "formFdcConsultation": "formFdcConsultation",
-            "formFdcConsultation:j_idt176_activeIndex": "4",
-            "javax.faces.source": "formFdcConsultation:j_idt174",
+            "formFdcConsultation:j_idt195_activeIndex": "0",
+            "javax.faces.source": "formFdcConsultation:j_idt193",
             "javax.faces.partial.event": "click",
-            "javax.faces.partial.execute": "formFdcConsultation:j_idt174 @component",
+            "javax.faces.partial.execute": "formFdcConsultation:j_idt193 @component",
             "javax.faces.partial.render": "@component",
-            "org.richfaces.ajax.component": "formFdcConsultation:j_idt174",
-            "formFdcConsultation:j_idt174": "formFdcConsultation:j_idt174",
+            "org.richfaces.ajax.component": "formFdcConsultation:j_idt193",
+            "formFdcConsultation:j_idt193": "formFdcConsultation:j_idt193",
             "rfExt": "null",
             "javax.faces.partial.ajax": "true",
             'javax.faces.ViewState': meta['viewstate']
@@ -362,6 +362,7 @@ class ParcellaireSpider(scrapy.Spider):
             'releveForm:j_idt51': 'on',
             'releveForm:j_idt53': 'on',
             'releveForm:j_idt65': 'on',
+            'releveForm:j_idt77': 'on',
             'releveForm:j_idt57:j_idt58:0:j_idt63': 'Toutes mes communes',
             'releveForm:j_idt57:j_idt58:1:j_idt63': 'Tous mes produits',
             'releveForm:j_idt57:j_idt58:2:j_idt63': 'Tous mes cepages',
@@ -373,7 +374,26 @@ class ParcellaireSpider(scrapy.Spider):
         print(args)
 
         return scrapy.FormRequest(url='https://www.douane.gouv.fr/ncvi-web-foncier-prodouane/pages/fdc/consultation.xhtml', formdata=args,
+                                 callback=self.parcellaire_ajax_pdf, meta=response.meta)
+
+    def parcellaire_ajax_pdf(self, response):
+        """ On récupère un ajax pdf du parcellaire """
+
+        self.log('parcellaire_ajax_pdf')
+
+        if os.getenv('PRODOUANE_DEBUG', None):
+            with open("debug/parcellaire-0350_parcellaire_ajax_pdf.html", 'wb') as f:
+                f.write(response.body)
+
+        args = {
+	       "formGetFdc": "formGetFdc",
+            'javax.faces.ViewState': response.meta['viewstate'],
+	       "formGetFdc:linkGetPdfFicheDeCompte": "formGetFdc:linkGetPdfFicheDeCompte"
+        }
+        
+        return scrapy.FormRequest(url='https://www.douane.gouv.fr/ncvi-web-foncier-prodouane/pages/fdc/consultation.xhtml', formdata=args,
                                  callback=self.parcellaire_pdf, meta=response.meta)
+
 
     def parcellaire_pdf(self, response):
         """ On récupère le pdf du parcellaire """
