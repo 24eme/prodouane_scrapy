@@ -113,18 +113,18 @@ const fs = require('fs');
     downloadPath: "documents",
     });
     
-    fs.rename('documents/Fiches_de_compte_'+process.env.CVI+'.pdf', 'documents/parcellaire-'+process.env.CVI+'-parcellaire.pdf', (err) => {
-        if (err) throw err;
-        console.log('Rename OK!');
-        console.log("===================");
-    });
-
     await page.waitForTimeout(2000);
     await page.click('#releveForm\\:j_idt80');
     await page.waitForTimeout(10000);
 
     console.log("Click sur deuxième imprimante OK");
     console.log("===================");
+    
+    fs.rename('documents/Fiches_de_compte_'+process.env.CVI+'.pdf', 'documents/parcellaire-'+process.env.CVI+'-parcellaire.pdf', (err) => {
+        if (err) throw err;
+        console.log('Rename OK!');
+        console.log("===================");
+    });
     
     await browser.close();
 
