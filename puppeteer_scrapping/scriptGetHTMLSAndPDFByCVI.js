@@ -1,5 +1,6 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
+
 (async () => {
   
   const browser = await puppeteer.launch(
@@ -84,7 +85,7 @@ const fs = require('fs');
     await page.waitForTimeout(2000);
 
     const html = await page.content();
-    fs.writeFileSync(process.env.CVI+"_coordonnees_"+".html","<?xml version='1.0' encoding='UTF-8' ?>"+html);
+    fs.writeFileSync("documents/parcellaire-"+process.env.CVI+"-accueil.html","<?xml version='1.0' encoding='UTF-8' ?>"+html);
   	
     console.log("Enregistre la page HTML des coordonnées de l'opérateur OK");
     console.log("===================");
@@ -96,7 +97,7 @@ const fs = require('fs');
     console.log("===================");
 
     await page.waitForSelector('#formFdcConsultation\\:j_idt195\\:pnlDttListeSpcvPlante ');       
-    fs.writeFileSync(process.env.CVI+"_parcellaire_plante_"+".html",await page.content());
+    fs.writeFileSync("documents/parcellaire-"+process.env.CVI+"-parcellaire.html",await page.content());
 
     console.log("Enregistre la page HTML des parcellaire plante de l'opérateur OK");
     console.log("===================");
@@ -109,7 +110,13 @@ const fs = require('fs');
     client = await page.target().createCDPSession()
     await client.send('Page.setDownloadBehavior', {
     behavior: 'allow',
-    downloadPath: '',
+    downloadPath: "documents",
+    });
+    
+    fs.rename('documents/Fiches_de_compte_'+process.env.CVI+'.pdf', 'documents/parcellaire-'+process.env.CVI+'-parcellaire.pdf', (err) => {
+        if (err) throw err;
+        console.log('Rename OK!');
+        console.log("===================");
     });
 
     await page.waitForTimeout(2000);
