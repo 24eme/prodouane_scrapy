@@ -135,5 +135,6 @@ const fs = require('fs');
 				console.log("");
 				console.log('FAILED !!');
 				console.log(e);
+        await browser.close();
 			}
 		})();
