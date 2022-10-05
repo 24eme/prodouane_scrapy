@@ -5,8 +5,10 @@ const fs = require('fs');
   
   const browser = await puppeteer.launch(
   {
-    headless: false,
+    headless: true,  //mettre à false pour debug
     defaultViewport: {width: 1920, height: 1080},
+    ignoreDefaultArgs: ['--disable-extensions'],
+    args: ['--no-sandbox', '--disable-setuid-sandbox'], 
   }
   );
   try {
