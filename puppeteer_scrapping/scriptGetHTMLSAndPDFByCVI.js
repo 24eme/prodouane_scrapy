@@ -68,7 +68,7 @@ const fs = require('fs');
       console.log("Redirection OK");
       console.log("===================");
     }
-    await page.waitForTimeout(5000);
+    await page.waitForSelector('.btn-primary');
     
     await page.click("input[value='Fiche de compte']");
     
@@ -77,7 +77,7 @@ const fs = require('fs');
       console.log("===================");
     }
     
-    await page.waitForTimeout(1000);
+    await page.waitForSelector('.btn-primary');
     await page.$$("#formFdc\\:inputNumeroCvi");
 
     await page.click("#formFdc\\:inputNumeroCvi");    
@@ -98,7 +98,7 @@ const fs = require('fs');
       console.log("===================");
     }
 
-    await page.waitForTimeout(2000);
+    await page.waitForSelector('.fdcCoordonneCol1');
 
     const html = await page.content();
     fs.writeFileSync("documents/parcellaire-"+process.env.CVI+"-accueil.html","<?xml version='1.0' encoding='UTF-8' ?>"+html);
@@ -130,21 +130,32 @@ const fs = require('fs');
       console.log("===================");
     }
     
-    client = await page.target().createCDPSession()
-    await client.send('Page.setDownloadBehavior', {
-    behavior: 'allow',
-    downloadPath: "documents",
-    });
-    
-    await page.waitForTimeout(2000);
+    await page.waitForSelector('#releveForm\\:popupReleveParcellaire_container');
+    await page.waitForTimeout(100);
+
+    await page.waitForSelector('.btn-danger');
+
+    await page.waitForTimeout(500);
     await page.click('#releveForm\\:j_idt80');
-    await page.waitForTimeout(10000);
 
     if(process.env.DEBUG){
       console.log("Click sur deuxième imprimante OK");
       console.log("===================");
     }
     
+    client = await page.target().createCDPSession()
+    await client.send('Page.setDownloadBehavior', {
+    behavior: 'allow',
+    downloadPath: "documents",
+    });
+
+    await page.waitForTimeout(250);
+    await page.waitForSelector('#waitPollImpressionPdf_container', {hidden: false});
+
+    await page.waitForTimeout(250);
+    await page.waitForSelector('#waitPollImpressionPdf_container', {hidden: true});
+
+    await page.waitForTimeout(500);
     fs.rename('documents/Fiches_de_compte_'+process.env.CVI+'.pdf', 'documents/parcellaire-'+process.env.CVI+'-parcellaire.pdf', (err) => {
         if (err) throw err;
         if(process.env.DEBUG){
