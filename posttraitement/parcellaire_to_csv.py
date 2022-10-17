@@ -20,27 +20,11 @@ def transform_superficie(superficie):
 
 
 def generate_idu(code_communes, section, num_parc):
-    code_parc = num_parc
-    length = len(num_parc)
-    zeros = ''
-
-    if length == 1:
-        code_parc = '000' + num_parc
-    if length == 2:
-        code_parc = '00' + num_parc
-    if length == 3:
-        code_parc = '0' + num_parc
-
-    for zero in range(5-len(section)):
-        zeros = zeros + '0'
-
-    if len(section) == 1:
-        section = '0' + section
-
     code_dep = code_communes[0:2]
     code_fincommune = code_communes[-3:]
-
-    return "%s%s000%s%s" % (code_dep, code_fincommune, section, code_parc)
+    
+    idu = ("%02d%03d%4s%04d" % (int(code_dep), int(code_fincommune), section, int(num_parc))).replace(' ', '0')
+    return idu
 
 
 parcellaire = {}
@@ -110,11 +94,13 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
                 continue
             except TypeError:
                 continue
+            if len(infos_parcelles[2]) != 15:
+                continue
 
-            match = re.search(r'(\d{2})(\d{,4}) *([A-Z0-9]+)(\d{4})', infos_parcelles[2])
-            CommuneId = match.group(1) + '%03d' % int(match.group(2))
-            parcellaire['Section'] = match.group(3)
-            parcellaire['Numero parcelle'] = match.group(4).lstrip('0')
+
+            CommuneId =  '%02d%03d' % (int(infos_parcelles[2][:2]), int(infos_parcelles[2][2:6]))
+            parcellaire['Section'] = infos_parcelles[2][6:11]
+            parcellaire['Numero parcelle'] = infos_parcelles[2][11:]
             parcellaire['IDU'] = generate_idu(
                     CommuneId,
                     parcellaire['Section'],
