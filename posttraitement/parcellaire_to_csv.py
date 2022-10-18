@@ -22,8 +22,16 @@ def transform_superficie(superficie):
 def generate_idu(code_communes, section, num_parc):
     code_dep = code_communes[0:2]
     code_fincommune = code_communes[-3:]
-    
-    idu = ("%02d%03d%4s%04d" % (int(code_dep), int(code_fincommune), section, int(num_parc))).replace(' ', '0')
+    match = re.search(r' *(\d{,3}) *([A-Z0-9]+)', section)
+    prefix = match.group(1)
+    prefix = 0
+    try:
+        prefix = int(match.group(1))
+    except:
+        prefix = 0
+    section = match.group(2)
+
+    idu = ("%02d%03d%03d%2s%04d" % (int(code_dep), int(code_fincommune), prefix, section, int(num_parc))).replace(' ', '0')
     return idu
 
 
@@ -99,7 +107,7 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
 
 
             CommuneId =  '%02d%03d' % (int(infos_parcelles[2][:2]), int(infos_parcelles[2][2:6]))
-            parcellaire['Section'] = infos_parcelles[2][6:11]
+            parcellaire['Section'] = infos_parcelles[2][6:11].replace(' ', '')
             parcellaire['Numero parcelle'] = infos_parcelles[2][11:]
             parcellaire['IDU'] = generate_idu(
                     CommuneId,
