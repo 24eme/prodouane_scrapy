@@ -142,6 +142,31 @@ const fs = require('fs');
       console.log("===================");
     }
     
+    await page.waitForTimeout(250);
+    
+    const tableLines = await page.evaluate(() =>
+      Array.from(document.querySelectorAll("td[class='rf-dt-nd-c']")).map(element=>element.innerText)
+    ); 
+        
+    var hasCVIError = (await page.$("#erreur\\:j_idt112")) || false;
+        
+    if(hasCVIError || tableLines.includes("aucune")){
+      console.log("");
+      console.log('FAILED !! ERREUR DE CVI');
+      await browser.close();
+      return;
+    }    
+    
+    var hasError = (await page.$("#erreur\\:jsfErrorId")) || false;
+    
+    if(hasError){
+      console.log("");
+      console.log('FAILED !! IL Y A UNE ERREUR DANS LA RECHERCHE');
+      await browser.close();
+      return;
+    }    
+    
+        
     await page.waitForSelector("#formFdc\\:dttListeEvvOA\\:0\\:j_idt268");
     await page.click("#formFdc\\:dttListeEvvOA\\:0\\:j_idt268");    
     
