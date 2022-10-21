@@ -4,6 +4,7 @@
 
     python-scrapy catdoc
     beautifulsoup lxml # pour les parcellaires
+    python-wget # pour télécharger les geojson depuis cadastre
 
 ## Lancer le téléchargement des documents
 
@@ -46,3 +47,25 @@ Pour formater les xls des déclarations en csv exploitable
 Pour formater le HTML en csv il faut lancer le script
 
     python posttraitement/parcellaire_to_csv.py <numero_cvi>
+
+## GeoJson cadastre
+
+Pour télécharger les geojson des parcellaire dépuis le site web https://cadastre.data.gouv.fr/
+
+!! vérifier le droit d'accès www sur le fichier bin/download_parcellaire_geojson.sh
+
+	sh bin/download_parcellaire_geojson.sh cvi?
+
+## Délimitation du parcellaire
+
+Pour télécharger la délimitation parcellaire des AOC (https://www.data.gouv.fr/fr/datasets/ ) puis les parse par commune, il existe un script pour le faire.
+
+Il faut avant tout indiquer l'identifiant de l'appellation dans le ficheir `bin/config.inc` via la variable de configuration `APP_ID`.
+
+La liste des appellations est disponible dans le fichier [inao_id_app.csv](inao_id_app.csv).
+
+Puis il faut executer le script suivant :
+	
+	bash bin/get_delimination_aoc.sh
+
+!! si ne fonctionne pas vérifier l'url du téléchargement qui peut avoir changé sur data.gouv.fr

@@ -12,21 +12,30 @@ class QuotesSpider(scrapy.Spider):
 #                       }
 
     def start_requests(self):
-        yield scrapy.Request(url="https://www.douane.gouv.fr/", callback=self.prelogin)
+        yield scrapy.Request(url="https://www.douane.gouv.fr/", callback=self.prelogin, dont_filter = True)
 
     def prelogin(self, response):
-        yield scrapy.Request(url="https://www.douane.gouv.fr/saml_login", callback=self.login)
+        self.log('prelogin')
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/"+self.name+"_00_prelogin.html", 'wb') as f:
+                f.write(response.body)
+        yield scrapy.Request(url="https://www.douane.gouv.fr/saml_login/", callback=self.login)
 
     def login(self, response):
-        formdata={"user":os.environ['PRODOUANE_USER'],"password":os.environ['PRODOUANE_PASS']}
+        self.log('login')
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/"+self.name+"_01_login.html", 'wb') as f:
+                f.write(response.body)
+        formdata={"user":os.environ['PRODOUANE_USER'], "password":os.environ['PRODOUANE_PASS']}
         formdata['token'] = response.xpath('//*[@name="token"]/@value')[0].extract()
         formdata['url'] = response.xpath('//*[@name="url"]/@value')[0].extract()
         yield scrapy.FormRequest.from_response(response, formdata=formdata, callback=self.postlogin)
 
     def postlogin(self, response):
         self.log('postlogin')
-#        with open("quotes-postlogin.html", 'wb') as f:
-#            f.write(response.body)
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/"+self.name+"_02_postlogin.html", 'wb') as f:
+                f.write(response.body)
         action = response.xpath('//*[@id="form"]/@action')[0].extract()
         formdata={}
         formdata['RelayState'] = response.xpath('//*[@name="RelayState"]/@value')[0].extract()
@@ -35,14 +44,16 @@ class QuotesSpider(scrapy.Spider):
 
     def redirectsaml(self, response):
         self.log('redirectsaml')
-#        with open("quotes-redirectsaml.html", 'wb') as f:
-#            f.write(response.body)
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/sv11_02_redirectsaml.html", 'wb') as f:
+                f.write(response.body)
         yield scrapy.Request(url='https://www.douane.gouv.fr/service-en-ligne/redirection/PORTAIL_VITI',  callback=self.multiservice)
 
     def multiservice(self, response):
         self.log('multiservice')
-#        with open("quotes-multiservice.html", 'wb') as f:
-#            f.write(response.body)
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/sv11_03_multiservice.html", 'wb') as f:
+                f.write(response.body)
 
         sid = ''
         for redir in response.request.meta.get('redirect_urls'):
@@ -54,7 +65,7 @@ class QuotesSpider(scrapy.Spider):
         if 'CVI' in os.environ:
             cvi = os.environ['CVI']
 
-        yield scrapy.Request(url='https://www.douane.gouv.fr/ncvi-web-sv11-prodouane/connexionProdouane?sid=%s&app=118' % sid, callback=self.sv11_accueil, meta={'departement': 0, 'commune': 0, 'annee': os.environ['PRODOUANE_ANNEE'], "cvi": cvi, "sid": sid})
+        yield scrapy.Request(url='https://www.douane.gouv.fr/ncvi-web-sv11-prodouane/connexionProdouane?code_teleservice=PORTAIL_VITI&sid=%s&app=118' % sid, callback=self.sv11_accueil, meta={'departement': 0, 'commune': 0, 'annee': os.environ['PRODOUANE_ANNEE'], "cvi": cvi, "sid": sid})
 
     def get_input_args(self, response, cssid):
         args = {}
@@ -65,8 +76,9 @@ class QuotesSpider(scrapy.Spider):
 
     def sv11_accueil(self, response):
         self.log('sv11_accueil')
-#        with open("quotes-sv11-connexion.html", 'wb') as f:
-#            f.write(response.body)
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/sv11_04_connexion.html", 'wb') as f:
+                f.write(response.body)
 
         departements = response.css('#formFiltre tr')[1].css('td')[1].css('option::attr(value)').extract();
         inputs = self.get_input_args(response, '#formFiltre')
@@ -101,8 +113,9 @@ class QuotesSpider(scrapy.Spider):
         meta = response.meta
         response = HtmlResponse(url=response.url, body=response.body)
         self.log('sv11_communes')
-#       with open("quotes-sv11-commune.html", 'wb') as f:
-#          f.write(response.body)
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/sv11_05_commune.html", 'wb') as f:
+                f.write(response.body)
 
         communes = response.css('option::attr(value)').extract()
         inputs = self.get_input_args(response, '')
@@ -130,8 +143,9 @@ class QuotesSpider(scrapy.Spider):
 
     def sv11_page_1(self, response):
         self.log('sv11_page_1')
-#        with open("quotes-sv11-page1.html", 'wb') as f:
-#            f.write(response.body)
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/sv11_06_page1.html", 'wb') as f:
+                f.write(response.body)
         args = self.get_input_args(response, '#formFiltre')
         response.meta['javaxViewState'] = args['javax.faces.ViewState']
         args = {
@@ -146,8 +160,9 @@ class QuotesSpider(scrapy.Spider):
     def sv11_tableau_cvi(self, response):
         self.log('sv11_tableau_cvi')
 
-#       with open("quotes-sv11.html", 'wb') as f:
-#           f.write(response.body)
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/sv11_07_tableau.html", 'wb') as f:
+                f.write(response.body)
 
         info = []
         nb_docs = 0
@@ -218,6 +233,11 @@ class QuotesSpider(scrapy.Spider):
         with open(filename, 'wb') as f:
             f.write(response.body)
         self.log('Saved file %s' % filename)
+
+        if os.environ.get('PRODOUANE_DEBUG'):
+            with open("debug/sv11_08_result.html", 'wb') as f:
+                f.write(response.body)
+
 
         inputs = self.get_input_args(response, '')
         args = {

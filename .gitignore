@@ -1,8 +1,8 @@
-documents/*xls
-documents/*pdf
-documents/*html
+documents/*
 
 bin/config.inc
+bin/config.*.inc
+debug/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -105,3 +105,5 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+pyenv/
