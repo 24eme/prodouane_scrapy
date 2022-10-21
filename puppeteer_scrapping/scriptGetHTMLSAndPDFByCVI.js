@@ -21,10 +21,6 @@ const fs = require('fs');
       await browser.close();
       throw "Initialisez la variable d'environnement PRODOUANE_PASS avec le mot de passe";
     }
-    if(!process.env.CVI){
-      await browser.close();
-      throw "Initialisez la variable d'environnement CVI avec le numéro de CVI";
-    }
     if(process.env.DEBUG){
       console.log("===================");
     }
@@ -77,9 +73,65 @@ const fs = require('fs');
       console.log("===================");
     }
     
+
     await page.waitForSelector('.btn-primary');
     await page.$$("#formFdc\\:inputNumeroCvi");
 
+
+    if(!process.env.CVI){
+      if(process.env.DEBUG){
+        console.log("LISTER TOUS LES CVIS");
+        console.log("===================");
+      }
+
+      const departements = await page.evaluate(() =>
+        Array.from(document.querySelectorAll('#formFdc\\:selectDepartement option')).map(element=>element.value)
+      );
+
+      for(var departement of departements){
+
+        await page.select('select#formFdc\\:selectDepartement', departement);
+
+        await page.click('input[value="Rechercher"]');
+        
+        await page.waitForSelector('#formFdc\\:dttListeEvvOA\\:scrollerId_ds_ff');
+        
+        var lastPage = (await page.$("#formFdc\\:dttListeEvvOA\\:scrollerId_ds_ff")) || true;
+        
+        var changeDepartment = false;
+        
+        do {
+            
+          const cvis = await page.evaluate(() =>
+            Array.from(document.querySelectorAll("td[id$='idt260']")).map(element=>element.innerText)
+          );
+                  
+          for(var cvi of cvis){
+            console.log(cvi);
+          }
+          
+          await page.click("#formFdc\\:dttListeEvvOA\\:scrollerId_ds_next");
+          
+          await page.waitForTimeout(250);
+          
+          if(lastPage==true){
+            changeDepartment=true;
+          }
+          
+          lastPage = (await page.$("#formFdc\\:dttListeEvvOA\\:scrollerId_ds_ff")) || true;
+          
+        } while(!changeDepartment);
+        
+      }
+      
+      if(process.env.DEBUG){
+        console.log("FIN LISTING DES CVIS");
+        console.log("===================");
+      }
+      
+      await browser.close();
+      return;
+    }
     await page.click("#formFdc\\:inputNumeroCvi");    
     await page.type('#formFdc\\:inputNumeroCvi', process.env.CVI);    
     
