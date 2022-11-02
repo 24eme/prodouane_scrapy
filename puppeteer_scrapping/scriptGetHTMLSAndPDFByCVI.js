@@ -94,7 +94,7 @@ const fs = require('fs');
 
         await page.click('input[value="Rechercher"]');
         
-        await page.waitForSelector('#formFdc\\:dttListeEvvOA\\:scrollerId_ds_ff');
+        await page.waitForSelector('#formFdc\\:dttListeEvvOA\\:th')
         
         var lastPage = (await page.$("#formFdc\\:dttListeEvvOA\\:scrollerId_ds_ff")) || true;
         
@@ -109,8 +109,12 @@ const fs = require('fs');
           for(var cvi of cvis){
               console.log(cvi);
           }
-
-          await page.click("#formFdc\\:dttListeEvvOA\\:scrollerId_ds_next");
+          
+          var multiplePage = (await page.$("#formFdc\\:dttListeEvvOA\\:scrollerId_ds_next")) || false;
+          
+          if(multiplePage){
+            await page.click("#formFdc\\:dttListeEvvOA\\:scrollerId_ds_next");
+          }
           
           await page.waitForTimeout(250);
           
