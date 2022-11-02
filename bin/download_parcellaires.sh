@@ -16,10 +16,8 @@ tmpfile=$(mktemp /tmp/$(basename $0).XXXXXX)
 
 PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" node puppeteer_scrapping/scriptGetHTMLSAndPDFByCVI.js > $tmpfile
 
-echo $tmpfile
-
 cat $tmpfile | while read cvi; do
 	CVI="$cvi" PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" node puppeteer_scrapping/scriptGetHTMLSAndPDFByCVI.js
 done
-
+	
 rm $tmpfile
