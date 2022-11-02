@@ -14,10 +14,10 @@ fi
 
 tmpfile=$(mktemp /tmp/$(basename $0).XXXXXX)
 
-PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" node puppeteer_scrapping/scriptGetHTMLSAndPDFByCVI.js > $tmpfile
+PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" node puppeteer_scrapping/script_parcellaire_info_from_douane.js > $tmpfile
 
 cat $tmpfile | while read cvi; do
-	CVI="$cvi" PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" node puppeteer_scrapping/scriptGetHTMLSAndPDFByCVI.js
+	CVI="$cvi" PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" node puppeteer_scrapping/script_parcellaire_info_from_douane.js
 done
 	
 rm $tmpfile
