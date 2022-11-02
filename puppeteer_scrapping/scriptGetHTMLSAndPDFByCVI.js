@@ -66,6 +66,8 @@ const fs = require('fs');
     }
     await page.waitForSelector('.btn-primary');
     
+    await page.waitForSelector("#j_idt24");
+    
     await page.click("input[value='Fiche de compte']");
     
     if(process.env.DEBUG){
