@@ -105,11 +105,12 @@ const fs = require('fs');
           const cvis = await page.evaluate(() =>
             Array.from(document.querySelectorAll("td[id$='idt260']")).map(element=>element.innerText)
           );
-                  
-          for(var cvi of cvis){
-            console.log(cvi);
-          }
           
+          if(process.env.DEBUG){
+            for(var cvi of cvis){
+              console.log(cvi);
+            }
+          }
           await page.click("#formFdc\\:dttListeEvvOA\\:scrollerId_ds_next");
           
           await page.waitForTimeout(250);
