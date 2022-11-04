@@ -21,10 +21,6 @@ const fs = require('fs');
       await browser.close();
       throw "Initialisez la variable d'environnement PRODOUANE_PASS avec le mot de passe";
     }
-    if(!process.env.CVI){
-      await browser.close();
-      throw "Initialisez la variable d'environnement CVI avec le numéro de CVI";
-    }
     if(process.env.DEBUG){
       console.log("===================");
     }
@@ -70,6 +66,8 @@ const fs = require('fs');
     }
     await page.waitForSelector('.btn-primary');
     
+    await page.waitForSelector("#j_idt24");
+    
     await page.click("input[value='Fiche de compte']");
     
     if(process.env.DEBUG){
@@ -77,9 +75,69 @@ const fs = require('fs');
       console.log("===================");
     }
     
+
     await page.waitForSelector('.btn-primary');
     await page.$$("#formFdc\\:inputNumeroCvi");
 
+
+    if(!process.env.CVI){
+      if(process.env.DEBUG){
+        console.log("LISTER TOUS LES CVIS");
+        console.log("===================");
+      }
+
+      const departements = await page.evaluate(() =>
+        Array.from(document.querySelectorAll('#formFdc\\:selectDepartement option')).map(element=>element.value)
+      );
+
+      for(var departement of departements){
+
+        await page.select('select#formFdc\\:selectDepartement', departement);
+
+        await page.click('input[value="Rechercher"]');
+        
+        await page.waitForSelector('#formFdc\\:dttListeEvvOA\\:th')
+        
+        var lastPage = (await page.$("#formFdc\\:dttListeEvvOA\\:scrollerId_ds_ff")) || true;
+        
+        var changeDepartment = false;
+        
+        do {
+            
+          const cvis = await page.evaluate(() =>
+            Array.from(document.querySelectorAll("td[id$='idt260']")).map(element=>element.innerText)
+          );
+          
+          for(var cvi of cvis){
+              console.log(cvi);
+          }
+          
+          var multiplePage = (await page.$("#formFdc\\:dttListeEvvOA\\:scrollerId_ds_next")) || false;
+          
+          if(multiplePage){
+            await page.click("#formFdc\\:dttListeEvvOA\\:scrollerId_ds_next");
+          }
+          
+          await page.waitForTimeout(250);
+          
+          if(lastPage==true){
+            changeDepartment=true;
+          }
+          
+          lastPage = (await page.$("#formFdc\\:dttListeEvvOA\\:scrollerId_ds_ff")) || true;
+          
+        } while(!changeDepartment);
+        
+      }
+      
+      if(process.env.DEBUG){
+        console.log("FIN LISTING DES CVIS");
+        console.log("===================");
+      }
+      
+      await browser.close();
+      return;
+    }
     await page.click("#formFdc\\:inputNumeroCvi");    
     await page.type('#formFdc\\:inputNumeroCvi', process.env.CVI);    
     
@@ -90,6 +148,31 @@ const fs = require('fs');
       console.log("===================");
     }
     
+    await page.waitForTimeout(250);
+    
+    const tableLines = await page.evaluate(() =>
+      Array.from(document.querySelectorAll("td[class='rf-dt-nd-c']")).map(element=>element.innerText)
+    ); 
+        
+    var hasCVIError = (await page.$("#erreur\\:j_idt112")) || false;
+        
+    if(hasCVIError || tableLines.includes("aucune")){
+      console.log("");
+      console.log('FAILED !! ERREUR DE CVI');
+      await browser.close();
+      return;
+    }    
+    
+    var hasError = (await page.$("#erreur\\:jsfErrorId")) || false;
+    
+    if(hasError){
+      console.log("");
+      console.log('FAILED !! IL Y A UNE ERREUR DANS LA RECHERCHE');
+      await browser.close();
+      return;
+    }    
+    
+        
     await page.waitForSelector("#formFdc\\:dttListeEvvOA\\:0\\:j_idt268");
     await page.click("#formFdc\\:dttListeEvvOA\\:0\\:j_idt268");    
     
