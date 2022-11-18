@@ -12,11 +12,11 @@ from bs4 import BeautifulSoup, SoupStrainer
 
 def transform_superficie(superficie):
     superficie = re.search(r'(\d+)Ha (\d+)Ar (\d+)Ca', superficie)
-    return '{:01d}.{}{}'.format(
+    return float('{:01d}.{}{}'.format(
         int(superficie.group(1)),
         superficie.group(2),
         superficie.group(3)
-    ).rstrip('0')
+    ).rstrip('0'))
 
 
 def generate_idu(code_communes, section, num_parc):
