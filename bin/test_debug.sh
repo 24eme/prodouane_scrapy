@@ -18,32 +18,32 @@ fi
 echo
 echo "test DR"
 echo "================"
-rm -f "documents/dr-2019-$PRODOUANE_DEBUG_DR"*
+rm -f "documents/dr-2019-"$PRODOUANE_DEBUG_DR""*
 PRODOUANE_DEBUG=true bash bin/download_douane.sh dr 2019 "$PRODOUANE_DEBUG_DR" > debug/dr-2019.log 2>&1
 
-if test -s documents/dr-2019-"$PRODOUANE_DEBUG_DR".pdf ;  then echo " PDF Présent :)";  else 	echo "Erreur pas de pdf dr";  fi
+if test -s documents/dr-2019-"$PRODOUANE_DEBUG_DR".pdf && file -i documents/dr-2019-"$PRODOUANE_DEBUG_DR".pdf | grep -i application/pdf > /dev/null ; then echo " PDF Présent :)";  else echo "Erreur pas de pdf dr";  fi
 if test -s documents/dr-2019-"$PRODOUANE_DEBUG_DR".html ; then echo " HTML Présent :)"; else    echo "Erreur pas de HTML dr"; fi
 if test -s documents/dr-2019-"$PRODOUANE_DEBUG_DR".xls ;  then echo " XLS Présent :)";  else    echo "Erreur pas de xls dr";  fi
 
 echo
 echo "test SV11"
 echo "================"
-rm -f "documents/sv11-2019-$PRODOUANE_DEBUG_SV11"*
+rm -f "documents/sv11-2019-"$PRODOUANE_DEBUG_SV11""*
 PRODOUANE_DEBUG=true bash bin/download_douane.sh sv11 2019 "$PRODOUANE_DEBUG_SV11" > debug/sv11-2019.log 2>&1
 
-if test -s documents/sv11-2019-"$PRODOUANE_DEBUG_SV11".pdf ;  then echo " PDF Présent :)" ;  else echo "Erreur pas de pdf sv11";  fi
+if test -s documents/sv11-2019-"$PRODOUANE_DEBUG_SV11".pdf && file -i documents/sv11-2019-"$PRODOUANE_DEBUG_SV11".pdf | grep -i application/pdf > /dev/null ; then echo " PDF Présent :)" ;  else echo "Erreur pas de pdf sv11";  fi
 if test -s documents/sv11-2019-"$PRODOUANE_DEBUG_SV11".html ; then echo " HTML Présent :)" ; else echo "Erreur pas de html sv11"; fi
 if test -s documents/sv11-2019-"$PRODOUANE_DEBUG_SV11".xls ;  then echo " XLS Présent :)" ;  else echo "Erreur pas de xls sv11";  fi
 
 echo
 echo "test SV12"
 echo "================"
-rm -f "documents/sv12-2019-$PRODOUANE_DEBUG_SV12"*
+rm -f "documents/sv12-2019-"$PRODOUANE_DEBUG_SV12""*
 PRODOUANE_DEBUG=true bash bin/download_douane.sh sv12 2019 "$PRODOUANE_DEBUG_SV12" > debug/sv12-2019.log 2>&1
 
-if test -s documents/sv12-2019-"$PRODOUANE_DEBUG_SV12".pdf  ; then echo " PDF Présent :)";  else echo "Erreur pas de pdf dr";  fi
-if test -s documents/sv12-2019-"$PRODOUANE_DEBUG_SV12".html ; then echo " HTML Présent :)"; else echo "Erreur pas de html dr"; fi
-if test -s documents/sv12-2019-"$PRODOUANE_DEBUG_SV12".xls  ; then echo " XLS Présent :)";  else echo "Erreur pas de xls dr";  fi
+if test -s documents/sv12-2019-"$PRODOUANE_DEBUG_SV12".pdf && file -i documents/sv12-2019-"$PRODOUANE_DEBUG_SV12".pdf | grep -i application/pdf > /dev/null ; then echo " PDF Présent :)";  else echo "Erreur pas de pdf sv12";  fi
+if test -s documents/sv12-2019-"$PRODOUANE_DEBUG_SV12".html ; then echo " HTML Présent :)"; else echo "Erreur pas de html sv12"; fi
+if test -s documents/sv12-2019-"$PRODOUANE_DEBUG_SV12".xls  ; then echo " XLS Présent :)";  else echo "Erreur pas de xls sv12";  fi
 
 echo
 echo "test Parcellaire"
