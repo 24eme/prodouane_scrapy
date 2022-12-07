@@ -1,64 +1,11 @@
-const puppeteer = require('puppeteer');
-const fs = require('fs');
+const prodouane = require('./common_prodouane.js');
 
 (async () => {
-  
-  const browser = await puppeteer.launch(
-  {
-    headless: !(process.env.DEBUG_WITH_BROWSER),  //mettre à false pour debug
-    defaultViewport: {width: 1920, height: 1080},
-    ignoreDefaultArgs: ['--disable-extensions'],
-    args: ['--no-sandbox', '--disable-setuid-sandbox'], 
-  }
-  );
   try {
-    
-    if(!process.env.PRODOUANE_USER){
-      await browser.close();
-      throw "Initialisez la variable d'environnement PRODOUANE_USER avec le login";
-    }
-    if(!process.env.PRODOUANE_PASS){
-      await browser.close();
-      throw "Initialisez la variable d'environnement PRODOUANE_PASS avec le mot de passe";
-    }
-    if(process.env.DEBUG){
-      console.log("===================");
-    }
-    const page = await browser.newPage();
-    const baseURL = 'https://www.douane.gouv.fr'
-    
-    await page.goto(baseURL+"/mon-espace-personnel");
-    
-    if(process.env.DEBUG){
-      console.log("Home page: OK");
-      console.log("===================");
-    }
-    await page.click('#loginIdentifiant');    
-    await page.waitForSelector('#loginIdentifiant');
-    
-    if(process.env.DEBUG){
-      console.log("Login page: OK");
-      console.log("===================");
-    }
-    
-    await page.type('#loginIdentifiant', process.env.PRODOUANE_USER); 
-    await page.type('#loginMotdepasse', process.env.PRODOUANE_PASS);
-    await page.keyboard.press('Enter');
-    
-    if(process.env.DEBUG){
-      console.log("Login: OK");
-      console.log("===================");
-    }
-    
-    await page.waitForSelector('#timer');
-    await page.click('button.positive');
 
-    if(process.env.DEBUG){
-      console.log("Click sur CONTINUER OK");
-      console.log("===================");
-    }
+    page = await prodouane.openpage_and_login();
 
-    await page.goto(baseURL+"/service-en-ligne/redirection/PORTAIL_VITI");
+    await page.goto(prodouane.baseURL+"/service-en-ligne/redirection/PORTAIL_VITI");
     
     if(process.env.DEBUG){
       console.log("Redirection OK");
@@ -135,7 +82,7 @@ const fs = require('fs');
         console.log("===================");
       }
       
-      await browser.close();
+      await prodouane.close();
       return;
     }
     await page.click("#formFdc\\:inputNumeroCvi");    
@@ -159,7 +106,7 @@ const fs = require('fs');
     if(hasCVIError || tableLines.includes("aucune")){
       console.log("");
       console.log('FAILED !! ERREUR DE CVI');
-      await browser.close();
+      await prodouane.close();
       return;
     }    
     
@@ -168,7 +115,7 @@ const fs = require('fs');
     if(hasError){
       console.log("");
       console.log('FAILED !! IL Y A UNE ERREUR DANS LA RECHERCHE');
-      await browser.close();
+      await prodouane.close();
       return;
     }    
     
@@ -247,17 +194,17 @@ const fs = require('fs');
         }
     });
     
-    await browser.close();
+    await prodouane.close();
 
     if(process.env.DEBUG){
       console.log("FINI POUR LE CVI "+process.env.CVI);  
       console.log("===================");
     }
     
-    }catch (e) {
-				console.log("");
-				console.log('FAILED !!');
-				console.log(e);
-        await browser.close();
-			}
-		})();
+  }catch (e) {
+    console.log("");
+    console.log('FAILED !!');
+    console.log(e);
+    await prodouane.close();
+  }
+})();
