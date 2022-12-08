@@ -20,4 +20,8 @@ if ! test "$cvi" ; then
 	exit 2;
 fi
 
+if test "$type" = "dr" ; then
 PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" CVI="$cvi" PRODOUANE_ANNEE="$annee" scrapy crawl $type
+else
+PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" CVI="$cvi" PRODOUANE_ANNEE="$annee" node puppeteer_scrapping/prodouane_vendanges.js
+fi
