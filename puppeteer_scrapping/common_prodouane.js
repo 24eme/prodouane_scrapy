@@ -37,12 +37,8 @@ exports.openpage_and_login = async function () {
     }
     const page = await browser.newPage();
     
-    await page.goto(baseURL+"/mon-espace-personnel");
-    
-    if(process.env.DEBUG){
-    console.log("Home page: OK");
-    console.log("===================");
-    }
+    await page.goto("https://connexion.douane.gouv.fr/")
+
     await page.click('#loginIdentifiant');    
     await page.waitForSelector('#loginIdentifiant');
     
@@ -60,12 +56,35 @@ exports.openpage_and_login = async function () {
     console.log("===================");
     }
     
-    await page.waitForSelector('#timer');
-    await page.click('button.positive');
+    await page.waitForSelector('.container');
+    await page.waitForTimeout(250);
+
+    const timer = await page.$$('#timer');
+    if (timer.length) {
+        await page.click('button.positive');
     
-    if(process.env.DEBUG){
-    console.log("Click sur CONTINUER OK");
-    console.log("===================");
+        if(process.env.DEBUG){
+            console.log("Click sur CONTINUER OK");
+            console.log("===================");
+        }
+    }else{
+        if(process.env.DEBUG){
+            console.log("Seule connexion, on peut aller directement au portail VITI");
+            console.log("===================");
+        }
+    }
+
+    await page.goto(baseURL+"/");
+
+    await page.waitForSelector('.marqueDouane');
+
+    const meteo = await page.$$('.descriptionMeteo');
+    if (meteo.length) {
+        if(process.env.DEBUG){
+          console.log("Mode secours de la douane détecté");
+          console.log("===================");
+        }
+        throw new Error('Portail de la douane inaccessible')
     }
     
     await page.goto(baseURL+"/service-en-ligne/redirection/PORTAIL_VITI");
