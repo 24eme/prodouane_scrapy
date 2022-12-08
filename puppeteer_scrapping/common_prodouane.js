@@ -1,5 +1,4 @@
 const puppeteer = require('puppeteer');
-const fs = require('fs');
 
 var browser;
 
@@ -11,6 +10,11 @@ exports.close = async function() {
 }
 
 exports.openpage_and_login = async function () {
+
+    if (!process.env.DEBUG) {
+        process.env.DEBUG = (process.env.DEBUG_WITH_BROWSER);
+    }
+
     browser = await puppeteer.launch(
     {
       headless: !(process.env.DEBUG_WITH_BROWSER),  //mettre à false pour debug
@@ -64,6 +68,17 @@ exports.openpage_and_login = async function () {
     console.log("===================");
     }
     
+    await page.goto(baseURL+"/service-en-ligne/redirection/PORTAIL_VITI");
+    
+    if(process.env.DEBUG){
+      console.log("Redirection OK");
+      console.log("===================");
+    }
+    await page.waitForSelector('.btn-primary');
+    
+    await page.waitForSelector("#j_idt24");
+
+
     return page;
 
 }

@@ -1,20 +1,11 @@
 const prodouane = require('./common_prodouane.js');
+const fs = require('fs');
 
 (async () => {
   try {
 
     page = await prodouane.openpage_and_login();
 
-    await page.goto(prodouane.baseURL+"/service-en-ligne/redirection/PORTAIL_VITI");
-    
-    if(process.env.DEBUG){
-      console.log("Redirection OK");
-      console.log("===================");
-    }
-    await page.waitForSelector('.btn-primary');
-    
-    await page.waitForSelector("#j_idt24");
-    
     await page.click("input[value='Fiche de compte']");
     
     if(process.env.DEBUG){
