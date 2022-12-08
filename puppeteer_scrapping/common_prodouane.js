@@ -11,8 +11,8 @@ exports.close = async function() {
 
 exports.openpage_and_login = async function () {
 
-    if (!process.env.DEBUG) {
-        process.env.DEBUG = (process.env.DEBUG_WITH_BROWSER);
+    if (!process.env.DEBUG && (process.env.DEBUG_WITH_BROWSER != undefined)) {
+        process.env.DEBUG = True;
     }
 
     browser = await puppeteer.launch(
