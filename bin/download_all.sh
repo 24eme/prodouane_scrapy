@@ -14,7 +14,7 @@ if ! test "$annee" ; then
 	annee=$(date '+%Y')
 fi
 if ! test "$types" ; then
-types="dr sv11 sv12";
+types="dr";
 fi
 
 
