@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. $(dirname $0)/common.inc
+. "$(dirname "$0")/common.inc"
 
 if test "$PRODOUANE_DOUANE"; then
 	mkdir -p debug
@@ -21,7 +21,8 @@ if ! test "$cvi" ; then
 fi
 
 if test "$type" = "dr" ; then
-PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" CVI="$cvi" PRODOUANE_ANNEE="$annee" scrapy crawl $type
+  rm ./documents/dr-"$annee"*"$cvi"*
+  PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" CVI="$cvi" PRODOUANE_ANNEE="$annee" scrapy crawl "$type"
 else
-PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" CVI="$cvi" PRODOUANE_ANNEE="$annee" node puppeteer_scrapping/prodouane_vendanges.js
+  PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" CVI="$cvi" PRODOUANE_ANNEE="$annee" node puppeteer_scrapping/prodouane_vendanges.js
 fi
