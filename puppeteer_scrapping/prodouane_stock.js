@@ -48,39 +48,78 @@ const fs = require('fs');
 
     await page.waitForSelector("#j_idt172\\:0");
     fs.writeFileSync("documents/ds-"+process.env.CVI+".html",await page.content());
-    
+
     if(process.env.DEBUG){
       console.log("Enregistre la page HTML des stock de l'opérateur OK");
       console.log("===================");
     }
-    
-        
-    await page.click('#j_idt172\\:j_idt178 a');  
+
+    // CONFIGURATION DU DOSSIER DE TELECHARGEMENT
+
+    client = await page.target().createCDPSession()
+    await client.send('Page.setDownloadBehavior', {
+    behavior: 'allow',
+    downloadPath: "documents",
+    });
+
+    // Recuperation des liens dans le header
+
+    liens = await page.$$('#j_idt172\\:j_idt178 a');
+
+    // Download du PDF
+
+    console.log(liens);
+
+    await page.click(liens[0]);
+
     console.log("Click sur pdf");
     console.log("===================");
-    
 
-    var csv_filename = '';
+    var pdf_filename = '';
     await page.waitForResponse((response) => {
         if (response.status() === 200) {
-            csv_filename = response.headers()['content-disposition'];
-            csv_filename = csv_filename.replace('attachment;filename=', '');
-            console.log(csv_filename);
-            if (csv_filename.match('pdf')) {
+            pdf_filename = response.headers()['content-disposition'];
+            pdf_filename = pdf_filename.replace('attachment; filename=', '');
+            console.log(pdf_filename);
+            if (pdf_filename.match('.pdf')) {
                 return true;
             }
         }
         return false;
     });
-    
-    
-    // session_id = csv_filename.match('DeclarationStock_([^_]+)_([^_]+)_([^\.]+)\.pdf');  DeclarationStock_6900703220_2122_RecapitulatifInstallation.pdf
-    // await page.waitForTimeout(100);
-    // await fs.rename('documents/'+csv_filename, 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.csv', (err) => {if (err) throw err;});
-    
-    
-    // await page.click('#j_idt172\\:j_idt178 a');
-    
+
+
+    pdf_newfilename = pdf_filename.replace('DeclarationStock', 'ds');
+    pdf_newfilename = pdf_newfilename.replace('_RecapitulatifInstallation', '');
+    pdf_newfilename = pdf_newfilename.replace('_', '-');
+    await page.waitForTimeout(100);
+    await fs.rename('documents/'+pdf_filename, 'documents/'+pdf_newfilename, (err) => {if (err) throw err;});
+
+    // Download du XLS
+
+    await page.click(liens[1]);
+    console.log("Click sur xls");
+    console.log("===================");
+
+    var xls_filename = '';
+    await page.waitForResponse((response) => {
+        if (response.status() === 200) {
+            xls_filename = response.headers()['content-disposition'];
+            xls_filename = xls_filename.replace('attachment; filename=', '');
+            console.log(xls_filename);
+            if (xls_filename.match('.xls')) {
+                return true;
+            }
+        }
+        return false;
+    });
+
+    xls_newfilename = xls_filename.replace('DeclarationStock', 'ds');
+    xls_newfilename = xls_newfilename.replace('_RecapitulatifInstallation', '');
+    xls_newfilename = xls_newfilename.replace('_', '-');
+    await page.waitForTimeout(100);
+    await fs.rename('documents/'+xls_filename, 'documents/'+xls_newfilename, (err) => {if (err) throw err;});
+
   }catch (e) {
     console.log("");
     console.log('FAILED !!');
