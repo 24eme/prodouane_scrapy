@@ -62,21 +62,24 @@ const fs = require('fs');
     downloadPath: "documents",
     });
 
-    // Recuperation des liens dans le header
-
-    liens = await page.$$('#j_idt172\\:j_idt178 a');
-
+    // await page.$$('#j_idt172\\:j_idt178 a(title="Générer un fichier pdf pour impression")');
+    
+    // console.log(liens);
+    // await page.click('a(title="Générer un fichier pdf pour impression")');
+    
+    
+    
     // Download du PDF
 
-    console.log(liens);
-
-    await page.click(liens[0]);
+    await page.click('#j_idt172\\:j_idt178:nth-child(1)');
 
     console.log("Click sur pdf");
     console.log("===================");
 
     var pdf_filename = '';
+    
     await page.waitForResponse((response) => {
+        console.log(pdf_filename);
         if (response.status() === 200) {
             pdf_filename = response.headers()['content-disposition'];
             pdf_filename = pdf_filename.replace('attachment; filename=', '');
@@ -88,16 +91,18 @@ const fs = require('fs');
         return false;
     });
 
+    await page.waitForTimeout(100);
 
     pdf_newfilename = pdf_filename.replace('DeclarationStock', 'ds');
     pdf_newfilename = pdf_newfilename.replace('_RecapitulatifInstallation', '');
     pdf_newfilename = pdf_newfilename.replace('_', '-');
-    await page.waitForTimeout(100);
     await fs.rename('documents/'+pdf_filename, 'documents/'+pdf_newfilename, (err) => {if (err) throw err;});
 
-    // Download du XLS
+    
 
-    await page.click(liens[1]);
+    // Download du XLS
+    await page.click("a[title='Générer un tableur Excel ou Calc']");
+
     console.log("Click sur xls");
     console.log("===================");
 
@@ -106,19 +111,35 @@ const fs = require('fs');
         if (response.status() === 200) {
             xls_filename = response.headers()['content-disposition'];
             xls_filename = xls_filename.replace('attachment; filename=', '');
-            console.log(xls_filename);
-            if (xls_filename.match('.xls')) {
+            if (xls_filename.match('/xls$/')) {
                 return true;
             }
         }
         return false;
     });
-
     xls_newfilename = xls_filename.replace('DeclarationStock', 'ds');
     xls_newfilename = xls_newfilename.replace('_RecapitulatifInstallation', '');
     xls_newfilename = xls_newfilename.replace('_', '-');
-    await page.waitForTimeout(100);
+    
+    await page.waitForTimeout(500);
+    
+    // console.log('documents/'+xls_filename+"\n");
+    // console.log('documents/'+xls_newfilename+"\n");
+    
     await fs.rename('documents/'+xls_filename, 'documents/'+xls_newfilename, (err) => {if (err) throw err;});
+    
+    
+    await page.click('#buttonLogin');
+    await page.waitForSelector('.logout');
+    await page.click('.logout');
+
+    await page.waitForSelector('.erreur-authentification')
+    if(process.env.DEBUG){
+      console.log("Déconnexion OK");
+      console.log("===================");
+    }
+    
+    await prodouane.close();
 
   }catch (e) {
     console.log("");
