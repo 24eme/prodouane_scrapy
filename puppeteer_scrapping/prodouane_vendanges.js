@@ -32,12 +32,17 @@ const fs = require('fs');
       console.log("===================");
     }
     
-    await page.waitForSelector('#tableau-declarations');
+    await page.waitForSelector('#tableau-declarations, #inputNumeroCvi.is-valid');
+
     const h2_result = await page.$$('#tableau-declarations tbody tr');
     
-    if (h2_result.length != 1) {
+    if (h2_result.length < 1) {
+        console.log("ERREUR: pas de résultat");
+        return prodouane.close();
+    }
+    if (h2_result.length > 1) {
         console.log("ERREUR: plus d'un résultat");
-        prodouane.close();
+        return prodouane.close();
     }
     if(process.env.DEBUG){
       console.log("Une déclaration trouvée");
