@@ -12,17 +12,100 @@ const fs = require('fs');
     console.log("Click sur Stock OK");
     console.log("===================");
 
+
+    //LISTER TOUS LES CVIS EN SORTIE STANDARD
+
     if(!process.env.CVI){
+
+      if(! process.env.PRODOUANE_ANNEE){
+        await browser.close();
+        throw "Initialisez la variable d'environnement PRODOUANE_ANNEE avec l'année ";
+      }
+
       if(process.env.DEBUG){
         console.log("LISTER TOUS LES CVIS");
         console.log("===================");
       }
 
-       //LISTER TOUS LES CVIS EN SORTIE STANDARD
+      page.select('#formFiltre select',(parseInt(process.env.PRODOUANE_ANNEE) - 2000 - 5).toString());
+
+      const departements = await page.evaluate(() =>
+        Array.from(document.querySelectorAll('#formFiltre\\:selectDepartement option')).map(element=>element.value)
+      );
+
+      await page.waitForTimeout(250);
+
+      for(var departement of departements){
+
+        console.log("DEPARTEMENT : "+ departement+"\n");
+
+        await page.select('select#formFiltre\\:selectDepartement', departement);
+
+        await page.waitForTimeout(250);
+
+        const communes = await page.evaluate(() =>
+          Array.from(document.querySelectorAll('#formFiltre\\:selectCommune option')).map(element=>element.value)
+        );
+
+        await page.waitForTimeout(250);
+
+        for(var commune of communes){
+          if(process.env.DEBUG){
+            console.log("COMMUNE : "+ commune+"\n");
+          }
+          await page.select('select#formFiltre\\:selectCommune', commune);
+          await page.click('input[value="Filtrer par EVV"]');
+          await page.waitForSelector("#formDeclaration\\:listeDeclaration\\:th");
+
+          var results = (await page.$('#formDeclaration\\:listeDeclaration\\:tf')) || false;
+
+          if(!results){
+            if(process.env.DEBUG){
+              console.log('Aucun résultat');
+            }
+            continue;
+          }
+
+          var multiplePage = (await page.$("#formDeclaration\\:listeDeclaration\\:scrollerId_ds_f")) || false;
+
+          if(multiplePage){
+            if(process.env.DEBUG){
+              console.log("A CODER PARCOURIR TOUTES LES PAGES");
+            }
+            continue;
+          }
+
+          const cvis = await page.evaluate(() =>
+            Array.from(document.querySelectorAll("td[id$='j_idt161']")).map(element=>element.innerText)
+          );
+
+          await page.waitForTimeout(250);
+
+          if(process.env.DEBUG){
+            console.log("NB CVIS : "+cvis.length);
+          }
+
+          for(var cvi of cvis){
+              console.log(cvi);
+          }
+
+        }
+
+      }
+
+      if(process.env.DEBUG){
+        console.log("FIN LISTING DES CVIS");
+        console.log("===================");
+      }
+
      await prodouane.close();
      return;
     }
 
+
+    if(process.env.PRODOUANE_ANNEE){
+      page.select('#formFiltre select',(parseInt(process.env.PRODOUANE_ANNEE) - 2000 - 5).toString());
+    }
 
     await page.click("#formFiltre\\:inputNumeroCvi");
     await page.type('#formFiltre\\:inputNumeroCvi', process.env.CVI);
@@ -33,7 +116,6 @@ const fs = require('fs');
       console.log("Input CVI OK");
       console.log("===================");
     }
-
 
     await page.waitForSelector("#formDeclaration\\:listeDeclaration\\:j_idt140");
     var result = await page.$("#formDeclaration\\:listeDeclaration\\:0\\:j_idt172");
