@@ -11,6 +11,9 @@ import urllib
 import gzip
 import json
 
+cache_parcelles_commune_millesimes = {};
+cache_parcelles = {};
+
 def get_file_parcellaire(numero_cvi, directory):
     for file in os.listdir(directory):
         if(re.findall('parcellaire-'+numero_cvi+'.csv', file)):
@@ -52,25 +55,36 @@ def get_geoJson_commune(directory, cvi, idu, millesime):
 def get_geoJson_parcelle(directory, parcellaire):
     num_commune = parcellaire[0]['CVI Operateur'];
     idu = parcellaire[0]['IDU'];
-    millesimes = ['latest','2022-01-01','2021-10-01','2021-07-01','2021-04-01','2021-02-01','2020-10-01','2020-07-01','2020-01-01','2019-10-01','2019-07-01','2019-04-01','2019-01-01'];
-    for millesime in millesimes[::-1]:
-        file_geojson_path = get_geoJson_commune(directory, idu[0:5], idu, millesime);
-        if not file_geojson_path:
-            continue
-        if file_geojson_path.find('.gz'):
-          try:
-            with gzip.open(file_geojson_path, 'rb') as f:
-              list_geojson = json.loads(f.read().decode('utf-8'));
-              
-              for parcelle in list_geojson["features"]:
-                if(parcelle['properties']['id'] == idu):
-                    #check if parcelle contains more than one cepage
+    millesimes = ['latest','2022-10-01','2022-07-01','2022-04-01','2022-01-01','2021-10-01','2021-07-01','2021-04-01','2021-02-01','2020-10-01','2020-07-01','2020-01-01','2019-10-01','2019-07-01','2019-04-01','2019-01-01']
+    if not idu in cache_parcelles:
+        for millesime in millesimes:
+            if not idu[0:5] in cache_parcelles_commune_millesimes:
+                cache_parcelles_commune_millesimes[idu[0:5]] = {}
+            if not millesime in cache_parcelles_commune_millesimes[idu[0:5]]:
+                cache_parcelles_commune_millesimes[idu[0:5]][millesime] = True
+                file_geojson_path = get_geoJson_commune(directory, idu[0:5], idu, millesime);
+                if not file_geojson_path:
+                    continue
+                if file_geojson_path.find('.gz'):
+                    try:
+                        with gzip.open(file_geojson_path, 'rb') as f:
+                            list_geojson = json.loads(f.read().decode('utf-8'));
+                        
+                        for parcelle in list_geojson["features"]:
+                            cache_parcelles[parcelle['properties']['id']] = parcelle
+                    except: #Not a gz probably 404
+                        continue
+                if idu in cache_parcelles:
                     parcelle['properties']['parcellaires'] = parcellaire;
-                    return parcelle;
-          except: #Not a gz probably 404
-            continue
-          #parcelle doesn't found in that millesime downloaded
-          #make new downloading and process
+                    return parcelle
+    try:
+        parcelle = cache_parcelles[idu]
+        #check if parcelle contains more than one cepage
+        parcelle['properties']['parcellaires'] = parcellaire;
+        return parcelle
+    except: #Not a gz probably 404
+        return None
+    return None
     
 def my_cache_download(filepath):
 
