@@ -75,6 +75,7 @@ def get_geoJson_parcelle(directory, parcellaire):
                     except: #Not a gz probably 404
                         continue
                 if idu in cache_parcelles:
+                    parcelle = cache_parcelles[idu]
                     parcelle['properties']['parcellaires'] = parcellaire;
                     return parcelle
     try:
