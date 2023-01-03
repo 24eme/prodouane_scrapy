@@ -69,3 +69,10 @@ Puis il faut executer le script suivant :
 	bash bin/get_delimination_aoc.sh
 
 !! si ne fonctionne pas vérifier l'url du téléchargement qui peut avoir changé sur data.gouv.fr
+
+## Parcellaires intéressants
+
+Pour la reconnaissance d'IDU, les parcellaires suivants sont intéressants :
+
+ - 4416300051
+ - 6831800051
