@@ -32,11 +32,12 @@ const fs = require('fs');
       console.log("===================");
     }
     
-    await page.waitForSelector('#tableau-declarations, #inputNumeroCvi.is-valid');
-
+    await page.waitForSelector('#tableau-declarations tbody tr, #inputNumeroCvi.is-valid');
+    await page.waitForTimeout(150);
     const h2_result = await page.$$('#tableau-declarations tbody tr');
     
     if (h2_result.length < 1) {
+        await page.waitForTimeout(50000);
         console.log("ERREUR: pas de résultat");
         return prodouane.close();
     }
@@ -113,7 +114,8 @@ const fs = require('fs');
         return false;
     });
     await page.waitForTimeout(100);
-    await fs.rename('documents/declaration_Production-'+session_id[2]+'.pdf', 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf', (err) => {if (err) throw err;});
+    await fs.rename('documents/declaration_Production-'+session_id[2]+'.pdf', 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf', (err) => {if (err) return;});
+    await fs.rename('documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_apporteur.pdf', 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf', (err) => {if (err) return;});
     
     if(process.env.DEBUG){
       console.log("Téléchargement PDF OK");
