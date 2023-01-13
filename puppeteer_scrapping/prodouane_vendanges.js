@@ -52,6 +52,8 @@ const fs = require('fs');
       console.log("===================");
     }
 
+    await page.waitForSelector('#tableau-declarations tbody tr:first-child .btn-primary');
+
     await page.click('#tableau-declarations tbody tr:first-child .btn-primary');
     await page.waitForSelector('#tableau-recap-resume');
     if(process.env.DEBUG){
