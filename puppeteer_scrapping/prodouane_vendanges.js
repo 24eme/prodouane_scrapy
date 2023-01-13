@@ -118,11 +118,16 @@ const fs = require('fs');
         return false;
     });
     await page.waitForTimeout(100);
-    await fs.rename('documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_fournisseur.pdf', 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf', (err) => {if (err) throw err;});
+    type = 'fournisseur';
+    ret = await fs.rename('documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_fournisseur.pdf', 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf', (err) => {if (err) return 'ERR';});
+    if (ret == 'ERR') {
+        type = 'apporteur';
+        await fs.rename('documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_apporteur.pdf', 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf', (err) => {if (err) throw err;});
+    }
     
     if(process.env.DEBUG){
       console.log("Téléchargement PDF OK");
-      console.log('documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_fournisseur.pdf'+" => "+'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf');
+      console.log('documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_'+type+'.pdf'+" => "+'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf');
       console.log("===================");
     }
 
