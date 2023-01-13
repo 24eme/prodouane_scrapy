@@ -119,8 +119,7 @@ const fs = require('fs');
         return false;
     });
     await page.waitForTimeout(100);
-    await fs.rename('documents/declaration_Production-'+session_id[2]+'.pdf', 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf', (err) => {if (err) return;});
-    await fs.rename('documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_apporteur.pdf', 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf', (err) => {if (err) return;});
+    await fs.rename('documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_fournisseur.pdf', 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf', (err) => {if (err) throw err;});
     
     if(process.env.DEBUG){
       console.log("Téléchargement PDF OK");
