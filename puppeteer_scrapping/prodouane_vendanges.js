@@ -89,6 +89,7 @@ const fs = require('fs');
 
     if(process.env.DEBUG){
       console.log("Téléchargement CSV OK");
+      console.log('documents/'+csv_filename+' => documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.csv');
       console.log("===================");
     }
 
@@ -123,6 +124,7 @@ const fs = require('fs');
     
     if(process.env.DEBUG){
       console.log("Téléchargement PDF OK");
+      console.log('documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_fournisseur.pdf'+" => "+'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf');
       console.log("===================");
     }
 
