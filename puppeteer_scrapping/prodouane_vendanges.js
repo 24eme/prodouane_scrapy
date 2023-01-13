@@ -16,7 +16,9 @@ const fs = require('fs');
     await page.waitForTimeout(250);
 
     await page.type('#inputNumeroCvi', process.env.CVI);
-    await page.select('#selectCampagne',  (parseInt(process.env.PRODOUANE_ANNEE) - 2000 - 5).toString());
+    await page.type('#selectCampagne',  process.env.PRODOUANE_ANNEE);
+    await page.keyboard.press('Enter');
+
     await page.click('#choix-statut-etat_BV_option_2')
     await page.waitForSelector('#input-live-feedback');
 
