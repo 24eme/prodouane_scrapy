@@ -39,7 +39,6 @@ const fs = require('fs');
     const h2_result = await page.$$('#tableau-declarations tbody tr');
     
     if (h2_result.length < 1) {
-        await page.waitForTimeout(50000);
         console.log("ERREUR: pas de résultat");
         return prodouane.close();
     }
