@@ -34,8 +34,9 @@ const fs = require('fs');
       console.log("===================");
     }
     
-    await page.waitForSelector('#tableau-declarations tbody tr, #inputNumeroCvi.is-valid');
-    await page.waitForTimeout(150);
+    await page.waitForSelector('#inputNumeroCvi.is-valid');
+    await page.waitForSelector('#tableau-declarations tbody tr');
+    await page.waitForTimeout(250);
     const h2_result = await page.$$('#tableau-declarations tbody tr');
     
     if (h2_result.length < 1) {
