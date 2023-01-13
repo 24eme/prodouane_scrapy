@@ -15,17 +15,23 @@ const fs = require('fs');
 
     await page.waitForTimeout(250);
 
-    await page.type('#inputNumeroCvi', process.env.CVI);
     await page.type('#selectCampagne',  process.env.PRODOUANE_ANNEE);
     await page.keyboard.press('Enter');
 
     await page.click('#choix-statut-etat_BV_option_2')
+
+    await page.waitForTimeout(250);
+
+    await page.type('#inputNumeroCvi', process.env.CVI);
+    await page.keyboard.press('Enter');
+
     await page.waitForSelector('#input-live-feedback');
 
     if(process.env.DEBUG){
       console.log("Saisie des infos CVI et Capagne");
       console.log("===================");
     }
+    await page.waitForSelector('#inputNumeroCvi.is-valid');
 
     await page.waitForTimeout(250);
     await page.click('#btnRechercheDeclaration');
