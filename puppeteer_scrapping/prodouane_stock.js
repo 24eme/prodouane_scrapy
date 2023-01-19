@@ -18,7 +18,7 @@ const fs = require('fs');
     if(!process.env.CVI){
 
       if(! process.env.PRODOUANE_ANNEE){
-        await browser.close();
+        await prodouane.close();
         throw "Initialisez la variable d'environnement PRODOUANE_ANNEE avec l'année ";
       }
 
@@ -36,8 +36,9 @@ const fs = require('fs');
       await page.waitForTimeout(250);
 
       for(var departement of departements){
-
-        console.log("DEPARTEMENT : "+ departement+"\n");
+        if(process.env.DEBUG){
+          console.log("DEPARTEMENT : "+ departement+"\n");
+        }
 
         await page.select('select#formFiltre\\:selectDepartement', departement);
 
@@ -70,9 +71,36 @@ const fs = require('fs');
 
           if(multiplePage){
             if(process.env.DEBUG){
-              console.log("A CODER PARCOURIR TOUTES LES PAGES");
+              console.log('PAGE MULTIPLE');
             }
-            continue;
+            lastPage = false;
+            while( !lastPage ){
+              if(process.env.DEBUG){
+                console.log('PARCOURS DES PAGES');
+              }
+              const cvis = await page.evaluate(() =>
+                Array.from(document.querySelectorAll("td[id$='j_idt161']")).map(element=>element.innerText)
+              );
+
+              await page.waitForTimeout(250);
+
+              for(var cvi of cvis){
+                  console.log(cvi);
+              }
+              //Regarde si nous sommes à la dernière page
+              const nextbtn = await page.evaluate(() => {
+                  return document.getElementById("formDeclaration:listeDeclaration:scrollerId_ds_next").className;
+              });
+
+              if(nextbtn.match("rf-ds-dis")){
+                lastPage = true;
+              }
+              else{
+                await page.click('#formDeclaration\\:listeDeclaration\\:scrollerId_ds_next');
+                await page.waitForTimeout(250);
+              }
+            }
+          continue;
           }
 
           const cvis = await page.evaluate(() =>
