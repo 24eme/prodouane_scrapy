@@ -47,10 +47,16 @@ const fs = require('fs');
     
     if (h2_result.length < 1) {
         console.log("ERREUR: pas de résultat");
+        if (process.env.DEBUG) {
+            await page.waitForTimeout(500000);
+        }
         return prodouane.close();
     }
     if (h2_result.length > 1) {
         console.log("ERREUR: plus d'un résultat");
+        if (process.env.DEBUG) {
+            await page.waitForTimeout(500000);
+        }
         return prodouane.close();
     }
     if(process.env.DEBUG){
