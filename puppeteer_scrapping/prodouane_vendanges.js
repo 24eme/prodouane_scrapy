@@ -43,7 +43,7 @@ const fs = require('fs');
     await page.waitForSelector('#inputNumeroCvi.is-valid');
     await page.waitForSelector('#tableau-declarations tbody tr');
     await page.waitForTimeout(250);
-    const h2_result = await page.$$('#tableau-declarations tbody tr');
+    const h2_result = await page.$$('#tableau-declarations tbody tr .btn-primary');
     
     if (h2_result.length < 1) {
         console.log("ERREUR: pas de résultat");
