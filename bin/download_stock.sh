@@ -1,0 +1,22 @@
+#!/bin/bash
+
+. "$(dirname "$0")/common.inc"
+
+if test "$PRODOUANE_DOUANE"; then
+	mkdir -p debug
+fi
+
+if ! test "$PRODOUANE_USER" || ! test "$PRODOUANE_PASS" ; then
+	echo "Authentification non configurée dans le config.inc"
+	exit 1;
+fi
+
+annee=$1
+cvi=$2
+
+if ! test "$cvi" ; then
+	echo "2 arguments attendus : <campagne> <cvi>"
+	exit 2;
+fi
+
+PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" CVI="$cvi" PRODOUANE_ANNEE="$annee" node puppeteer_scrapping/prodouane_stock.js
