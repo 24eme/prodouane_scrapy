@@ -37,7 +37,7 @@ parcellaire = {}
 liste_parcellaire = []
 
 headers = [
-    'CVI Operateur', 'Siret Operateur', 'Nom Operateur', 'Adresse Operateur',
+    'Origine', 'CVI Operateur', 'Siret Operateur', 'Nom Operateur', 'Adresse Operateur',
     'CP Operateur', 'Commune Operateur', 'Email Operateur', 'IDU', 'Commune',
     'Lieu dit', 'Section', 'Numero parcelle', 'Produit', 'Cepage',
     'Superficie', 'Superficie cadastrale', 'Campagne', 'Ecart pied',
@@ -54,6 +54,7 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
 
     soup = BeautifulSoup(html_file, 'lxml', parse_only=tables)
     tds = soup.select('td.fdcCoordonneCol2')
+    parcellaire['Origine'] = 'PRODOUANE'
     parcellaire['CVI Operateur'] = tds[0].string
 
     if tds[1].string:
