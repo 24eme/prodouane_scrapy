@@ -21,15 +21,11 @@ fi
 
 CVI="$cvi" PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" node puppeteer_scrapping/prodouane_parcellaire.js
 
-if [ ! -f "./documents/parcellaire-${cvi}-parcellaire.html" ]; then
-	echo "Échec du scraping"
-	exit 4
+if test -f "./documents/parcellaire-${cvi}-parcellaire.html"; then
+	sed -i '/^<?xml /id' "./documents/parcellaire-${cvi}-accueil.html"
+	sed -i '/^<?xml /id' "./documents/parcellaire-${cvi}-parcellaire.html"
+	python3 posttraitement/parcellaire_html_to_csv.py "$cvi" 2>&1
 fi
-
-sed -i '/^<?xml /id' "./documents/parcellaire-${cvi}-accueil.html"
-sed -i '/^<?xml /id' "./documents/parcellaire-${cvi}-parcellaire.html"
-
-python3 posttraitement/parcellaire_html_to_csv.py "$cvi" 2>&1
 
 if ! test -f "documents/parcellaire-${cvi}.csv" && test -f "$INAO_FILE"; then
 	echo -n "Origine;CVI Operateur;Siret Operateur;Nom Operateur;Adresse Operateur;CP Operateur;Commune Operateur;Email Operateur;IDU;Commune;Lieu dit;Section;" > "documents/parcellaire-${cvi}.csv"
@@ -40,4 +36,9 @@ fi
 #Code transitoire
 if ! test -f "$INAO_FILE" && test -f "documents/parcellaire-${cvi}.csv" ; then
 	sed -i 's/^[^;]*;//' "documents/parcellaire-${cvi}.csv"
+fi
+
+if ! test -f "documents/parcellaire-${cvi}.csv"; then
+	echo "Échec du scraping"
+	exit 4
 fi
