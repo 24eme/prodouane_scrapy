@@ -21,8 +21,8 @@ def transform_superficie(superficie):
 
 def reference2idu_commune_section_num(reference):
     ref_commune = reference[0:6]
-    communeId =  '%02d%03d' % (int(reference[:2]), int(reference[2:6]))
-    section = reference[6:11].replace(' ', '')
+    communeId =  '%02d%03d' % (int(reference[:2]), int(reference[3:6]))
+    section = reference[9:11].replace(' ', '')
     num_parc = int(reference[11:])
     full_section = section
     prefix = 0
