@@ -22,7 +22,7 @@ fi
 CVI="$cvi" PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" node puppeteer_scrapping/prodouane_parcellaire.js
 
 _scrape_status=$?
-if test $_scrape_status; then
+if test $_scrape_status -ne 0; then
 	echo "Erreur lors de l'exécution du scrappeur"
 	exit "$_scrape_status"
 fi
