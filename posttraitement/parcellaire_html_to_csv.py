@@ -25,7 +25,11 @@ def reference2idu_commune_section_num(reference):
     section = reference[9:11].replace(' ', '')
     num_parc = int(reference[11:])
     full_section = section
-    prefix = 0
+    prefix = reference[6:9].replace(' ', '')
+    if not prefix:
+        prefix=0
+    else:
+        prefix=int(prefix)
     match = re.search(r' *(\d{1,3}) *([A-Z][0-9]+)', section)
     if match:
         prefix = int(match.group(1))

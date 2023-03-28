@@ -213,5 +213,6 @@ const fs = require('fs');
     console.log('FAILED !!');
     console.log(e);
     await prodouane.close();
+    process.exit(255);
   }
 })();
