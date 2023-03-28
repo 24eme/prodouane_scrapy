@@ -151,12 +151,12 @@ const fs = require('fs');
       console.log("===================");
     }
     
-    await page.waitForSelector('#releveForm\\:popupReleveParcellaire_container');
-    await page.waitForTimeout(100);
+    await page.waitForSelector('#waitPopup_content', {hidden: false});
+    await page.waitForSelector('#waitPopup_content', {hidden: true});
 
-    await page.waitForSelector('.btn-danger');
+    await page.waitForSelector('#releveForm\\:pnlPopupReleveParcellaire', {hidden: false});
+    await page.waitForTimeout(750);
 
-    await page.waitForTimeout(500);
     await page.click('#releveForm\\:j_idt80');
 
     if(process.env.DEBUG){
@@ -173,18 +173,34 @@ const fs = require('fs');
     await page.waitForTimeout(250);
     await page.waitForSelector('#waitPollImpressionPdf_container', {hidden: false});
 
-    await page.waitForTimeout(250);
-    await page.waitForSelector('#waitPollImpressionPdf_container', {hidden: true});
+    if(process.env.DEBUG){
+      console.log("Popup generation OK");
+      console.log("===================");
+    }
 
-    await page.waitForTimeout(500);
-    fs.rename('documents/Fiches_de_compte_'+process.env.CVI+'.pdf', 'documents/parcellaire-'+process.env.CVI+'-parcellaire.pdf', (err) => {
-        if (err) throw err;
-        if(process.env.DEBUG){
-          console.log('Rename OK!');
-          console.log("===================");
+    var pdf_filename = '';
+    await page.waitForResponse((response) => {
+        if (response.status() === 200) {
+            pdf_filename = response.headers()['content-disposition'];
+            if (!pdf_filename) {
+                return false;
+            }
+            pdf_filename = pdf_filename.replace('attachment; filename=', '');
+            if(process.env.DEBUG){
+              console.log("Nom PDF : "+pdf_filename);
+              console.log("===================");
+            }
+            if (pdf_filename.match('pdf')) {
+                return true;
+            }
         }
+        return false;
     });
-    
+    await page.waitForTimeout(100);
+    err = await fs.rename('documents/Fiches_de_compte_'+process.env.CVI+'.pdf', 'documents/parcellaire-'+process.env.CVI+'-parcellaire.pdf', (err) => { return 'ERR'; });
+    if (err == 'ERR') {
+        err = await fs.rename('documents/Fiches_de_compte_'+process.env.CVI+'.pdf.crdownload', 'documents/parcellaire-'+process.env.CVI+'-parcellaire.pdf', (err) => { return 'ERR'; });
+    }
     await prodouane.close();
 
     if(process.env.DEBUG){
