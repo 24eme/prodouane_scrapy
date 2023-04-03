@@ -123,39 +123,44 @@ const fs = require('fs');
 
     const html = await page.content();
     fs.writeFileSync("documents/parcellaire-"+process.env.CVI+"-accueil.html","<?xml version='1.0' encoding='UTF-8' ?>"+html);
-  	
+
     if(process.env.DEBUG){
       console.log("Enregistre la page HTML des coordonnées de l'opérateur OK");
       console.log("===================");
     }
-        
-    await page.click('a[href="#formFdcConsultation:j_idt195:j_idt480"]'); 
-    
+
+    await page.click('a[href="#formFdcConsultation:j_idt195:j_idt480"]');
+
     if(process.env.DEBUG){
       console.log("Click sur Mon parcellaire planté OK");
       console.log("===================");
     }
-    
-    await page.waitForSelector('#formFdcConsultation\\:j_idt195\\:pnlDttListeSpcvPlante ');       
+
+    await page.waitForSelector('#formFdcConsultation\\:j_idt195\\:pnlDttListeSpcvPlante ');
     fs.writeFileSync("documents/parcellaire-"+process.env.CVI+"-parcellaire.html",await page.content());
 
     if(process.env.DEBUG){
       console.log("Enregistre la page HTML des parcellaire plante de l'opérateur OK");
       console.log("===================");
     }
-    
-    await page.click('#formFdcConsultation\\:j_idt193'); 
-    
+
+    await page.click('#formFdcConsultation\\:j_idt193');
+
     if(process.env.DEBUG){
       console.log("Click sur première imprimante OK");
       console.log("===================");
     }
-    
+
     await page.waitForSelector('#waitPopup_content', {hidden: false});
     await page.waitForSelector('#waitPopup_content', {hidden: true});
 
     await page.waitForSelector('#releveForm\\:pnlPopupReleveParcellaire', {hidden: false});
     await page.waitForTimeout(750);
+
+    try {
+      fs.unlinkSync('documents/Fiches_de_compte_'+process.env.CVI+'.pdf', {force: true});
+      fs.unlinkSync('documents/Fiches_de_compte_'+process.env.CVI+'.pdf.crdownload', {force: true});
+    } catch (Error) { }
 
     await page.click('#releveForm\\:j_idt80');
 
@@ -163,7 +168,7 @@ const fs = require('fs');
       console.log("Click sur deuxième imprimante OK");
       console.log("===================");
     }
-    
+
     client = await page.target().createCDPSession()
     await client.send('Page.setDownloadBehavior', {
     behavior: 'allow',
@@ -197,9 +202,9 @@ const fs = require('fs');
         return false;
     });
     await page.waitForTimeout(100);
-    err = await fs.rename('documents/Fiches_de_compte_'+process.env.CVI+'.pdf', 'documents/parcellaire-'+process.env.CVI+'-parcellaire.pdf', (err) => { return 'ERR'; });
-    if (err == 'ERR') {
-        err = await fs.rename('documents/Fiches_de_compte_'+process.env.CVI+'.pdf.crdownload', 'documents/parcellaire-'+process.env.CVI+'-parcellaire.pdf', (err) => { return 'ERR'; });
+    await fs.rename('documents/Fiches_de_compte_'+process.env.CVI+'.pdf', 'documents/parcellaire-'+process.env.CVI+'-parcellaire.pdf', (err) => { return 'ERR'; });
+    if (!fs.existsSync('documents/parcellaire-'+process.env.CVI+'-parcellaire.pdf')) {
+        await fs.rename('documents/Fiches_de_compte_'+process.env.CVI+'.pdf.crdownload', 'documents/parcellaire-'+process.env.CVI+'-parcellaire.pdf', (err) => { return 'ERR'; });
     }
     await prodouane.close();
 
