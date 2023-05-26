@@ -159,7 +159,14 @@ const fs = require('fs');
 
     try {
       fs.unlinkSync('documents/Fiches_de_compte_'+process.env.CVI+'.pdf', {force: true});
+    } catch (Error) { }
+
+    try {
       fs.unlinkSync('documents/Fiches_de_compte_'+process.env.CVI+'.pdf.crdownload', {force: true});
+    } catch (Error) { }
+
+    try {
+      fs.unlinkSync('documents/parcellaire-'+process.env.CVI+'-parcellaire.pdf', {force: true});
     } catch (Error) { }
 
     await page.click('#releveForm\\:j_idt80');
