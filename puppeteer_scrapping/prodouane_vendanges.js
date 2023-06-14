@@ -95,9 +95,10 @@ const fs = require('fs');
         }
         return false;
     });
-    session_id = csv_filename.match('declaration_Production-([^_]+)_([^_]+)_([^\.]+)\.csv');
+    session_id = csv_filename.match('déclaration_production_([^_]+)_([^_]+)_([^\.]+)\.csv');
     await page.waitForTimeout(100);
     await fs.rename('documents/'+csv_filename, 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.csv', (err) => {if (err) throw err;});
+
 
     if(process.env.DEBUG){
       console.log("Téléchargement CSV OK");
