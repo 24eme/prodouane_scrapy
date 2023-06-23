@@ -108,12 +108,11 @@ const fs = require('fs');
       console.log('FAILED !! IL Y A UNE ERREUR DANS LA RECHERCHE');
       await prodouane.close();
       return;
-    }    
-    
-        
-    await page.waitForSelector("#formFdc\\:dttListeEvvOA\\:0\\:j_idt268");
-    await page.click("#formFdc\\:dttListeEvvOA\\:0\\:j_idt268");    
-    
+    }
+
+    await page.waitForSelector("#formFdc\\:dttListeEvvOA\\:tb tr:nth-child(1) td a:nth-child(1)");
+    await page.click("#formFdc\\:dttListeEvvOA\\:tb tr:nth-child(1) td a:nth-child(1)");
+
     if(process.env.DEBUG){
       console.log("Click sur l'oeil OK");
       console.log("===================");
