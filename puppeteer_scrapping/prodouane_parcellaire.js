@@ -108,12 +108,11 @@ const fs = require('fs');
       console.log('FAILED !! IL Y A UNE ERREUR DANS LA RECHERCHE');
       await prodouane.close();
       return;
-    }    
-    
-        
-    await page.waitForSelector("#formFdc\\:dttListeEvvOA\\:0\\:j_idt268");
-    await page.click("#formFdc\\:dttListeEvvOA\\:0\\:j_idt268");    
-    
+    }
+
+    await page.waitForSelector("#formFdc\\:dttListeEvvOA\\:tb tr:nth-child(1) td a:nth-child(1)");
+    await page.click("#formFdc\\:dttListeEvvOA\\:tb tr:nth-child(1) td a:nth-child(1)");
+
     if(process.env.DEBUG){
       console.log("Click sur l'oeil OK");
       console.log("===================");
@@ -208,7 +207,7 @@ const fs = require('fs');
         }
         return false;
     });
-    await page.waitForTimeout(100);
+    await page.waitForTimeout(400);
     await fs.rename('documents/Fiches_de_compte_'+process.env.CVI+'.pdf', 'documents/parcellaire-'+process.env.CVI+'-parcellaire.pdf', (err) => { return 'ERR'; });
     if (!fs.existsSync('documents/parcellaire-'+process.env.CVI+'-parcellaire.pdf')) {
         await fs.rename('documents/Fiches_de_compte_'+process.env.CVI+'.pdf.crdownload', 'documents/parcellaire-'+process.env.CVI+'-parcellaire.pdf', (err) => { return 'ERR'; });
