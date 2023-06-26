@@ -125,14 +125,18 @@ const fs = require('fs');
         if (response.status() === 200) {
             pdf_filename = response.headers()['content-disposition'];
             pdf_filename = pdf_filename.replace('attachment;filename=', '');
+            if(process.env.DEBUG){
+                console.log('pdf_filename: ' + pdf_filename);
+            }
             if (pdf_filename.match('pdf')) {
                 return true;
             }
         }
         return false;
     });
-    await page.waitForTimeout(100);
+    await page.waitForTimeout(250);
 
+    type = 'type-non-trouvé';
     if (fs.existsSync('documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_fournisseur.pdf')) {
         type = 'fournisseur';
         await fs.rename('documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_fournisseur.pdf', 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf', (err) => {if (err) return 'ERR';});
