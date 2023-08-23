@@ -9,9 +9,10 @@ const fs = require('fs');
     await page.click("input[value='Stock']");
     await page.waitForSelector('#formDeclaration');
 
-    console.log("Click sur Stock OK");
-    console.log("===================");
-
+    if(process.env.DEBUG){
+      console.log("Click sur Stock OK");
+      console.log("===================");
+    }
 
     //LISTER TOUS LES CVIS EN SORTIE STANDARD
 
@@ -28,6 +29,10 @@ const fs = require('fs');
       }
 
       page.select('#formFiltre select',(parseInt(process.env.PRODOUANE_ANNEE) - 2000 - 5).toString());
+
+      if(process.env.DEBUG){
+        console.log((parseInt(process.env.PRODOUANE_ANNEE) - 2000 - 5));
+      }
 
       const departements = await page.evaluate(() =>
         Array.from(document.querySelectorAll('#formFiltre\\:selectDepartement option')).map(element=>element.value)
@@ -164,8 +169,22 @@ const fs = require('fs');
       console.log("===================");
     }
 
+    await page.waitForSelector("#j_idt240");
+
+    content = await page.content()
+
+    fs.writeFileSync("documents/ds-"+process.env.CVI+".html",content);
+
+    if(content.includes("déclaration d'absence de stock")){
+        if(process.env.DEBUG){
+          console.log("ABSENCE DE DOCUMENTS CAR NON DECLARE");
+          console.log("===================");
+        }
+        await prodouane.close();
+        return;
+    }
+
     await page.waitForSelector("#j_idt172\\:0");
-    fs.writeFileSync("documents/ds-"+process.env.CVI+".html",await page.content());
 
     if(process.env.DEBUG){
       console.log("Enregistre la page HTML des stock de l'opérateur OK");

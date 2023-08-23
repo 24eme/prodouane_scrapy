@@ -14,9 +14,14 @@ fi
 annee=$1
 cvi=$2
 
-if ! test "$cvi" ; then
-	echo "2 arguments attendus : <campagne> <cvi>"
+if ! test "$annee" ; then
+	echo "1 arguments attendus : <annee>"
 	exit 2;
 fi
 
-PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" CVI="$cvi" PRODOUANE_ANNEE="$annee" node puppeteer_scrapping/prodouane_stock.js
+if ! test "$cvi" ; then
+	echo "listes des CVI"
+	PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" PRODOUANE_ANNEE="$annee" node puppeteer_scrapping/prodouane_stock.js
+else
+	PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" CVI="$cvi" PRODOUANE_ANNEE="$annee" node puppeteer_scrapping/prodouane_stock.js
+fi
