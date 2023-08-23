@@ -20,7 +20,6 @@ if ! test "$annee" ; then
 fi
 
 if ! test "$cvi" ; then
-	echo "listes des CVI"
 	PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" PRODOUANE_ANNEE="$annee" node puppeteer_scrapping/prodouane_stock.js
 else
 	PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" CVI="$cvi" PRODOUANE_ANNEE="$annee" node puppeteer_scrapping/prodouane_stock.js
