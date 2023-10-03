@@ -153,8 +153,19 @@ const fs = require('fs');
     await page.waitForSelector('#waitPopup_content', {hidden: false});
     await page.waitForSelector('#waitPopup_content', {hidden: true});
 
-    await page.waitForSelector('#releveForm\\:pnlPopupReleveParcellaire', {hidden: false});
+    if(process.env.DEBUG){
+      console.log("Wait popup OK");
+      console.log("=============");
+    }
+
+    await page.waitForSelector('#j_idt80');
     await page.waitForTimeout(750);
+
+    await page.click('#j_idt80');
+    if(process.env.DEBUG){
+        console.log("Click sur le bouton imprimante de la popup OK");
+        console.log("===================");
+    }
 
     try {
       fs.unlinkSync('documents/Fiches_de_compte_'+process.env.CVI+'.pdf', {force: true});
@@ -168,28 +179,16 @@ const fs = require('fs');
       fs.unlinkSync('documents/parcellaire-'+process.env.CVI+'-parcellaire.pdf', {force: true});
     } catch (Error) { }
 
-    await page.click('#releveForm\\:j_idt80');
-
-    if(process.env.DEBUG){
-      console.log("Click sur deuxième imprimante OK");
-      console.log("===================");
-    }
-
     client = await page.target().createCDPSession()
     await client.send('Page.setDownloadBehavior', {
     behavior: 'allow',
     downloadPath: "documents",
     });
 
-    await page.waitForTimeout(250);
-    await page.waitForSelector('#waitPollImpressionPdf_container', {hidden: false});
-
-    if(process.env.DEBUG){
-      console.log("Popup generation OK");
-      console.log("===================");
-    }
-
     var pdf_filename = '';
+    await page.waitForSelector('#formGetFdc\\:linkGetPdfFicheDeCompte');
+    await page.waitForTimeout(750);
+    await page.click('#formGetFdc\\:linkGetPdfFicheDeCompte')
     await page.waitForResponse((response) => {
         if (response.status() === 200) {
             pdf_filename = response.headers()['content-disposition'];
@@ -207,6 +206,13 @@ const fs = require('fs');
         }
         return false;
     });
+
+
+    if(process.env.DEBUG){
+      console.log("Click sur le lien téléchargement");
+      console.log("===================");
+    }
+
     await page.waitForTimeout(400);
     await fs.rename('documents/Fiches_de_compte_'+process.env.CVI+'.pdf', 'documents/parcellaire-'+process.env.CVI+'-parcellaire.pdf', (err) => { return 'ERR'; });
     if (!fs.existsSync('documents/parcellaire-'+process.env.CVI+'-parcellaire.pdf')) {
