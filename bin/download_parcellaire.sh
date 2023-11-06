@@ -19,6 +19,8 @@ if ! test "$PRODOUANE_USER" || ! test "$PRODOUANE_PASS"; then
 	exit 3
 fi
 
+rm -f "documents/parcellaire-${cvi}.csv"
+
 CVI="$cvi" PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" node puppeteer_scrapping/prodouane_parcellaire.js
 
 _scrape_status=$?
