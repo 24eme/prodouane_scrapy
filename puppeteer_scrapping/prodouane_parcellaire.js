@@ -153,7 +153,7 @@ const fs = require('fs');
     await page.waitForSelector('#waitPopup_content', {hidden: false});
     await page.waitForSelector('#waitPopup_content', {hidden: true});
 
-    await page.waitForSelector('#releveForm\\:pnlPopupReleveParcellaire', {hidden: false});
+    await page.waitForSelector('#pnlPopupReleveParcellaire', {hidden: false});
     await page.waitForTimeout(750);
 
     try {
@@ -168,7 +168,7 @@ const fs = require('fs');
       fs.unlinkSync('documents/parcellaire-'+process.env.CVI+'-parcellaire.pdf', {force: true});
     } catch (Error) { }
 
-    await page.click('#releveForm\\:j_idt80');
+    await page.click('#j_idt80');
 
     if(process.env.DEBUG){
       console.log("Click sur deuxième imprimante OK");
@@ -188,6 +188,9 @@ const fs = require('fs');
       console.log("Popup generation OK");
       console.log("===================");
     }
+
+    await page.waitForSelector('#formGetFdc\\:linkGetPdfFicheDeCompte')
+    await page.click('#formGetFdc\\:linkGetPdfFicheDeCompte')
 
     var pdf_filename = '';
     await page.waitForResponse((response) => {
