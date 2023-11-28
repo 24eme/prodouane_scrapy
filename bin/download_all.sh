@@ -14,19 +14,19 @@ if ! test "$annee" ; then
 	annee=$(date '+%Y')
 fi
 if ! test "$types" ; then
-types="dr";
+types="dr sv11 sv12";
 fi
 
 
-for type in $(echo $types) ; do
-PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" PRODOUANE_ANNEE="$annee" scrapy crawl $type
-done > /tmp/$$.cvi.tmp
+PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" PRODOUANE_ANNEE="$annee" node puppeteer_scrapping/prodouane_listcvi.js > /tmp/$$.cvi.tmp
 
-cat /tmp/$$.cvi.tmp | grep "new cvi found" | sed 's/new cvi found : //' | while read type cvi ; do
-PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" PRODOUANE_ANNEE="$annee" CVI="$cvi" scrapy crawl $type
+for type in $(echo $types) ; do
+cat /tmp/$$.cvi.tmp | grep "$type" | while read type cvi ; do
+    bash bin/download_douane.sh $type $annee $cvi
+done
 done
 
 file documents/*$annee*.pdf | grep HTML | sed 's/:.*//' | sed 's/.pdf//' | while read file ; do
 	rm $file*;
 done
-rm /tmp/$$.cvi.tmp
+#rm /tmp/$$.cvi.tmp

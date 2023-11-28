@@ -113,8 +113,13 @@ const fs = require('fs');
     await page.waitForSelector('#waitPopup_content', {hidden: false});
     await page.waitForSelector('#waitPopup_content', {hidden: true});
 
-    await page.waitForSelector('#pnlPopupReleveParcellaire', {hidden: false});
+    await page.waitForSelector('#pnlPopupReleveParcellaire', {hidden: false})
+              .then(() => prodouane.log("Wait popup OK"));
     await page.waitForTimeout(750);
+
+    await page.waitForSelector('#j_idt80');
+    await page.click('#j_idt80')
+              .then(() => prodouane.log("Click sur le bouton imprimante de la popup OK"));
 
     try {
       fs.unlinkSync('documents/Fiches_de_compte_'+process.env.CVI+'.pdf', {force: true});
@@ -127,9 +132,6 @@ const fs = require('fs');
     try {
       fs.unlinkSync('documents/parcellaire-'+process.env.CVI+'-parcellaire.pdf', {force: true});
     } catch (Error) { }
-
-    await page.click('#j_idt80')
-              .then(() => prodouane.log("Click sur deuxième imprimante OK"));
 
     client = await page.target().createCDPSession()
     await client.send('Page.setDownloadBehavior', {
@@ -144,6 +146,7 @@ const fs = require('fs');
     await page.waitForSelector('#formGetFdc\\:linkGetPdfFicheDeCompte')
               .then(() => prodouane.log("Lien de téléchargement trouvé"))
     await page.click('#formGetFdc\\:linkGetPdfFicheDeCompte')
+              .then(() => prodouane.log("Click sur le lien téléchargement"))
 
     var pdf_filename = '';
     await page.waitForResponse((response) => {
