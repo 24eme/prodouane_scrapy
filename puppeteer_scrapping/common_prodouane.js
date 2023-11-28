@@ -22,7 +22,7 @@ exports.openpage_and_login = async function () {
     }
 
     browser = await puppeteer.launch({
-      headless: false, //!(process.env.DEBUG_WITH_BROWSER),  //mettre à false pour debug
+      headless: !(process.env.DEBUG_WITH_BROWSER),  //mettre à false pour debug
       defaultViewport: {width: 1920, height: 1080},
       ignoreDefaultArgs: ['--disable-extensions'],
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
