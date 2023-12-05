@@ -100,25 +100,25 @@ const fs = require('fs');
     fs.writeFileSync("documents/parcellaire-"+process.env.CVI+"-accueil.html","<?xml version='1.0' encoding='UTF-8' ?>"+html);
     prodouane.log("Enregistre la page HTML des coordonnées de l'opérateur OK");
 
-    await page.click('a[href="#formFdcConsultation:j_idt195:j_idt480"]')
+    await page.click('a[href="#formFdcConsultation:j_idt159:j_idt444"]')
               .then(() => prodouane.log("Click sur Mon parcellaire planté OK"));
 
-    await page.waitForSelector('#formFdcConsultation\\:j_idt195\\:pnlDttListeSpcvPlante ');
+    await page.waitForSelector('#formFdcConsultation\\:j_idt159\\:pnlDttListeSpcvPlante ');
     fs.writeFileSync("documents/parcellaire-"+process.env.CVI+"-parcellaire.html",await page.content());
     prodouane.log("Enregistre la page HTML des parcellaire plante de l'opérateur OK");
 
-    await page.click('#formFdcConsultation\\:j_idt193')
+    await page.click('#formFdcConsultation\\:j_idt157')
               .then(() => prodouane.log("Click sur première imprimante OK"));
 
-    await page.waitForSelector('#waitPopup_content', {hidden: false});
-    await page.waitForSelector('#waitPopup_content', {hidden: true});
+    await page.waitForSelector('#waitPopup_container', {hidden: false});
+    await page.waitForSelector('#waitPopup_container', {hidden: true});
 
-    await page.waitForSelector('#pnlPopupReleveParcellaire', {hidden: false})
+    await page.waitForSelector('#popupReleveParcellaire_container', {hidden: false})
               .then(() => prodouane.log("Wait popup OK"));
     await page.waitForTimeout(750);
 
-    await page.waitForSelector('#j_idt80');
-    await page.click('#j_idt80')
+    await page.waitForSelector('#j_idt43');
+    await page.click('#j_idt43')
               .then(() => prodouane.log("Click sur le bouton imprimante de la popup OK"));
 
     try {
