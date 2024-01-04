@@ -100,8 +100,14 @@ const fs = require('fs');
     fs.writeFileSync("documents/parcellaire-"+process.env.CVI+"-accueil.html","<?xml version='1.0' encoding='UTF-8' ?>"+html);
     prodouane.log("Enregistre la page HTML des coordonnées de l'opérateur OK");
 
-    await page.click('a[href="#formFdcConsultation:j_idt159:j_idt448"]')
+    try {
+        await page.click('a[href="#formFdcConsultation:j_idt159:j_idt448"]')
               .then(() => prodouane.log("Click sur Mon parcellaire planté OK"));
+    } catch (Error) {
+        await page.click('a[href="#formFdcConsultation:j_idt159:j_idt444"]')
+              .then(() => prodouane.log("Click sur Mon parcellaire planté OK"));
+    }
+
 
     await page.waitForSelector('#formFdcConsultation\\:j_idt159\\:pnlDttListeSpcvPlante ');
     fs.writeFileSync("documents/parcellaire-"+process.env.CVI+"-parcellaire.html",await page.content());
