@@ -30,7 +30,7 @@ const fs = require('fs');
 
         do {
           const cvis = await page.evaluate(() =>
-            Array.from(document.querySelectorAll("td[id$='idt260']")).map(element=>element.innerText)
+            Array.from(document.querySelectorAll('tbody#formFdc\\:dttListeEvvOA\\:tb td:nth-child(2)')).map(element=>element.innerText)
           );
 
           for(var cvi of cvis){
