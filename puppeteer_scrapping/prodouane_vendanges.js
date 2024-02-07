@@ -137,11 +137,20 @@ const fs = require('fs');
     await page.waitForTimeout(250);
 
     type = 'type-non-trouvé';
+    console.log(['session_id', 'documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_fournisseur.pdf', session_id]);
+    if (fs.existsSync('documents/declaration_production-'+session_id[2]+'_recapitulatif_par_fournisseur.pdf')) {
+        type = 'fournisseur';
+        await fs.rename('documents/declaration_production-'+session_id[2]+'_recapitulatif_par_fournisseur.pdf', 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf', (err) => {if (err) return 'ERR';});
+    }
     if (fs.existsSync('documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_fournisseur.pdf')) {
         type = 'fournisseur';
         await fs.rename('documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_fournisseur.pdf', 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf', (err) => {if (err) return 'ERR';});
     }
 
+    if (fs.existsSync('documents/declaration_production-'+session_id[2]+'_recapitulatif_par_apporteur.pdf')) {
+        type = 'apporteur';
+        await fs.rename('documents/declaration_production-'+session_id[2]+'_recapitulatif_par_apporteur.pdf', 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf', (err) => {if (err) return 'ERR';});
+    }
     if (fs.existsSync('documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_apporteur.pdf')) {
         type = 'apporteur';
         await fs.rename('documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_apporteur.pdf', 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf', (err) => {if (err) return 'ERR';});

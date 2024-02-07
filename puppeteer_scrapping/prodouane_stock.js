@@ -173,7 +173,7 @@ const fs = require('fs');
 
     content = await page.content()
 
-    fs.writeFileSync("documents/ds-"+process.env.CVI+".html",content);
+    fs.writeFileSync("documents/ds-"+process.env.PRODOUANE_ANNEE+'-'+process.env.CVI+".html",content);
 
     if(content.includes("déclaration d'absence de stock")){
         if(process.env.DEBUG){
@@ -225,9 +225,7 @@ const fs = require('fs');
 
     await page.waitForTimeout(100);
 
-    pdf_newfilename = pdf_filename.replace('DeclarationStock', 'ds');
-    pdf_newfilename = pdf_newfilename.replace('_RecapitulatifInstallation', '');
-    pdf_newfilename = pdf_newfilename.replace('_', '-');
+    pdf_newfilename = 'ds-'+process.env.PRODOUANE_ANNEE+'-'+process.env.CVI+".pdf";
     await fs.rename('documents/'+pdf_filename, 'documents/'+pdf_newfilename, (err) => {if (err) throw err;});
 
     if(process.env.DEBUG){
@@ -256,10 +254,7 @@ const fs = require('fs');
         return false;
     });
 
-    xls_newfilename = xls_filename.replace('DeclarationStock', 'ds');
-    xls_newfilename = xls_newfilename.replace('_RecapitulatifInstallation', '');
-    xls_newfilename = xls_newfilename.replace('_', '-');
-
+    xls_newfilename = 'ds-'+process.env.PRODOUANE_ANNEE+'-'+process.env.CVI+".xls";
     await page.waitForTimeout(5000); //attendre le téléchargement complet et non du fichier temporaire de chromium .crdownload
 
     await fs.rename('documents/'+xls_filename, 'documents/'+xls_newfilename, (err) => {if (err) throw err;});

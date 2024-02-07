@@ -94,7 +94,7 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
             parcellaire['Commune'] = infos_parcelles[0]
 
             if infos_parcelles[1]:
-                parcellaire['Lieu dit'] = re.sub(r' *\* *', '', infos_parcelles[1].string)
+                parcellaire['Lieu dit'] = re.sub(r"\n.*$", "", re.sub(r' *\* *', '', infos_parcelles[1].string))
             else:
                 parcellaire['Lieu dit'] = ""
 
