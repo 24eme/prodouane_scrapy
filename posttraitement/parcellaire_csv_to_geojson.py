@@ -110,7 +110,8 @@ liste_parcellaire = []
 
 numero_cvi = sys.argv[1];
 directory = os.path.dirname(os.path.realpath(__file__)) + '/../documents/';
-tmp_dir = '/tmp/';
+tmp_dir = '/tmp/parcellaires/'
+os.mkdir(tmp_dir)
 inputfile = get_file_parcellaire(numero_cvi, directory);
 
 if(inputfile != -1):
