@@ -26,7 +26,9 @@ CVI="$cvi" PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" nod
 _scrape_status=$?
 if test $_scrape_status -ne 0; then
 	echo "Erreur lors de l'exécution du scrappeur"
-	exit "$_scrape_status"
+	if ! test -f "$INAO_FILE"; then
+		exit "$_scrape_status"
+	fi
 fi
 
 if test -f "./documents/parcellaire-${cvi}-parcellaire.html"; then
