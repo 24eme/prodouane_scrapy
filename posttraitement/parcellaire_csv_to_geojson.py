@@ -86,10 +86,10 @@ def get_geoJson_parcelle(directory, parcellaire):
     except: #Not a gz probably 404
         return None
     return None
-    
+
 def my_cache_download(filepath):
 
-    return os.path.isfile(filepath);
+    return os.path.isfile(filepath) and path.getmtime(filepath) > time.time() - 604800; #Si plus vieux qu'une semaine on ignore le cache
 
 def create_array_assoc(parcellaires):
     assoc = {};
@@ -111,7 +111,8 @@ liste_parcellaire = []
 numero_cvi = sys.argv[1];
 directory = os.path.dirname(os.path.realpath(__file__)) + '/../documents/';
 tmp_dir = '/tmp/parcellaires/'
-os.mkdir(tmp_dir)
+if not os.path.exists(tmp_dir):
+    os.mkdir(tmp_dir)
 inputfile = get_file_parcellaire(numero_cvi, directory);
 
 if(inputfile != -1):
