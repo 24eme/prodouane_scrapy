@@ -10,6 +10,7 @@ import csv
 import urllib
 import gzip
 import json
+import time
 
 cache_parcelles_commune_millesimes = {};
 cache_parcelles = {};
@@ -89,8 +90,7 @@ def get_geoJson_parcelle(directory, parcellaire):
 
 def my_cache_download(filepath):
 
-    return os.path.isfile(filepath) and path.getmtime(filepath) > time.time() - 604800; #Si plus vieux qu'une semaine on ignore le cache
-
+    return os.path.isfile(filepath) and os.path.getmtime(filepath) > time.time() - 604800; #Si plus vieux qu'une semaine on ignore le cache
 def create_array_assoc(parcellaires):
     assoc = {};
     cepages = [];
