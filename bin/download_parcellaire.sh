@@ -48,7 +48,9 @@ if ! test -f "$INAO_FILE" && test -f "documents/parcellaire-${cvi}.csv" ; then
 	sed -i 's/^[^;]*;//' "documents/parcellaire-${cvi}.csv"
 fi
 
-if ! test -f "documents/parcellaire-${cvi}.csv"; then
+if test -f "documents/parcellaire-${cvi}.csv"; then
+	bash posttraitement/parcellaire_csv_to_geojson.py ${cvi}
+else
 	echo "Échec du scraping"
 	exit 4
 fi
