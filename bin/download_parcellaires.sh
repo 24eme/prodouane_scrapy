@@ -24,6 +24,7 @@ cat $tmpfile | while read cvi; do
 		sed -i '/^<?xml /id' "./documents/parcellaire-${cvi}-accueil.html"
 		sed -i '/^<?xml /id' "./documents/parcellaire-${cvi}-parcellaire.html"
 		python3 posttraitement/parcellaire_html_to_csv.py "$cvi" 2>&1
+		python3 posttraitement/parcellaire_csv_to_geojson.py "$cvi" 2>&1
 	fi
 done
 
