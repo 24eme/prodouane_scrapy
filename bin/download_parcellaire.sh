@@ -34,7 +34,7 @@ fi
 if test -f "./documents/parcellaire-${cvi}-parcellaire.html"; then
 	sed -i '/^<?xml /id' "./documents/parcellaire-${cvi}-accueil.html"
 	sed -i '/^<?xml /id' "./documents/parcellaire-${cvi}-parcellaire.html"
-	python3 posttraitement/parcellaire_html_to_csv.py "$cvi" 2>&1
+	python posttraitement/parcellaire_html_to_csv.py "$cvi" 2>&1
 fi
 
 if ! test -f "documents/parcellaire-${cvi}.csv" && test -f "$INAO_FILE"; then
@@ -49,7 +49,7 @@ if ! test -f "$INAO_FILE" && test -f "documents/parcellaire-${cvi}.csv" ; then
 fi
 
 if test -f "documents/parcellaire-${cvi}.csv"; then
-	bash posttraitement/parcellaire_csv_to_geojson.py ${cvi}
+	python posttraitement/parcellaire_csv_to_geojson.py ${cvi}
 else
 	echo "Échec du scraping"
 	exit 4
