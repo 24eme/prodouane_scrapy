@@ -19,7 +19,7 @@ class QuotesSpider(scrapy.Spider):
         if os.environ.get('PRODOUANE_DEBUG'):
             with open("debug/"+self.name+"_00_prelogin.html", 'wb') as f:
                 f.write(response.body)
-        yield scrapy.Request(url="https://www.douane.gouv.fr/saml_login/", callback=self.login)
+        yield scrapy.Request(url="https://www.douane.gouv.fr/service-en-ligne/redirection/PORTAIL_VITI", callback=self.login)
 
     def login(self, response):
         self.log('login')
@@ -36,18 +36,14 @@ class QuotesSpider(scrapy.Spider):
         if os.environ.get('PRODOUANE_DEBUG'):
             with open("debug/"+self.name+"_02_postlogin.html", 'wb') as f:
                 f.write(response.body)
-        action = response.xpath('//*[@id="form"]/@action')[0].extract()
-        formdata={}
-        formdata['RelayState'] = response.xpath('//*[@name="RelayState"]/@value')[0].extract()
-        formdata['SAMLResponse'] = response.xpath('//*[@name="SAMLResponse"]/@value')[0].extract()
-        yield scrapy.FormRequest(url=action, formdata=formdata, callback=self.redirectsaml, dont_filter = True)
+        yield scrapy.Request(url='https://www.douane.gouv.fr/connexion?destination=%2Fservice-en-ligne%2Fredirection%2FPORTAIL_VITI&choix=1_REST&skin=douane',  callback=self.redirectsaml, dont_filter = True)
 
     def redirectsaml(self, response):
         self.log('redirectsaml')
         if os.environ.get('PRODOUANE_DEBUG'):
             with open("debug/dr_02_redirectsaml.html", 'wb') as f:
                 f.write(response.body)
-        yield scrapy.Request(url='https://www.douane.gouv.fr/service-en-ligne/redirection/PORTAIL_VITI',  callback=self.multiservice)
+        yield scrapy.Request(url='https://www.douane.gouv.fr/service-en-ligne/redirection/PORTAIL_VITI',  callback=self.multiservice, dont_filter = True)
 
     def multiservice(self, response):
         self.log('multiservice')
