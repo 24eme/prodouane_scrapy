@@ -127,6 +127,7 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
                         infos_parcelles[3] \
                             .replace('Ctes ', 'Côtes ') \
                             .replace(' Ste-', ' Sainte ') \
+                            .replace(' St-', ' Saint ') \
                             .replace(' rs', ' rosé') \
                             .replace(' rg', ' rouge') \
                             .replace(' RG', ' rouge') \
@@ -147,6 +148,7 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
                             .replace('Crémant Alsace bl', "AOC Crémant d'Alsace")
                             .replace('CDRV', 'Côtes du Rhône Villages')
                             .replace('Pouilly-Fumé ou Blanc Fumé', 'Pouilly-Fumé Blanc')
+                            .replace('COTES RHONE VILLAGES', 'Côtes du Rhône Villages')
                         , flags=re.I), flags=re.I), flags=re.I), flags=re.I), flags=re.I), flags=re.I) ))).replace('  ', ' ')
 
             else:
