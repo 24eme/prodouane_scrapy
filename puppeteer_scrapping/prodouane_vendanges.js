@@ -2,6 +2,7 @@ const prodouane = require('./common_prodouane.js');
 const fs = require('fs');
 
 (async () => {
+  page = null;
   try {
 
     page = await prodouane.openpage_and_login();
@@ -178,7 +179,7 @@ const fs = require('fs');
     console.log("");
     console.log('FAILED !!');
     console.log(e);
-    if(process.env.DEBUG){
+    if(process.env.DEBUG && page){
         await page.screenshot({ path: '/tmp/screenshot_vendanges_error.png'})
         console.log('screenshot in /tmp/screenshot_vendanges_error.png')
     }
