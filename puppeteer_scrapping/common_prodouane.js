@@ -75,7 +75,8 @@ exports.openpage_and_login = async function () {
     this.log("Redirection OK");
 
     await page.waitForSelector('.btn-primary');
-    await page.waitForSelector("#j_idt24");
+    await page.waitForSelector("form");
 
+    this.log("Portail VITI: OK");
     return page;
 }
