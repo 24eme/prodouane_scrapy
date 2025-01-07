@@ -96,8 +96,8 @@ const fs = require('fs');
         }
         return false;
     });
+    await page.waitForTimeout(1000);
     session_id = csv_filename.match('déclaration_production_([^_]+)_([^_]+)_([^\.]+)\.csv');
-    await page.waitForTimeout(100);
     await fs.rename('documents/'+csv_filename, 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.csv', (err) => {if (err) throw err;});
 
 
@@ -135,32 +135,34 @@ const fs = require('fs');
         }
         return false;
     });
-    await page.waitForTimeout(250);
+    await page.waitForTimeout(1000);
+    document_filename = null
+    if (!document_filename && fs.existsSync('documents/'+pdf_filename)) {
+        document_filename = 'documents/'+pdf_filename;
+    }
+    if (!document_filename && fs.existsSync('documents/declaration_'+session_id[2]+'.pdf')) {
+        document_filename = 'documents/declaration_'+session_id[2]+'.pdf';
+    }
+    if (!document_filename && fs.existsSync('documents/declaration_production-'+session_id[2]+'_recapitulatif_par_fournisseur.pdf')) {
+        document_filename = 'documents/declaration_production-'+session_id[2]+'_recapitulatif_par_fournisseur.pdf';
+    }
+    if (!document_filename && fs.existsSync('documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_fournisseur.pdf')) {
+        document_filename = 'documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_fournisseur.pdf';
+    }
+    if (!document_filename && fs.existsSync('documents/declaration_production-'+session_id[2]+'_recapitulatif_par_apporteur.pdf')) {
+        document_filename = 'documents/declaration_production-'+session_id[2]+'_recapitulatif_par_apporteur.pdf';
+    }
+    if (!document_filename && fs.existsSync('documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_apporteur.pdf')) {
+        document_filename = 'documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_apporteur.pdf';
+    }
 
-    type = 'type-non-trouvé';
-    console.log(['session_id', 'documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_fournisseur.pdf', session_id]);
-    if (fs.existsSync('documents/declaration_production-'+session_id[2]+'_recapitulatif_par_fournisseur.pdf')) {
-        type = 'fournisseur';
-        await fs.rename('documents/declaration_production-'+session_id[2]+'_recapitulatif_par_fournisseur.pdf', 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf', (err) => {if (err) return 'ERR';});
-    }
-    if (fs.existsSync('documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_fournisseur.pdf')) {
-        type = 'fournisseur';
-        await fs.rename('documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_fournisseur.pdf', 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf', (err) => {if (err) return 'ERR';});
-    }
-
-    if (fs.existsSync('documents/declaration_production-'+session_id[2]+'_recapitulatif_par_apporteur.pdf')) {
-        type = 'apporteur';
-        await fs.rename('documents/declaration_production-'+session_id[2]+'_recapitulatif_par_apporteur.pdf', 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf', (err) => {if (err) return 'ERR';});
-    }
-    if (fs.existsSync('documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_apporteur.pdf')) {
-        type = 'apporteur';
-        await fs.rename('documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_apporteur.pdf', 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf', (err) => {if (err) return 'ERR';});
-    }
-
-    if(process.env.DEBUG){
-      console.log("Téléchargement PDF OK");
-      console.log('documents/declaration_Production-'+session_id[2]+'_recapitulatif_par_'+type+'.pdf'+" => "+'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf');
-      console.log("===================");
+    if (document_filename) {
+        await fs.rename(document_filename, 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf', (err) => {if (err) return 'ERR';});
+        if(process.env.DEBUG){
+            console.log("Téléchargement PDF OK");
+            console.log('documents/'+document_filename+" => "+'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf');
+            console.log("===================");
+        }
     }
 
     await page.click('#buttonLogin');
