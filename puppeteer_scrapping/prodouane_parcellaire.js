@@ -66,7 +66,7 @@ const fs = require('fs');
     await page.click('input[value="Rechercher"]')
               .then(() => prodouane.log("Input CVI OK"));
 
-    await page.waitForTimeout(250);
+    await page.waitForTimeout(500);
 
     const tableLines = await page.evaluate(() =>
       Array.from(document.querySelectorAll("td[class='rf-dt-nd-c']")).map(element=>element.innerText)
@@ -109,7 +109,7 @@ const fs = require('fs');
     }
 
 
-    await page.waitForSelector('#formFdcConsultation\\:j_idt159\\:pnlDttListeSpcvPlante ');
+    await page.waitForSelector('#formFdcConsultation\\:j_idt159\\:pnlDttListeSpcvPlante ',{timeout: 150000});
     fs.writeFileSync("documents/parcellaire-"+process.env.CVI+"-parcellaire.html",await page.content());
     prodouane.log("Enregistre la page HTML des parcellaire plante de l'opérateur OK");
 
