@@ -43,11 +43,6 @@ if ! test -f "documents/parcellaire-${cvi}.csv" && test -f "$INAO_FILE"; then
 	grep "$cvi" $INAO_FILE | awk -F ';' '{idu=substr($4,1,2)substr($4,4,12); gsub(" ", "0", idu); print "INAO;"$17";"$19";"$18";;;;;"idu";"$9";"$10";"$1";"$2";"$26" - "$25";"$28";"$36";"$5";"$35";"$37";"$38";"$33";;"$39}' >> "documents/parcellaire-${cvi}.csv"
 fi
 
-#Code transitoire
-if ! test -f "$INAO_FILE" && test -f "documents/parcellaire-${cvi}.csv" ; then
-	sed -i 's/^[^;]*;//' "documents/parcellaire-${cvi}.csv"
-fi
-
 if test -f "documents/parcellaire-${cvi}.csv"; then
 	python posttraitement/parcellaire_csv_to_geojson.py ${cvi}
 else

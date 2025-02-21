@@ -54,7 +54,6 @@ def get_geoJson_commune(directory, cvi, idu, millesime):
     return outputfile
 
 def get_geoJson_parcelle(directory, parcellaire):
-    num_commune = parcellaire[0]['CVI Operateur'];
     idu = parcellaire[0]['IDU'];
     millesimes = ['latest','2022-10-01','2022-07-01','2022-04-01','2022-01-01','2021-10-01','2021-07-01','2021-04-01','2021-02-01','2020-10-01','2020-07-01','2020-01-01','2019-10-01','2019-07-01','2019-04-01','2019-01-01']
     if not idu in cache_parcelles:
@@ -89,18 +88,33 @@ def get_geoJson_parcelle(directory, parcellaire):
     return None
 
 def my_cache_download(filepath):
-
     return os.path.isfile(filepath) and os.path.getmtime(filepath) > time.time() - 604800; #Si plus vieux qu'une semaine on ignore le cache
+
+def convert_parcellaire(parcellaire):
+    try:
+        if parcellaire['IDU']:
+            return parcellaire
+    except KeyError:
+        parcellaire['IDU'] = parcellaire['Code INSEE de la commune'] + parcellaire['Référence cadastrale de la parcelle'][6:].replace(' ', '0')
+        parcellaire['Commune'] = parcellaire['Libellé de la commune']
+        parcellaire['Section'] = parcellaire['Référence cadastrale de la parcelle'][-6:-4]
+        parcellaire['Numero parcelle'] = parcellaire['Référence cadastrale de la parcelle'][-4:]
+        parcellaire['Produit'] = parcellaire['Libellé du produit']
+        parcellaire['Cepage'] = parcellaire['Libellé cépage']
+        parcellaire['Campagne'] = parcellaire['Campagne de plantation']
+        parcellaire['Ecart pied'] = parcellaire['Écart entre les pieds de vigne']
+        parcellaire['Ecart rang'] = parcellaire['Écart entre les rangs de vigne']
+        parcellaire['Superficie'] = parcellaire['Superficie de la plantation']
+    return parcellaire
+
 def create_array_assoc(parcellaires):
     assoc = {};
     cepages = [];
     for parcellaire in parcellaires:
-        cepages.append(parcellaire);
-        for p in parcellaires:
-            if(parcellaire['IDU'] == p['IDU'] and parcellaire['Cepage'] != p['Cepage']):
-                cepages.append(p);
-        assoc[parcellaire['IDU']] = cepages;
-        cepages = [];
+        parcellaire = convert_parcellaire(parcellaire)
+        if not assoc.get(parcellaire['IDU']):
+            assoc[parcellaire['IDU']] = []
+        assoc[parcellaire['IDU']].append(parcellaire);
     return assoc;
 
 parcellaire = {}
