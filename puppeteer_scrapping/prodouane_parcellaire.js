@@ -149,7 +149,7 @@ const fs = require('fs');
     await page.waitForSelector('#waitPollImpressionPdf_container', {hidden: false})
               .then(() => prodouane.log("Popup generation OK"));
 
-    await page.waitForSelector('#formGetFdc\\:linkGetPdfFicheDeCompte')
+    await page.waitForSelector('#formGetFdc\\:linkGetPdfFicheDeCompte',{timeout: 150000})
               .then(() => prodouane.log("Lien de téléchargement trouvé"))
     await page.click('#formGetFdc\\:linkGetPdfFicheDeCompte')
               .then(() => prodouane.log("Click sur le lien téléchargement"))
