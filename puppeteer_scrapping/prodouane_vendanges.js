@@ -8,8 +8,27 @@ const fs = require('fs');
     page = await prodouane.openpage_and_login();
 
     await page.click("input[value='VENDANGES']");
+
+    await page.waitForSelector('#accueil');
+    if(process.env.DEBUG){
+      console.log("Entrée dans Vendanges");
+      console.log("===================");
+    }
+    await page.waitForTimeout(250);
+
+    const has_ovnis = await page.$$('.table-title');
+
+    if (has_ovnis.length) {
+        if(process.env.DEBUG){
+          console.log("Selection d'un OVNIS");
+          console.log("===================");
+        }
+
+        await page.type('input.champRecherche', process.env.PRODOUANE_OVNI);
+        await page.click('.material-icons');
+    }
+
     await page.waitForSelector('.btnMenu');
-    
 
     await page.click('.btnMenu');
     await page.waitForSelector('#inputNumeroCvi');
