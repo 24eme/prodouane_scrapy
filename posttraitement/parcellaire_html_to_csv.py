@@ -149,6 +149,8 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
                             .replace('CDRV', 'Côtes du Rhône Villages')
                             .replace('Pouilly-Fumé ou Blanc Fumé', 'Pouilly-Fumé Blanc')
                             .replace('COTES RHONE VILLAGES', 'Côtes du Rhône Villages')
+                            .replace('Savenn Roche', 'Savennières Roche')
+                            .replace('Roche Moines', 'Roche aux moines')
                         , flags=re.I), flags=re.I), flags=re.I), flags=re.I), flags=re.I), flags=re.I) ))).replace('  ', ' ')
 
             else:
