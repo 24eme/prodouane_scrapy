@@ -151,6 +151,9 @@ const fs = require('fs');
 
     await page.waitForSelector('#formGetFdc\\:linkGetPdfFicheDeCompte',{timeout: 150000})
               .then(() => prodouane.log("Lien de téléchargement trouvé"))
+
+    await page.waitForTimeout(250);
+
     await page.click('#formGetFdc\\:linkGetPdfFicheDeCompte')
               .then(() => prodouane.log("Click sur le lien téléchargement"))
 
