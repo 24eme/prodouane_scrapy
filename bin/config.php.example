@@ -1,0 +1,11 @@
+<?php
+
+$config_dep_to_region = [
+	'33' => ['bordeaux'],
+];
+
+$config_router_uri = "http://localhost:8181";
+$config_instance_uri = [
+	'default' => 'http://default:pass@localhost:8888',
+	'bordeaux' => 'http://bordeaux:pass@localhost:8888',
+];

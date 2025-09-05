@@ -3,6 +3,7 @@ documents/*
 bin/config.inc
 bin/config.*.inc
 debug/*
+bin/config.php
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
