@@ -105,6 +105,12 @@ switch ($action) {
 				if (file_exists($path.'/'.$type.'-'.$millesime.'-'.$cvi.'.html') || file_exists('../documents/'.$type.'-'.$millesime.'-'.$cvi.'.html')) {
 					$files[] = $type.'-'.$millesime.'-'.$cvi.'.html';
 				}
+				if (file_exists($path.'/production-'.$millesime.'-'.$cvi.'.pdf') || file_exists('../documents/production-'.$millesime.'-'.$cvi.'.pdf')) {
+					$files[] = 'production-'.$millesime.'-'.$cvi.'.pdf';
+				}
+				if (file_exists($path.'/production-'.$millesime.'-'.$cvi.'.csv') || file_exists('../documents/production-'.$millesime.'-'.$cvi.'.csv')) {
+					$files[] = 'production-'.$millesime.'-'.$cvi.'.csv';
+				}
 				break;
 			case 'parcellaire':
 				if (file_exists($path.'/parcellaire-'.$cvi.'-accueil.html') || file_exists('../documents/parcellaire-'.$cvi.'-accueil.html')) {
