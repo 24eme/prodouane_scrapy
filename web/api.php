@@ -50,7 +50,9 @@ switch ($action) {
 		$json_message = [];
 		switch ($ret) {
 			case 0:
-				header('Location: '.str_replace('action='.$action.'&', 'action=list&', $_SERVER['REQUEST_URI']));
+				if ($format != 'json') {
+					header('Location: '.str_replace('action='.$action.'&', 'action=list&', $_SERVER['REQUEST_URI']));
+				}
 				break;
 			case SCRAPING_UNKOWN_TYPE:
 				if ($format != 'json') {
