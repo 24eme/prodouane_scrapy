@@ -98,6 +98,9 @@ switch ($action) {
 			case 'sv11':
 			case 'sv12':
 			case 'dr':
+				if ($millesime > 2021 && ($type == 'sv11' || $type == 'sv12')) {
+					$type = 'production';
+				}
 				if (file_exists($path.'/'.$type.'-'.$millesime.'-'.$cvi.'.pdf') || file_exists('../documents/'.$type.'-'.$millesime.'-'.$cvi.'.pdf')) {
 					$files[] = $type.'-'.$millesime.'-'.$cvi.'.pdf';
 				}
@@ -106,12 +109,6 @@ switch ($action) {
 				}
 				if (file_exists($path.'/'.$type.'-'.$millesime.'-'.$cvi.'.html') || file_exists('../documents/'.$type.'-'.$millesime.'-'.$cvi.'.html')) {
 					$files[] = $type.'-'.$millesime.'-'.$cvi.'.html';
-				}
-				if (file_exists($path.'/production-'.$millesime.'-'.$cvi.'.pdf') || file_exists('../documents/production-'.$millesime.'-'.$cvi.'.pdf')) {
-					$files[] = 'production-'.$millesime.'-'.$cvi.'.pdf';
-				}
-				if (file_exists($path.'/production-'.$millesime.'-'.$cvi.'.csv') || file_exists('../documents/production-'.$millesime.'-'.$cvi.'.csv')) {
-					$files[] = 'production-'.$millesime.'-'.$cvi.'.csv';
 				}
 				break;
 			case 'parcellaire':
