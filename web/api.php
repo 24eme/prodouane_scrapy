@@ -234,10 +234,15 @@ function exec_local_parsing($config_name, $type, $millesime, $cvi, & $exec_outpu
 			if ($ret) {
 				return $ret;
 			}
-			if (file_exists($path.'/parcellaire-'.$cvi.'.csv') || file_exists('../documents/parcellaire-'.$cvi.'.csv')) {
-				return 0;
+			if (!file_exists($path.'/parcellaire-'.$cvi.'.csv') && !file_exists('../documents/parcellaire-'.$cvi.'.csv')) {
+				return SCRAPING_FILE_NOT_FOUND;
 			}
-			return SCRAPING_FILE_NOT_FOUND;
+			exec($script_prefix.' bash ../bin/download_parcellaire_geojson.sh '.$cvi.' 2>&1', $exec_output, $ret);
+			if ($ret) {
+				return $ret;
+			}
+
+			return 0;
 	}
 	return SCRAPING_UNKOWN_TYPE;
 }
