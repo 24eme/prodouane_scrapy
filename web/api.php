@@ -328,6 +328,7 @@ function exec_distant_parsing($config_name, $type, $millesime, $cvi, & $exec_out
 	$router_uri = str_replace('://', '://'.$_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'].'@', $config_router_uri);
 
 	api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing '.$config_router_uri.': list']);
+	api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing '.$config_router_uri.': /router.php?action=list&type='.$type.'&millesime='.$millesime.'&cvi='.$cvi]);
 	$response = file_get_contents($router_uri.'/router.php?action=list&type='.$type.'&millesime='.$millesime.'&cvi='.$cvi);
 	api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing '.$config_router_uri.': list response: '.$response]);
 	$json = json_decode($response);
@@ -361,9 +362,11 @@ function exec_distant_parsing($config_name, $type, $millesime, $cvi, & $exec_out
 		}
 	}
 	if (isset($json->error_code)) {
+		api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing '.$config_router_uri.': return error_code'.$json->error_code]);
 		return $json->error_code;
 	}
 	if (!isset($json->files)) {
+		api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing '.$config_router_uri.': return response '.$response]);
 		return $response;
 	}
 	foreach($json->files as $f) {
@@ -379,6 +382,7 @@ function exec_distant_parsing($config_name, $type, $millesime, $cvi, & $exec_out
 		$file = file_get_contents($router_uri.'/router.php?action=file&type='.$type.'&millesime='.$millesime.'&cvi='.$cvi.'&filename='.$f);
 		file_put_contents('../documents/'.$millesime.'/'.$dep.'/'.$f, $file);
 	}
+	api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing '.$config_router_uri.': return 0']);
 	return 0;
 }
 
