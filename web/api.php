@@ -129,6 +129,9 @@ switch ($action) {
 				if (file_exists($path.'/'.$type.'-'.$millesime.'-'.$cvi.'.xls') || file_exists('../documents/'.$type.'-'.$millesime.'-'.$cvi.'.xls')) {
 					$files[] = $type.'-'.$millesime.'-'.$cvi.'.xls';
 				}
+				if (file_exists($path.'/'.$type.'-'.$millesime.'-'.$cvi.'.csv') || file_exists('../documents/'.$type.'-'.$millesime.'-'.$cvi.'.csv')) {
+					$files[] = $type.'-'.$millesime.'-'.$cvi.'.csv';
+				}
 				if (file_exists($path.'/'.$type.'-'.$millesime.'-'.$cvi.'.html') || file_exists('../documents/'.$type.'-'.$millesime.'-'.$cvi.'.html')) {
 					$files[] = $type.'-'.$millesime.'-'.$cvi.'.html';
 				}
