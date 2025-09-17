@@ -120,20 +120,21 @@ switch ($action) {
 			case 'sv12':
 			case 'dr':
 			case 'production':
+				$filetype = $type;
 				if ($millesime > 2021 && ($type == 'sv11' || $type == 'sv12')) {
-					$type = 'production';
+					$filetype = 'production';
 				}
-				if (file_exists($path.'/'.$type.'-'.$millesime.'-'.$cvi.'.pdf') || file_exists('../documents/'.$type.'-'.$millesime.'-'.$cvi.'.pdf')) {
-					$files[] = $type.'-'.$millesime.'-'.$cvi.'.pdf';
+				if (file_exists($path.'/'.$filetype.'-'.$millesime.'-'.$cvi.'.pdf') || file_exists('../documents/'.$filetype.'-'.$millesime.'-'.$cvi.'.pdf')) {
+					$files[] = $filetype.'-'.$millesime.'-'.$cvi.'.pdf';
 				}
-				if (file_exists($path.'/'.$type.'-'.$millesime.'-'.$cvi.'.xls') || file_exists('../documents/'.$type.'-'.$millesime.'-'.$cvi.'.xls')) {
-					$files[] = $type.'-'.$millesime.'-'.$cvi.'.xls';
+				if (file_exists($path.'/'.$filetype.'-'.$millesime.'-'.$cvi.'.xls') || file_exists('../documents/'.$filetype.'-'.$millesime.'-'.$cvi.'.xls')) {
+					$files[] = $filetype.'-'.$millesime.'-'.$cvi.'.xls';
 				}
-				if (file_exists($path.'/'.$type.'-'.$millesime.'-'.$cvi.'.csv') || file_exists('../documents/'.$type.'-'.$millesime.'-'.$cvi.'.csv')) {
-					$files[] = $type.'-'.$millesime.'-'.$cvi.'.csv';
+				if (file_exists($path.'/'.$filetype.'-'.$millesime.'-'.$cvi.'.csv') || file_exists('../documents/'.$filetype.'-'.$millesime.'-'.$cvi.'.csv')) {
+					$files[] = $filetype.'-'.$millesime.'-'.$cvi.'.csv';
 				}
-				if (file_exists($path.'/'.$type.'-'.$millesime.'-'.$cvi.'.html') || file_exists('../documents/'.$type.'-'.$millesime.'-'.$cvi.'.html')) {
-					$files[] = $type.'-'.$millesime.'-'.$cvi.'.html';
+				if (file_exists($path.'/'.$filetype.'-'.$millesime.'-'.$cvi.'.html') || file_exists('../documents/'.$filetype.'-'.$millesime.'-'.$cvi.'.html')) {
+					$files[] = $filetype.'-'.$millesime.'-'.$cvi.'.html';
 				}
 				break;
 			case 'parcellaire':
