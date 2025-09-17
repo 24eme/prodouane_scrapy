@@ -332,7 +332,7 @@ function exec_distant_parsing($config_name, $type, $millesime, $cvi, & $exec_out
 	$response = file_get_contents($router_uri.'/router.php?action=list&type='.$type.'&millesime='.$millesime.'&cvi='.$cvi);
 	api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing '.$config_router_uri.': list response: '.$response]);
 	$json = json_decode($response);
-	if (isset($json->error_code) || (isset($json->files) && !count($json->files)) ) {
+	if (isset($json->error_code) || (isset($json->files) && count($json->files) < 2) ) {
 		api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing '.$config_router_uri.': update']);
 		api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing '.$config_router_uri.': /router.php?action=update&type='.$type.'&millesime='.$millesime.'&cvi='.$cvi]);
 		$response = file_get_contents($router_uri.'/router.php?action=update&type='.$type.'&millesime='.$millesime.'&cvi='.$cvi);
