@@ -39,6 +39,7 @@ $action = $_GET['action'];
 $config_dep_to_region[$dep][] = 'default';
 
 $page = json_encode(['error_code' => -1, 'msg' => 'no region found '.$dep]);
+$ret = json_decode('["exec_output":[]]');
 foreach($config_dep_to_region[$dep] as $region) {
 	if ($region == $account_name) {
 		continue;
@@ -53,8 +54,33 @@ foreach($config_dep_to_region[$dep] as $region) {
 		$query .= "&filename=".$_GET['filename'];
 	}
 	$page = file_get_contents($query);
-	$ret = json_decode($page);
-	if ($ret && !isset($ret->error_code)) {
+	$newret = json_decode($page);
+	if ($newret) {
+		if (isset($newret->msg)) {
+			$newret->msg = 'router: '.$region.': '.$newret->msg;
+			if (isset($ret->msg)) {
+				$newret->msg .= ' // '.$ret->msg;
+			}
+		} elseif(isset($ret->msg)) {
+			$newret->msg = 'router: '.$region.' null // '.$ret->msg;
+		}
+		if (isset($newret->exec_output)) {
+			$newret->exec_output = array_merge(['router region: '.$region], $newret->exec_output);
+			if (isset($ret->exec_output)) {
+				$newret->exec_output = array_merge( $newret->exec_output, $ret->exec_output);
+			}
+		} elseif (isset($ret->exec_output)) {
+			$newret->exec_output = $ret->exec_output;
+		}
+		if (isset($ret->via)) {
+			$newret->via = array_merge([$region], $ret->via);
+		}else{
+			$newret->via = [$region];
+		}
+		$page = json_encode($newret);
+	}
+	$ret = $newret;
+	if (!$ret || !isset($ret->error_code) || $ret->error_code === 0) {
 		echo $page;
 		exit;
 	}

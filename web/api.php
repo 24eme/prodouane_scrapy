@@ -34,11 +34,23 @@ if (isset($_GET['millesime'])) {
 
 $format = null;
 if (isset($_GET['format'])) {
-	$format = $_GET['format'];
+	$format = preg_replace('/[^0-9a-z]/', '', $_GET['format']);
 }
 
-$path = '../documents/'.$millesime.'/'.substr($cvi, 0, 2);
-error_log('api: '.$account_name.': action '.$action);
+$type = null;
+if (isset($_GET['type'])) {
+	$type = $_GET['type'];
+	if (!in_array($type, ['parcellaire', 'dr', 'sv11', 'sv12', 'production'])) {
+		$type = null;
+	}
+}
+
+$dep = substr($cvi, 0, 2);
+$path = '../documents/'.$millesime.'/'.$dep;
+@mkdir('../documents/'.$millesime);
+@mkdir('../documents/'.$millesime.'/'.$dep);
+api_log($type, $millesime, $cvi, ['api: '.$account_name.': action '.$action]);
+
 switch ($action) {
 	case 'scrape':
 	case 'update':
@@ -47,37 +59,50 @@ switch ($action) {
 			$type = $_GET['type'];
 		}
 		$ret = parsing($account_name, $type, $millesime, $cvi, $exec_output);
+		api_log($type, $millesime, $cvi, ['parsing DONE']);
+		if ($format) {
+			api_log($type, $millesime, $cvi, ['response format: '.$format]);
+		}
 		$json_message = [];
 		switch ($ret) {
 			case 0:
 				if ($format != 'json') {
+					api_log($type, $millesime, $cvi, ['redirect to list']);
 					header('Location: '.str_replace('action='.$action.'&', 'action=list&', $_SERVER['REQUEST_URI']));
 				}
 				break;
 			case SCRAPING_UNKOWN_TYPE:
 				if ($format != 'json') {
+					api_log($type, $millesime, $cvi, ['HTTP 400 Bad Request']);
 					header('HTTP/1.0 400 Bad Request');
 				}
-				echo json_encode(['error_code' => $ret, 'msg' => 'valeur de type reconnu'])."\n";
+				echo json_encode(['error_code' => $ret, 'msg' => 'valeur de type non reconnu'])."\n";
+				api_log($type, $millesime, $cvi, ['valeur de type non reconnu']);
 				exit;
 			case SCRAPING_NO_CONF_FOUND:
 				if ($format != 'json') {
+					api_log($type, $millesime, $cvi, ['HTTP 400 Bad Request']);
 					header('HTTP/1.0 400 Bad Request');
 				}
 				echo json_encode(['error_code' => $ret, 'msg' => 'no conf found'])."\n";
+				api_log($type, $millesime, $cvi, ['no conf found']);
 				exit;
 			case SCRAPING_FILE_NOT_FOUND:
 				if ($format != 'json') {
 					header('HTTP/1.0 500 Scraping failed');
+					api_log($type, $millesime, $cvi, ['HTTP 500 Scraping failed']);
 				}
 				$json_message['msg'] = "scraping failed : files not found";
+				api_log($type, $millesime, $cvi, ['files not found']);
 				$format = 'error';
 				break;
 			default:
 				if ($format != 'json') {
 					header('HTTP/1.0 500 Scraping failed');
+					api_log($type, $millesime, $cvi, ['HTTP 500 Scraping failed']);
 				}
 				$json_message['msg'] =  "scraping failed : error $ret";
+				api_log($type, $millesime, $cvi, ["scraping failed : error $ret"]);
 				$format = 'error';
 				break;
 		}
@@ -89,15 +114,12 @@ switch ($action) {
 			exit;
 		}
 	case 'list':
-		$type = null;
-		if (isset($_GET['type'])) {
-			$type = $_GET['type'];
-		}
-		$files = [];
+		$files = [$type.'-'.$millesime.'-'.$cvi.'.log'];
 		switch ($type) {
 			case 'sv11':
 			case 'sv12':
 			case 'dr':
+			case 'production':
 				if ($millesime > 2021 && ($type == 'sv11' || $type == 'sv12')) {
 					$type = 'production';
 				}
@@ -131,19 +153,24 @@ switch ($action) {
 			default:
 				if ($format != 'json') {
 					header('HTTP/1.0 400 Bad Request');
+					api_log($type, $millesime, $cvi, ['HTTP/1.0 400 Bad Request']);
 				}
 				echo json_encode(['error_code' => '400', 'msg' => 'argument type nécessaire'])."\n";
+				api_log($type, $millesime, $cvi, ['unknown type '.$_GET['type']]);
 				exit;
 				break;
 		}
+		api_log($type, $millesime, $cvi, ['files found: '.implode(', ', $files)]);
 		switch ($format) {
 			case 'json':
+				api_log($type, $millesime, $cvi, ['json response']);
 				header('Content-Type: text/json');
 				echo json_encode(['files' => $files]);
 				echo "\n";
 				break;
 			default:
 				header('Content-Type: text/json');
+				api_log($type, $millesime, $cvi, ['listing response']);
 				$protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']) ? 'https' : 'http';
 				$auth = $_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'].'@';
 				foreach($files as $f) {
@@ -156,8 +183,10 @@ switch ($action) {
 		if (!isset($_GET['filename'])){
 			if ($format != 'json') {
 				header('HTTP/1.0 400 Bad Request');
+				api_log($type, $millesime, $cvi, ['HTTP 400 Bad Request']);
 			}
 			echo json_encode(['error_code' => '400', 'msg' => 'argument filename nécessaire'])."\n";
+			api_log($type, $millesime, $cvi, ['argument filename nécessaire']);
 			exit;
 		}
 		$filename = str_replace('/', '', $_GET['filename']);
@@ -167,21 +196,29 @@ switch ($action) {
 			if (!file_exists($fullpath)) {
 				if ($format != 'json') {
 					header('HTTP/1.0 400 Bad Request');
+					api_log($type, $millesime, $cvi, ['HTTP 400 Bad Request']);
 				}
 				echo json_encode(['error_code' => '400', 'msg' => 'wrong file'])."\n";
+				api_log($type, $millesime, $cvi, ['wrong file']);
 				exit;
 			}
 		}
-		header('Content-Type: application/download');
-		header('Content-Disposition: attachment; filename="'.urlencode($filename).'"');
-
+		api_log($type, $millesime, $cvi, [$filename.' sent']);
+		if (strpos($filename, '.log') === false) {
+			header('Content-Type: application/download');
+			header('Content-Disposition: attachment; filename="'.urlencode($filename).'"');
+		}else{
+			header('Content-Type: text/plain');
+		}
 		echo file_get_contents($fullpath);
 		exit;
 	default:
 		if ($format != 'json') {
 			header('HTTP/1.0 400 Bad Request');
+			api_log($type, $millesime, $cvi, ['HTTP 400 Bad Request']);
 		}
 		echo json_encode(['error_code' => '400', 'msg' => 'action inconnue'])."\n";
+		api_log($type, $millesime, $cvi, ['action inconnue']);
 		echo "action inconnue\n";
 		exit;
 		break;
@@ -202,48 +239,64 @@ function exec_local_parsing($config_name, $type, $millesime, $cvi, & $exec_outpu
 	global $config_script_prefix;
 	global $path;
 
-	error_log('api: '.$config_name.': local_parsing');
+	api_log($type, $millesime, $cvi, ['api: '.$config_name.': local_parsing']);
 	if (isset($config_script_prefix) && $config_script_prefix) {
 		$script_prefix = $config_script_prefix;
 	}else{
 		$script_prefix = '';
 	}
 	if (file_exists('../bin/config.'.$config_name.'.inc')) {
-		error_log('api: '.$config_name.': config: '.'config.'.$config_name.'.inc');
+		api_log($type, $millesime, $cvi, ['exec_local_parsing: '.$config_name.': config: '.'config.'.$config_name.'.inc']);
 		$script_prefix .= ' PRODOUANE_CONFIG_FILENAME=config.'.$config_name.'.inc';
 	}elseif (!file_exists('../bin/config.inc')) {
-		error_log('api: '.$config_name.': config: not found');
+		api_log($type, $millesime, $cvi, ['exec_local_parsing: '.$config_name.': config: not found']);
 		return SCRAPING_NO_CONF_FOUND;
 	}else{
-		error_log('api: '.$config_name.': config: '.'config.inc');
+		api_log($type, $millesime, $cvi, ['exec_local_parsing: '.$config_name.': config: '.'config.inc']);
 	}
 	switch ($type) {
 		case 'sv11':
 		case 'sv12':
 		case 'dr':
+			api_log($type, $millesime, $cvi, ['exec_local_parsing: '.$config_name.': exec: '.$script_prefix.' bash ../bin/download_douane.sh '.$type.' '.$millesime.' '.$cvi.' 2>&1']);
 			exec($script_prefix.' bash ../bin/download_douane.sh '.$type.' '.$millesime.' '.$cvi.' 2>&1', $exec_output, $ret);
+			api_log($type, $millesime, $cvi, ['===============================================']);
+			api_log($type, $millesime, $cvi, $exec_output);
+			api_log($type, $millesime, $cvi, ['===============================================']);
+			api_log($type, $millesime, $cvi, ['exec_local_parsing: '.$config_name.': exec: ret: '.$ret]);
 			if ($ret) {
 				return $ret;
 			}
 			if (file_exists($path.'/'.$type.'-'.$millesime.'-'.$cvi.'.pdf') || file_exists('../documents/'.$type.'-'.$millesime.'-'.$cvi.'.pdf')) {
+				api_log($type, $millesime, $cvi, ['exec_local_parsing: '.$config_name.': exec: pdf file exists']);
 				return 0;
 			}
+			api_log($type, $millesime, $cvi, ['exec_local_parsing: '.$config_name.': exec: SCRAPING_FILE_NOT_FOUND']);
 			return SCRAPING_FILE_NOT_FOUND;
 		case 'parcellaire':
+			api_log($type, $millesime, $cvi, ['exec_local_parsing: '.$config_name.': exec: '.$script_prefix.' bash ../bin/download_parcellaire.sh '.$cvi.' 2>&1']);
 			exec($script_prefix.' bash ../bin/download_parcellaire.sh '.$cvi.' 2>&1', $exec_output, $ret);
+			api_log($type, $millesime, $cvi, ['===============================================']);
+			api_log($type, $millesime, $cvi, $exec_output);
+			api_log($type, $millesime, $cvi, ['===============================================']);
+			api_log($type, $millesime, $cvi, ['exec_local_parsing: '.$config_name.': exec: ret: '.$ret]);
 			if ($ret) {
 				return $ret;
 			}
 			if (!file_exists($path.'/parcellaire-'.$cvi.'.csv') && !file_exists('../documents/parcellaire-'.$cvi.'.csv')) {
+				api_log($type, $millesime, $cvi, ['exec_local_parsing: '.$config_name.': exec: pdf file exists']);
 				return SCRAPING_FILE_NOT_FOUND;
 			}
+			api_log($type, $millesime, $cvi, ['exec_local_parsing: '.$config_name.': exec: '.$script_prefix.' bash ../bin/download_parcellaire_geojson.sh '.$cvi.' 2>&1']);
 			exec($script_prefix.' bash ../bin/download_parcellaire_geojson.sh '.$cvi.' 2>&1', $exec_output, $ret);
+			api_log($type, $millesime, $cvi, ['exec_local_parsing: '.$config_name.': exec: ret: '.$ret]);
 			if ($ret) {
 				return $ret;
 			}
-
+			api_log($type, $millesime, $cvi, ['exec_local_parsing: '.$config_name.': exec: ret: return 0']);
 			return 0;
 	}
+	api_log($type, $millesime, $cvi, ['exec_local_parsing: '.$config_name.': exec: SCRAPING_UNKOWN_TYPE']);
 	return SCRAPING_UNKOWN_TYPE;
 }
 
@@ -251,23 +304,41 @@ function exec_distant_parsing($config_name, $type, $millesime, $cvi, & $exec_out
 	global $config_router_uri;
 	$dep = substr($cvi, 0, 2);
 
-	error_log('api: '.$config_name.': distant_parsing');
+	api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing']);
 	$router_uri = str_replace('://', '://'.$_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'].'@', $config_router_uri);
 
-	error_log('api: '.$config_name.': distant_parsing: list');
+	api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing '.$config_router_uri.': list']);
 	$response = file_get_contents($router_uri.'/router.php?action=list&type='.$type.'&millesime='.$millesime.'&cvi='.$cvi);
+	api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing '.$config_router_uri.': list response: '.$response]);
 	$json = json_decode($response);
 	if (isset($json->error_code) || (isset($json->files) && !count($json->files)) ) {
-		error_log('api: '.$config_name.': distant_parsing: update');
+		api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing '.$config_router_uri.': update']);
+		api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing '.$config_router_uri.': /router.php?action=update&type='.$type.'&millesime='.$millesime.'&cvi='.$cvi]);
 		$response = file_get_contents($router_uri.'/router.php?action=update&type='.$type.'&millesime='.$millesime.'&cvi='.$cvi);
 		$json = json_decode($response);
-		if (isset($json->error_code) && !$json->error_code) {
-			$response = file_get_contents($router_uri.'/router.php?action=list&type='.$type.'&millesime='.$millesime.'&cvi='.$cvi);
-			$json = json_decode($response);
+		if (isset($json->via)) {
+			api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing '.$config_router_uri.': update via: '.implode(',', $json->via)]);
 		}
-	}
-	if (isset($json->exec_output)) {
-		$exec_output = $json->exec_output;
+		if (isset($json->exec_output)) {
+			api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing '.$config_router_uri.': exec_output: ']);
+			api_log($type, $millesime, $cvi, ['===============================================']);
+			$exec_output = $json->exec_output;
+			api_log($type, $millesime, $cvi, $exec_output, $config_router_uri);
+			api_log($type, $millesime, $cvi, ['===============================================']);
+		}
+		if (isset($json->error_code)) {
+			api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing '.$config_router_uri.': error_code:'.$json->error_code]);
+		}
+		if (isset($json->error_code) && !$json->error_code) {
+			api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing '.$config_router_uri.': listing']);
+			api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing '.$config_router_uri.': /router.php?action=list&type='.$type.'&millesime='.$millesime.'&cvi='.$cvi]);
+			$response = file_get_contents($router_uri.'/router.php?action=list&type='.$type.'&millesime='.$millesime.'&cvi='.$cvi);
+			api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing '.$config_router_uri.': listing response: '.$response]);
+			$json = json_decode($response);
+			if (isset($json->via)) {
+				api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing '.$config_router_uri.': listing via: '.implode(',', $json->via)]);
+			}
+		}
 	}
 	if (isset($json->error_code)) {
 		return $json->error_code;
@@ -275,15 +346,33 @@ function exec_distant_parsing($config_name, $type, $millesime, $cvi, & $exec_out
 	if (!isset($json->files)) {
 		return $response;
 	}
-	@mkdir('../documents/'.$millesime);
-	@mkdir('../documents/'.$millesime.'/'.$dep);
 	foreach($json->files as $f) {
-		if (strpos($f, '.pdf') === false && strpos($f, '.csv') === false && strpos($f, '.html') === false  && strpos($f, '.xls') === false && strpos($f, '.xlsx') === false && strpos($f, '.json') === false  && strpos($f, '.geojson') === false) {
+		if (strpos($f, '.pdf') === false && strpos($f, '.csv') === false && strpos($f, '.html') === false  && strpos($f, '.xls') === false && strpos($f, '.xlsx') === false && strpos($f, '.json') === false  && strpos($f, '.geojson') === false && strpos($f, '.log') === false) {
 			continue;
 		}
-		error_log('api: '.$config_name.': distant_parsing: file '.$f);
+		api_log($type, $millesime, $cvi, ['api: '.$config_name.': distant_parsing: file '.$f]);
+		if (strpos($f, '.log') !== false) {
+			continue;
+		}
+		api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing '.$config_router_uri.': file']);
+		api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing '.$config_router_uri.': /router.php?action=file&type='.$type.'&millesime='.$millesime.'&cvi='.$cvi.'&filename='.$f]);
 		$file = file_get_contents($router_uri.'/router.php?action=file&type='.$type.'&millesime='.$millesime.'&cvi='.$cvi.'&filename='.$f);
 		file_put_contents('../documents/'.$millesime.'/'.$dep.'/'.$f, $file);
 	}
 	return 0;
+}
+
+function api_log($type, $millesime, $cvi, array $output, $add_prefix = null) {
+	$dep = substr($cvi, 0, 2);
+	$file = '../documents/'.$millesime.'/'.$dep.'/'.$type.'-'.$millesime.'-'.$cvi.'.log';
+	$prefix = date("Y-m-d H:i:s").' '.$_SERVER['REMOTE_ADDR'].' ['.$_SERVER['PHP_AUTH_USER'].']';
+	if ($add_prefix) {
+		$prefix .= ' '.$add_prefix;
+	}
+	foreach ($output as $line) {
+		error_log($prefix.': '.$line);
+		if ($type) {
+			file_put_contents($file, $prefix.' '.$line."\n", FILE_APPEND);
+		}
+	}
 }
