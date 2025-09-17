@@ -193,6 +193,15 @@ switch ($action) {
 			exit;
 		}
 		$filename = str_replace('/', '', $_GET['filename']);
+		if (! strpos($filename, $cvi)) {
+			if ($format != 'json') {
+				header('HTTP/1.0 400 Bad Request');
+				api_log($type, $millesime, $cvi, ['HTTP 400 Bad Request']);
+			}
+			echo json_encode(['error_code' => '400', 'msg' => 'wrong filename'])."\n";
+			api_log($type, $millesime, $cvi, ['wrong filename']);
+			exit;
+		}
 		$fullpath = $path.'/'.$filename;
 		if (!file_exists($fullpath)) {
 			$fullpath = '../documents/'.$filename;
