@@ -279,9 +279,11 @@ function exec_local_parsing($config_name, $type, $millesime, $cvi, & $exec_outpu
 		case 'parcellaire':
 			api_log($type, $millesime, $cvi, ['exec_local_parsing: '.$config_name.': exec: '.$script_prefix.' bash ../bin/download_parcellaire.sh '.$cvi.' 2>&1']);
 			exec($script_prefix.' bash ../bin/download_parcellaire.sh '.$cvi.' 2>&1', $exec_output, $ret);
-			api_log($type, $millesime, $cvi, ['===============================================']);
-			api_log($type, $millesime, $cvi, $exec_output);
-			api_log($type, $millesime, $cvi, ['===============================================']);
+			if (count($exec_output)) {
+				api_log($type, $millesime, $cvi, ['===============================================']);
+				api_log($type, $millesime, $cvi, $exec_output);
+				api_log($type, $millesime, $cvi, ['===============================================']);
+			}
 			api_log($type, $millesime, $cvi, ['exec_local_parsing: '.$config_name.': exec: ret: '.$ret]);
 			if ($ret) {
 				return $ret;
@@ -292,6 +294,11 @@ function exec_local_parsing($config_name, $type, $millesime, $cvi, & $exec_outpu
 			}
 			api_log($type, $millesime, $cvi, ['exec_local_parsing: '.$config_name.': exec: '.$script_prefix.' bash ../bin/download_parcellaire_geojson.sh '.$cvi.' 2>&1']);
 			exec($script_prefix.' bash ../bin/download_parcellaire_geojson.sh '.$cvi.' 2>&1', $exec_output, $ret);
+			if (count($exec_output)) {
+				api_log($type, $millesime, $cvi, ['===============================================']);
+				api_log($type, $millesime, $cvi, $exec_output);
+				api_log($type, $millesime, $cvi, ['===============================================']);
+			}
 			api_log($type, $millesime, $cvi, ['exec_local_parsing: '.$config_name.': exec: ret: '.$ret]);
 			if ($ret) {
 				return $ret;
