@@ -20,7 +20,7 @@ if ! test "$cvi" ; then
 	exit 2;
 fi
 
-if test "$type" = "dr" ; then
+if test "$type" = "dr" && test $annee -lt 2025 ; then
   rm ./documents/dr-"$annee"*"$cvi"*
   PRODOUANE_USER="$PRODOUANE_USER" PRODOUANE_PASS="$PRODOUANE_PASS" CVI="$cvi" PRODOUANE_ANNEE="$annee" scrapy crawl "$type"
 elif test "$type" = "sv11" && test $annee -lt 2022 ; then
