@@ -204,6 +204,30 @@ async function scrape_production(csv_filename, page, process) {
       console.log("===================");
     }
 
+    await page.click("#accordeonRecapDec .fr-link--download:nth-child(3)");
+    if(process.env.DEBUG){
+      console.log("Téléchargement JSON demandé");
+      console.log("===================");
+    }
+    var json_filename = '';
+    await page.waitForResponse((response) => {
+        if (response.status() === 200) {
+            json_filename = response.headers()['content-disposition'];
+            json_filename = json_filename.replace('attachment;filename=', '');
+            if (json_filename.match('json')) {
+                return true;
+            }
+        }
+        return false;
+    });
+    await page.waitForTimeout(1000);
+    await fs.rename('documents/'+json_filename, 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.json', (err) => {if (err) throw err;});
+    if(process.env.DEBUG){
+      console.log("Téléchargement JSON OK");
+      console.log('documents/'+json_filename+' => documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.json');
+      console.log("===================");
+    }
+
     await page.click('#segmented-v-18');
     await page.waitForSelector('#tableau-recap-resume', {hidden: true});
     await page.waitForSelector('#tableau-recap-par-fournisseur-apporteur table');
