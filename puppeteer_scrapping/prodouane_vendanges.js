@@ -133,7 +133,7 @@ const fs = require('fs');
     if (is_production) {
         await scrape_production(first_filename, page, process);
     } else {
-        await scrape_recolte(page, process);
+        await scrape_recolte(first_filename, page, process);
     }
 
     await page.click('.id-user');
@@ -161,7 +161,38 @@ const fs = require('fs');
 })();
 
 async function scrape_recolte(pdf_filename, page, process) {
-    console.log([pdf_filename, page, process]);
+    session_id = pdf_filename.match('([^_]+)_recolte_production_([^\.]+)\.pdf');
+    await fs.rename('documents/'+pdf_filename, 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf', (err) => {if (err) throw err;});
+    if(process.env.DEBUG){
+      console.log("Téléchargement PDF OK");
+      console.log('documents/'+pdf_filename+' => documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf');
+      console.log("===================");
+    }
+
+    await page.click("#accordeonRecapDec .fr-link--download:nth-child(2)");
+    if(process.env.DEBUG){
+      console.log("Téléchargement JSON demandé");
+      console.log("===================");
+    }
+    var json_filename = '';
+    await page.waitForResponse((response) => {
+        if (response.status() === 200) {
+            json_filename = response.headers()['content-disposition'];
+            json_filename = json_filename.replace('attachment;filename=', '');
+            if (json_filename.match('json')) {
+                return true;
+            }
+        }
+        return false;
+    });
+    await page.waitForTimeout(1000);
+    await fs.rename('documents/'+json_filename, 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.json', (err) => {if (err) throw err;});
+    if(process.env.DEBUG){
+      console.log("Téléchargement JSON OK");
+      console.log('documents/'+json_filename+' => documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.json');
+      console.log("===================");
+    }
+
 }
 
 async function scrape_production(csv_filename, page, process) {
