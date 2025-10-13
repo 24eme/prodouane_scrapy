@@ -9,7 +9,7 @@ const fs = require('fs');
 
     await page.click("input[value='VENDANGES']");
 
-    await page.waitForSelector('#accueil');
+    await page.waitForSelector('.btnMenu');
     if(process.env.DEBUG){
       console.log("Entrée dans Vendanges");
       console.log("===================");
@@ -38,33 +38,41 @@ const fs = require('fs');
     await page.type('#selectCampagne',  process.env.PRODOUANE_ANNEE);
     await page.keyboard.press('Enter');
 
-    await page.click('#choix-statut-etat_BV_option_0')
+    await page.click('#statut_1')
 
     await page.waitForTimeout(250);
 
     await page.type('#inputNumeroCvi', process.env.CVI);
     await page.keyboard.press('Enter');
 
-    await page.waitForSelector('#input-live-feedback');
+    await page.waitForSelector('.fr-input-group--valid');
 
     if(process.env.DEBUG){
       console.log("Saisie des infos CVI et Capagne");
       console.log("===================");
     }
-    await page.waitForSelector('#inputNumeroCvi.is-valid');
 
+
+    await page.waitForSelector('#bloc-form-recherche-dec-par-evv button.fr-icon-search-line');
     await page.waitForTimeout(250);
-    await page.click('#btnRechercheDeclaration');
+
+    await page.click('#statut_1')
+    await page.waitForTimeout(250);
+
+    await page.keyboard.press("Tab");
+    await page.keyboard.press("Tab");
+    await page.keyboard.press('Enter');
+
+//    await page.click('#bloc-form-recherche-dec-par-evv button.fr-icon-search-line');
     if(process.env.DEBUG){
       console.log("Click sur la recherche");
       console.log("===================");
     }
-    
-    await page.waitForSelector('#inputNumeroCvi.is-valid');
+
     await page.waitForSelector('#tableau-declarations tbody tr');
     await page.waitForTimeout(250);
-    const h2_result = await page.$$('#tableau-declarations tbody tr .btn-primary');
-    
+    const h2_result = await page.$$('#tableau-declarations tbody tr .fr-badge--success');
+
     if (h2_result.length < 1) {
         console.log("ERREUR: pas de résultat");
         if (process.env.DEBUG) {
@@ -84,9 +92,9 @@ const fs = require('fs');
       console.log("===================");
     }
 
-    await page.waitForSelector('#tableau-declarations tbody tr:first-child .btn-primary');
+    await page.waitForSelector('#tableau-declarations tbody tr:first-child .fr-icon-arrow-right-line');
 
-    await page.click('#tableau-declarations tbody tr:first-child .btn-primary');
+    await page.click('#tableau-declarations tbody tr:first-child .fr-icon-arrow-right-line');
     await page.waitForSelector('#tableau-recap-resume');
     if(process.env.DEBUG){
       console.log("Page du document");
@@ -99,26 +107,67 @@ const fs = require('fs');
     downloadPath: "documents",
     });
     await page.waitForTimeout(250);
-    await page.click("#tableau-recap-resume button:first-child");
+    await page.click("#accordeonRecapDec .fr-link--download:first-child");
     if(process.env.DEBUG){
       console.log("Téléchargement CSV demandé");
       console.log("===================");
     }
-    var csv_filename = '';
+    var first_filename = '';
     await page.waitForResponse((response) => {
         if (response.status() === 200) {
-            csv_filename = response.headers()['content-disposition'];
-            csv_filename = csv_filename.replace('attachment;filename=', '');
-            if (csv_filename.match('csv')) {
+            first_filename = response.headers()['content-disposition'];
+            first_filename = first_filename.replace('attachment;filename=', '');
+            if (first_filename.match('csv')) {
+                return true;
+            }
+            if (first_filename.match('pdf')) {
                 return true;
             }
         }
         return false;
     });
     await page.waitForTimeout(1000);
-    session_id = csv_filename.match('déclaration_production_([^_]+)_([^_]+)_([^\.]+)\.csv');
-    await fs.rename('documents/'+csv_filename, 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.csv', (err) => {if (err) throw err;});
 
+    is_production = first_filename.match('production.*\.csv');
+    console.log([first_filename, is_production]);
+    if (is_production) {
+        await scrape_production(first_filename, page, process);
+    } else {
+        await scrape_recolte(page, process);
+    }
+
+    await page.click('.id-user');
+    await page.waitForSelector('.fr-icon-logout-box-r-line');
+    await page.click('.fr-icon-logout-box-r-line');
+
+    await page.waitForSelector('.erreur-authentification')
+    if(process.env.DEBUG){
+      console.log("Déconnexion OK");
+      console.log("===================");
+    }
+
+    await prodouane.close();
+
+  }catch (e) {
+    console.log("");
+    console.log('FAILED !!');
+    console.log(e);
+    if(process.env.DEBUG && page){
+        await page.screenshot({ path: '/tmp/screenshot_vendanges_error.png'})
+        console.log('screenshot in /tmp/screenshot_vendanges_error.png')
+    }
+    await prodouane.close();
+  }
+})();
+
+async function scrape_recolte(pdf_filename, page, process) {
+    console.log([pdf_filename, page, process]);
+}
+
+async function scrape_production(csv_filename, page, process) {
+    session_id = csv_filename.match('([^_]+)_production_([^\.]+)\.csv');
+    console.log([session_id]);
+    await fs.rename('documents/'+csv_filename, 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.csv', (err) => {if (err) throw err;});
 
     if(process.env.DEBUG){
       console.log("Téléchargement CSV OK");
@@ -126,16 +175,16 @@ const fs = require('fs');
       console.log("===================");
     }
 
-    await page.click('.toggle-switch li:last-child label');
+    await page.click('#segmented-v-18');
     await page.waitForSelector('#tableau-recap-resume', {hidden: true});
-    await page.waitForSelector('#btnTeleChargement');
+    await page.waitForSelector('#tableau-recap-par-fournisseur-apporteur table');
     if(process.env.DEBUG){
       console.log("Page par apporteur");
       console.log("===================");
     }
     await page.waitForTimeout(250);
 
-    await page.click("#btnTeleChargement");
+    await page.click(".fr-link--download");
     if(process.env.DEBUG){
       console.log("Téléchargement du PDF");
       console.log("===================");
@@ -156,6 +205,7 @@ const fs = require('fs');
     });
     await page.waitForTimeout(1000);
     document_filename = null
+    console.log([pdf_filename, session_id]);
     if (!document_filename && fs.existsSync('documents/'+pdf_filename)) {
         document_filename = 'documents/'+pdf_filename;
     }
@@ -183,27 +233,4 @@ const fs = require('fs');
             console.log("===================");
         }
     }
-
-    await page.click('#buttonLogin');
-    await page.waitForSelector('.logout');
-    await page.click('.logout');
-
-    await page.waitForSelector('.erreur-authentification')
-    if(process.env.DEBUG){
-      console.log("Déconnexion OK");
-      console.log("===================");
-    }
-
-    await prodouane.close();
-
-  }catch (e) {
-    console.log("");
-    console.log('FAILED !!');
-    console.log(e);
-    if(process.env.DEBUG && page){
-        await page.screenshot({ path: '/tmp/screenshot_vendanges_error.png'})
-        console.log('screenshot in /tmp/screenshot_vendanges_error.png')
-    }
-    await prodouane.close();
-  }
-})();
+}
