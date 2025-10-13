@@ -129,7 +129,6 @@ const fs = require('fs');
     await page.waitForTimeout(1000);
 
     is_production = first_filename.match('production.*\.csv');
-    console.log([first_filename, is_production]);
     if (is_production) {
         await scrape_production(first_filename, page, process);
     } else {
@@ -197,7 +196,6 @@ async function scrape_recolte(pdf_filename, page, process) {
 
 async function scrape_production(csv_filename, page, process) {
     session_id = csv_filename.match('([^_]+)_production_([^\.]+)\.csv');
-    console.log([session_id]);
     await fs.rename('documents/'+csv_filename, 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.csv', (err) => {if (err) throw err;});
 
     if(process.env.DEBUG){
@@ -236,7 +234,6 @@ async function scrape_production(csv_filename, page, process) {
     });
     await page.waitForTimeout(1000);
     document_filename = null
-    console.log([pdf_filename, session_id]);
     if (!document_filename && fs.existsSync('documents/'+pdf_filename)) {
         document_filename = 'documents/'+pdf_filename;
     }
