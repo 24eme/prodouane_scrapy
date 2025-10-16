@@ -161,10 +161,10 @@ const fs = require('fs');
 
 async function scrape_recolte(pdf_filename, page, process) {
     session_id = pdf_filename.match('([^_]+)_recolte_production_([^\.]+)\.pdf');
-    await fs.rename('documents/'+pdf_filename, 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf', (err) => {if (err) throw err;});
+    await fs.rename('documents/'+pdf_filename, 'documents/recolte-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf', (err) => {if (err) throw err;});
     if(process.env.DEBUG){
       console.log("Téléchargement PDF OK");
-      console.log('documents/'+pdf_filename+' => documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf');
+      console.log('documents/'+pdf_filename+' => documents/recolte-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.pdf');
       console.log("===================");
     }
 
@@ -185,10 +185,10 @@ async function scrape_recolte(pdf_filename, page, process) {
         return false;
     });
     await page.waitForTimeout(1000);
-    await fs.rename('documents/'+json_filename, 'documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.json', (err) => {if (err) throw err;});
+    await fs.rename('documents/'+json_filename, 'documents/recolte-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.json', (err) => {if (err) throw err;});
     if(process.env.DEBUG){
       console.log("Téléchargement JSON OK");
-      console.log('documents/'+json_filename+' => documents/production-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.json');
+      console.log('documents/'+json_filename+' => documents/recolte-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.json');
       console.log("===================");
     }
 

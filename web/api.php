@@ -123,6 +123,8 @@ switch ($action) {
 				$filetype = $type;
 				if ($millesime > 2021 && ($type == 'sv11' || $type == 'sv12')) {
 					$filetype = 'production';
+				}elseif ($millesime > 2024 && $type == 'dr') {
+					$filetype = 'recolte';
 				}
 				if (file_exists($path.'/'.$filetype.'-'.$millesime.'-'.$cvi.'.pdf') || file_exists('../documents/'.$filetype.'-'.$millesime.'-'.$cvi.'.pdf')) {
 					$files[] = $filetype.'-'.$millesime.'-'.$cvi.'.pdf';
