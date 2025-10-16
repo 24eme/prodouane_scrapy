@@ -139,7 +139,7 @@ const fs = require('fs');
     await page.waitForSelector('.fr-icon-logout-box-r-line');
     await page.click('.fr-icon-logout-box-r-line');
 
-    await page.waitForSelector('.erreur-authentification')
+    await page.waitForTimeout(1000);
     if(process.env.DEBUG){
       console.log("Déconnexion OK");
       console.log("===================");
