@@ -136,6 +136,9 @@ switch ($action) {
 				if (file_exists($path.'/'.$filetype.'-'.$millesime.'-'.$cvi.'.html') || file_exists('../documents/'.$filetype.'-'.$millesime.'-'.$cvi.'.html')) {
 					$files[] = $filetype.'-'.$millesime.'-'.$cvi.'.html';
 				}
+				if (file_exists($path.'/'.$filetype.'-'.$millesime.'-'.$cvi.'.json') || file_exists('../documents/'.$filetype.'-'.$millesime.'-'.$cvi.'.json')) {
+					$files[] = $filetype.'-'.$millesime.'-'.$cvi.'.json';
+				}
 				break;
 			case 'parcellaire':
 				if (file_exists($path.'/parcellaire-'.$cvi.'-accueil.html') || file_exists('../documents/parcellaire-'.$cvi.'-accueil.html')) {
