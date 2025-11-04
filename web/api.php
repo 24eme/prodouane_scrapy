@@ -292,6 +292,9 @@ function exec_local_parsing($config_name, $type, $millesime, $cvi, & $exec_outpu
 			if ($millesime > 2021 && ($type == 'sv11' || $type == 'sv12')) {
 				$filetype = 'production';
 			}
+			if ($millesime > 2024 && $type == 'dr') {
+				$filetype = 'recolte';
+			}
 			if (file_exists($path.'/'.$filetype.'-'.$millesime.'-'.$cvi.'.pdf') || file_exists('../documents/'.$filetype.'-'.$millesime.'-'.$cvi.'.pdf')) {
 				api_log($type, $millesime, $cvi, ['exec_local_parsing: '.$config_name.': exec: pdf file exists']);
 				return 0;
