@@ -233,8 +233,10 @@ switch ($action) {
 		} else {
 			if (filemtime($files[0]) < filemtime($files[1])) {
 				$fullpath = $files[1];
+				unlink($files[0]);
 			} else {
 				$fullpath = $files[0];
+				unlink($files[1]);
 			}
 		}
 		api_log($type, $millesime, $cvi, [$filename.' sent']);
