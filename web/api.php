@@ -212,16 +212,29 @@ switch ($action) {
 			exit;
 		}
 		$fullpath = $path.'/'.$filename;
-		if (!file_exists($fullpath)) {
-			$fullpath = '../documents/'.$filename;
-			if (!file_exists($fullpath)) {
-				if ($format != 'json') {
-					header('HTTP/1.0 400 Bad Request');
-					api_log($type, $millesime, $cvi, ['HTTP 400 Bad Request']);
-				}
-				echo json_encode(['error_code' => '400', 'msg' => 'wrong file'])."\n";
-				api_log($type, $millesime, $cvi, ['wrong file']);
-				exit;
+		$files = [];
+		if (file_exists($fullpath)) {
+			$files[] = $fullpath;
+		}
+		if (file_exists('../documents/'.$filename)) {
+			$files[] = '../documents/'.$filename;
+		}
+		if (count($files) < 1) {
+			if ($format != 'json') {
+				header('HTTP/1.0 400 Bad Request');
+				api_log($type, $millesime, $cvi, ['HTTP 400 Bad Request']);
+			}
+			echo json_encode(['error_code' => '400', 'msg' => 'wrong file'])."\n";
+			api_log($type, $millesime, $cvi, ['wrong file']);
+			exit;
+		}
+		if (count($files) == 1)  {
+			$fullpath = $files[0];
+		} else {
+			if (filemtime($files[0]) < filemtime($files[1])) {
+				$fullpath = $files[1];
+			} else {
+				$fullpath = $files[0];
 			}
 		}
 		api_log($type, $millesime, $cvi, [$filename.' sent']);
