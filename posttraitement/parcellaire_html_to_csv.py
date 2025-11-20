@@ -157,7 +157,8 @@ with open(directory + filename % 'accueil', 'rb') as html_file:
                 parcellaire['Produit'] = ""
                 parcellaire['Superficie cadastrale'] = ""
 
-            parcellaire['Cepage'] = infos_parcelles[4].strip()
+            if infos_parcelles[4]:
+                parcellaire['Cepage'] = infos_parcelles[4].strip()
 
             parcellaire['Superficie'] = transform_superficie(infos_parcelles[5])
 
