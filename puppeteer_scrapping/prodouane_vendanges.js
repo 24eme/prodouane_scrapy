@@ -228,7 +228,7 @@ async function scrape_production(csv_filename, page, process) {
       console.log("===================");
     }
 
-    await page.click('#segmented-v-18');
+    await page.click('input[type="radio"][value^="Récapitulatif par"][value$="eur"]');
     await page.waitForSelector('#tableau-recap-resume', {hidden: true});
     await page.waitForSelector('#tableau-recap-par-fournisseur-apporteur table');
     if(process.env.DEBUG){
