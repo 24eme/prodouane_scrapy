@@ -1,5 +1,4 @@
 const prodouane = require('./common_prodouane.js');
-const fs = require('fs');
 
 (async () => {
   page = null;
