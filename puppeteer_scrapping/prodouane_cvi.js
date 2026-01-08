@@ -12,15 +12,13 @@ var browser;
 
      await page.waitForSelector('.btnMenu');
      if(process.env.DEBUG){
-       console.log("Entrée dans Vendanges");
-       console.log("===================");
+       prodouane.log("Entrée dans Vendanges");
      }
      const has_ovnis = await page.$$('.table-title');
 
      if (has_ovnis.length) {
          if(process.env.DEBUG){
-           console.log("Selection d'un OVNIS");
-           console.log("===================");
+           prodouane.log("Selection d'un OVNIS");
          }
 
          await page.type('input.champRecherche', process.env.PRODOUANE_OVNI);
@@ -44,6 +42,7 @@ var browser;
         }
         r = await response.text();
         console.log(r);
+        prodouane.log('');
         return true;
     });
 
