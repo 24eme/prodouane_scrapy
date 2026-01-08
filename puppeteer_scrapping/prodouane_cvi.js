@@ -47,7 +47,8 @@ var browser;
         return true;
     });
 
-    prodouane.close();
+    await prodouane.saveCookie(page);
+    await prodouane.close();
 
  }catch (e) {
   console.log("");

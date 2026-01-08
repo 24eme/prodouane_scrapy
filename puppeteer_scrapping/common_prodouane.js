@@ -1,11 +1,14 @@
 const puppeteer = require('puppeteer');
+const fs = require('fs');
 
 var browser;
 
 const baseURL = 'https://www.douane.gouv.fr';
 exports.baseURL = baseURL;
+exports.page = null;
 
 exports.close = async function() {
+    this.saveCookie(this.page);
     return await browser.close();
 }
 
@@ -15,8 +18,7 @@ exports.log = function (message) {
     }
 }
 
-exports.openpage_and_login = async function () {
-
+exports.openpage = async function () {
     if (!process.env.DEBUG && (process.env.DEBUG_WITH_BROWSER != undefined)) {
         process.env.DEBUG = 1;
     }
@@ -28,6 +30,19 @@ exports.openpage_and_login = async function () {
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
+    this.log('');
+
+    const page = await browser.newPage();
+    this.page = page;
+    return page
+
+}
+
+exports.openpage_and_login = async function () {
+
+    const page = await this.openpage();
+    this.page = page;
+
     if(!process.env.PRODOUANE_USER){
       await browser.close();
       throw "Initialisez la variable d'environnement PRODOUANE_USER avec le login";
@@ -36,10 +51,41 @@ exports.openpage_and_login = async function () {
       await browser.close();
       throw "Initialisez la variable d'environnement PRODOUANE_PASS avec le mot de passe";
     }
-    this.log('');
 
-    const page = await browser.newPage();
-
+    if (exports.loadCookie(page)) {
+        var logged_OK = false;
+        this.log("PORTAIL_VITI cookie connexion");
+        page.goto(baseURL+"/service-en-ligne/redirection/PORTAIL_VITI");
+        await page.waitForResponse( async (response) => {
+            if (response.status() == 403) {
+                if (response.url().match('redirection/PORTAIL_VITI')) {
+                    logged_OK = true;
+                    return true;
+                }
+            }
+            if (response.status() == 200) {
+                if (response.url().match('connexion.douane.gouv.fr')) {
+                    return true;
+                }
+                if (response.url().match('portail.xhtml')) {
+                    logged_OK = true;
+                    return true;
+                }
+            }
+            return false;
+        });
+        if (logged_OK) {
+            this.log("Cookie loaded: OK");
+            await page.waitForTimeout(250);
+            await page.goto(baseURL+"/service-en-ligne/redirection/PORTAIL_VITI");
+            this.log("Redirect PORTAIL_VITI");
+            await page.waitForSelector('.btn-primary');
+            await page.waitForSelector("form");
+            this.log("Portail VITI: OK");
+            return page;
+        }
+        this.log("Cookie: outdated");
+    }
     await page.goto("https://connexion.douane.gouv.fr/")
 
     await page.click('#loginIdentifiant');
@@ -78,5 +124,37 @@ exports.openpage_and_login = async function () {
     await page.waitForSelector("form");
 
     this.log("Portail VITI: OK");
+
+    exports.saveCookie(page);
     return page;
+}
+
+
+exports.saveCookie = async (page) => {
+    const cookies = await page.cookies();
+    const cookieJson = JSON.stringify(cookies, null, 2);
+    await fs.writeFile('/tmp/prodouane_cookies.'+process.env.PRODOUANE_USER+'.json', cookieJson,  err => { if (err) { console.error('ERROR: saveCookie: '+ err); } } );
+    this.log("saveCookie in "+'/tmp/prodouane_cookies.'+process.env.PRODOUANE_USER+'.json');
+}
+
+//load cookie function
+exports.loadCookie = async (page) => {
+    if (!fs.existsSync('/tmp/prodouane_cookies.'+process.env.PRODOUANE_USER+'.json')) {
+        this.log('loadCookie: no file');
+        return false;
+    }
+    return await fs.readFile('/tmp/prodouane_cookies.'+process.env.PRODOUANE_USER+'.json', (err, data) => {
+        if (err) {
+            console.error('ERROR: loadCookie: '+ err);
+        }
+        const cookieJson = data.toString();
+        if (! cookieJson) {
+            this.log('loadCookie: no json');
+            return false;
+        }
+        const cookies = JSON.parse(cookieJson);
+        page.setCookie(...cookies);
+        this.log("cookies loaded");
+        return true;
+    } );
 }
