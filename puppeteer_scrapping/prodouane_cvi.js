@@ -55,6 +55,9 @@ var browser;
   console.log('FAILED !!');
   console.log(e);
   if(process.env.DEBUG){
+    if (!page) {
+        page = prodouane.page;
+    }
     await page.screenshot({ path: '/tmp/screenshot_vendanges_error.png'})
     console.log('screenshot in /tmp/screenshot_vendanges_error.png')
   }
