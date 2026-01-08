@@ -33,8 +33,9 @@ var browser;
     await page.type('#inputNumeroCvi', process.env.CVI);
     await page.keyboard.press('Enter');
 
+
     await page.waitForResponse(async (response) => {
-        if (response.status() != 200) {
+        if (response.status() != 200 && response.status() != 404) {
             return false;
         }
         if (!response.url().match('rest/evvs')) {
