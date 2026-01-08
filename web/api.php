@@ -4,6 +4,7 @@ include('../bin/config.php');
 const SCRAPING_FILE_NOT_FOUND = 666;
 const SCRAPING_NO_CONF_FOUND = 888;
 const SCRAPING_UNKOWN_TYPE = 999;
+const SCRAPING_JSON_NATIF = 750;
 
 if (!isset($_SERVER['PHP_AUTH_USER']) || !$_SERVER['PHP_AUTH_USER'] || (strpos($_SERVER['REMOTE_ADDR'], '10.20') === false && strpos($_SERVER['REMOTE_ADDR'], '127.') === false && strpos($_SERVER['REMOTE_ADDR'], '::1') === false) ) {
 	header('WWW-Authenticate: Basic realm="My Realm"');
@@ -40,7 +41,7 @@ if (isset($_GET['format'])) {
 $type = null;
 if (isset($_GET['type'])) {
 	$type = $_GET['type'];
-	if (!in_array($type, ['parcellaire', 'dr', 'sv11', 'sv12', 'production'])) {
+	if (!in_array($type, ['parcellaire', 'dr', 'sv11', 'sv12', 'production', 'verify', 'cvi'])) {
 		$type = null;
 	}
 }
@@ -54,6 +55,7 @@ api_log($type, $millesime, $cvi, ['api: '.$account_name.': action '.$action]);
 switch ($action) {
 	case 'scrape':
 	case 'update':
+	case 'verify':
 		$type = null;
 		if (isset($_GET['type'])) {
 			$type = $_GET['type'];
@@ -69,6 +71,13 @@ switch ($action) {
 				if ($format != 'json') {
 					api_log($type, $millesime, $cvi, ['redirect to list']);
 					header('Location: '.str_replace('action='.$action.'&', 'action=list&', $_SERVER['REQUEST_URI']));
+				}
+				break;
+			case SCRAPING_JSON_NATIF:
+				if ($format == 'json') {
+					echo implode("\n", $exec_output);
+					echo "\n";
+					exit;
 				}
 				break;
 			case SCRAPING_UNKOWN_TYPE:
@@ -265,6 +274,9 @@ function parsing($acccount_name, $type, $millesime, $cvi, &$exec_output) {
 	if (!$ret) {
 		return $ret;
 	}
+	if ($ret == SCRAPING_JSON_NATIF) {
+		return $ret;
+	}
 	if (!isset($_GET['localonly']) || !$_GET['localonly']) {
 		$ret = exec_distant_parsing($acccount_name, $type, $millesime, $cvi, $exec_output);
 	}
@@ -316,6 +328,19 @@ function exec_local_parsing($config_name, $type, $millesime, $cvi, & $exec_outpu
 			}
 			api_log($type, $millesime, $cvi, ['exec_local_parsing: '.$config_name.': exec: SCRAPING_FILE_NOT_FOUND']);
 			return SCRAPING_FILE_NOT_FOUND;
+		case 'verify':
+		case 'cvi':
+			api_log($type, $millesime, $cvi, ['exec_local_parsing: '.$config_name.': exec: '.$script_prefix.' bash ../bin/verify_cvi.sh '.$cvi.' 2>&1']);
+			exec($script_prefix.' bash ../bin/verify_cvi.sh '.$cvi.' 2>&1', $exec_output, $ret);
+			if (count($exec_output)) {
+				api_log($type, $millesime, $cvi, ['===============================================']);
+				api_log($type, $millesime, $cvi, $exec_output);
+				api_log($type, $millesime, $cvi, ['===============================================']);
+			}
+			if (!$ret) {
+				return SCRAPING_JSON_NATIF;
+			}
+			return $ret;
 		case 'parcellaire':
 			api_log($type, $millesime, $cvi, ['exec_local_parsing: '.$config_name.': exec: '.$script_prefix.' bash ../bin/download_parcellaire.sh '.$cvi.' 2>&1']);
 			exec($script_prefix.' bash ../bin/download_parcellaire.sh '.$cvi.' 2>&1', $exec_output, $ret);
