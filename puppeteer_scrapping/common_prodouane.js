@@ -8,7 +8,7 @@ exports.baseURL = baseURL;
 exports.page = null;
 
 exports.close = async function() {
-    this.saveCookie(this.page);
+    await this.saveCookie(this.page);
     return await browser.close();
 }
 
