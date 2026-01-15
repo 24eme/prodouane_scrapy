@@ -125,7 +125,7 @@ const fs = require('fs');
             }
         }
         return false;
-    });
+    },{timeout: 150000});
     await page.waitForTimeout(1000);
 
     is_production = first_filename.match('production.*\.csv');
@@ -183,7 +183,7 @@ async function scrape_recolte(pdf_filename, page, process) {
             }
         }
         return false;
-    });
+    },{timeout: 150000});
     await page.waitForTimeout(1000);
     await fs.rename('documents/'+json_filename, 'documents/recolte-'+process.env.PRODOUANE_ANNEE+'-'+session_id[1]+'.json', (err) => {if (err) throw err;});
     if(process.env.DEBUG){
