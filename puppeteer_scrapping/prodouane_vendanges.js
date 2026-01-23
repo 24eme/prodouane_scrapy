@@ -9,23 +9,22 @@ const fs = require('fs');
 
     await page.click("input[value='VENDANGES']");
 
-    await page.waitForSelector('.btnMenu');
+    await page.waitForSelector('.btnMenu,#tableauIntervenant');
     if(process.env.DEBUG){
       console.log("Entrée dans Vendanges");
       console.log("===================");
     }
+
     await page.waitForTimeout(250);
 
-    const has_ovnis = await page.$$('.table-title');
-
+    const has_ovnis = await page.$$('#tableauIntervenant');
     if (has_ovnis.length) {
         if(process.env.DEBUG){
           console.log("Selection d'un OVNIS");
           console.log("===================");
         }
 
-        await page.type('input.champRecherche', process.env.PRODOUANE_OVNI);
-        await page.click('.material-icons');
+        await page.click('tr.vtl-tbody-tr:first-child');
     }
 
     await page.waitForSelector('.btnMenu');
