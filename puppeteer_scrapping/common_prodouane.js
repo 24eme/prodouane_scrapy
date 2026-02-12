@@ -97,7 +97,7 @@ exports.openpage_and_login = async function () {
     await page.keyboard.press('Enter')
                        .then(() => this.log("Login: OK"));
 
-    await page.waitForSelector('.container');
+    await page.waitForSelector('body');
     await page.waitForTimeout(250);
 
     const timer = await page.$$('#timer');
