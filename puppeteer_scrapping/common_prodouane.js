@@ -94,6 +94,7 @@ exports.openpage_and_login = async function () {
 
     await page.type('#loginIdentifiant', process.env.PRODOUANE_USER);
     await page.type('#loginMotdepasse', process.env.PRODOUANE_PASS);
+    await page.waitForTimeout(50);
     await page.keyboard.press('Enter')
                        .then(() => this.log("Login: OK"));
 
