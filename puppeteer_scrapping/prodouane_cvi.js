@@ -10,19 +10,35 @@ var browser;
 
      await page.click("input[value='VENDANGES']");
 
-     await page.waitForSelector('.btnMenu');
+     await page.waitForSelector('.fr-col');
      if(process.env.DEBUG){
        prodouane.log("Entrée dans Vendanges");
      }
-     const has_ovnis = await page.$$('.table-title');
+     await page.waitForTimeout(500);
 
-     if (has_ovnis.length) {
+     const has_ovnis = await page.url().includes('/ovnis');
+
+     if (has_ovnis) {
          if(process.env.DEBUG){
-           prodouane.log("Selection d'un OVNIS");
+           prodouane.log("Has OVNIS");
          }
+         await page.waitForSelector('#blocSelectionIntervenant')
 
-         await page.type('input.champRecherche', process.env.PRODOUANE_OVNI);
-         await page.click('.material-icons');
+         const ovnis = await page.$$('#blocSelectionIntervenant tbody tr td:first-child');
+         for (tr_ovnis of ovnis) {
+             const name = await tr_ovnis.$("div div span");
+             const o = await page.evaluate(name => name.innerText, name);
+             if (o == process.env.PRODOUANE_OVNI) {
+                if(process.env.DEBUG){
+                    console.log("ovnis: ", o);
+                }
+             }
+         }
+         os = await tr_ovnis.$x('..');
+         await page.evaluate(name => name.click('.material-icons'), os[0]);
+         if(process.env.DEBUG){
+           prodouane.log("OVNIS sélectionné");
+         }
      }
 
      await page.waitForSelector('.btnMenu');
