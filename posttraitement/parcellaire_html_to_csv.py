@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup, SoupStrainer
 
 
 def transform_superficie(superficie):
-    superficie = re.search(r'(\d+)Ha (\d+)Ar (\d+)Ca', superficie)
+    superficie = re.search(r'(\d+)ha (\d+)ar? (\d+)ca', superficie,  re.IGNORECASE)
     return float('{:01d}.{}{}'.format(
         int(superficie.group(1)),
         superficie.group(2),
