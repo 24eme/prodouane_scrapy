@@ -53,9 +53,12 @@ $path = '../documents/'.$millesime.'/'.$dep;
 api_log($type, $millesime, $cvi, ['api: '.$account_name.': action '.$action]);
 
 switch ($action) {
+	case 'verify':
+		if (! $format) {
+			$format = 'json';
+		}
 	case 'scrape':
 	case 'update':
-	case 'verify':
 		$type = null;
 		if (isset($_GET['type'])) {
 			$type = $_GET['type'];
@@ -71,8 +74,8 @@ switch ($action) {
 				if ($format != 'json') {
 					api_log($type, $millesime, $cvi, ['redirect to list']);
 					header('Location: '.str_replace('action='.$action.'&', 'action=list&', $_SERVER['REQUEST_URI']));
+					break;
 				}
-				break;
 			case SCRAPING_JSON_NATIF:
 				if ($format == 'json') {
 					echo implode("\n", $exec_output);
@@ -176,7 +179,7 @@ switch ($action) {
 					header('HTTP/1.0 400 Bad Request');
 					api_log($type, $millesime, $cvi, ['HTTP/1.0 400 Bad Request']);
 				}
-				echo json_encode(['error_code' => '400', 'msg' => 'argument type nécessaire'])."\n";
+				echo json_encode(['error_code' => '400', 'msg' => 'action list: argument type ('.$type.') nécessaire'])."\n";
 				api_log($type, $millesime, $cvi, ['unknown type '.$_GET['type']]);
 				exit;
 				break;
@@ -422,7 +425,8 @@ function exec_distant_parsing($config_name, $type, $millesime, $cvi, & $exec_out
 	}
 	if (!isset($json->files)) {
 		api_log($type, $millesime, $cvi, ['exec_distant_parsing: '.$config_name.': distant_parsing '.$config_router_uri.': return response '.$response]);
-		return $response;
+		$exec_output = [$response];
+		return 0;
 	}
 	foreach($json->files as $f) {
 		if (strpos($f, '.pdf') === false && strpos($f, '.csv') === false && strpos($f, '.html') === false  && strpos($f, '.xls') === false && strpos($f, '.xlsx') === false && strpos($f, '.json') === false  && strpos($f, '.geojson') === false && strpos($f, '.log') === false) {
