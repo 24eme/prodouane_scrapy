@@ -78,6 +78,7 @@ const fs = require('fs');
       console.log("");
       console.log('FAILED !! ERREUR DE CVI');
       await prodouane.close();
+      process.exit(255);
       return;
     }
 
