@@ -155,8 +155,12 @@ const fs = require('fs');
 
     await page.waitForTimeout(250);
 
-    await page.click('#formGetFdc\\:linkGetPdfFicheDeCompte')
-              .then(() => prodouane.log("Click sur le lien téléchargement"))
+
+
+    setTimeout(() => {
+      page.click('#formGetFdc\\:linkGetPdfFicheDeCompte')
+        .then(() => prodouane.log("Click sur le lien téléchargement"));
+    }, 200);
 
     var pdf_filename = '';
     await page.waitForResponse((response) => {
